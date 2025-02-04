@@ -5,6 +5,7 @@ import { signInWithEmailAndPassword } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { auth } from "@/firebase/client_app";
 import TextInput from "@/components/TextInput"; // Import the reusable TextInput component
+import Link from "next/link";
 
 function LoginPage() {
   const router = useRouter();
@@ -78,9 +79,9 @@ function LoginPage() {
             </form>
             <p className="text-center text-gray-600 mt-4">
               Don’t have an account?{" "}
-              <a href="#" className="text-blue-500 hover:underline">
+              <Link href="/signup" className="text-blue-500 hover:underline">
                 Create an account
-              </a>
+              </Link>
             </p>
           </div>
         </div>

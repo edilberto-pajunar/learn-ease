@@ -6,6 +6,7 @@ import { useSignupStore } from "@/hooks/useSignupStore";
 import { useCreateUserWithEmailAndPassword } from "react-firebase-hooks/auth";
 import { auth, db } from "@/firebase/client_app";
 import { doc, setDoc } from "firebase/firestore";
+import { AppUser } from "@/interface/user";
 
 const SignupPage: React.FC = () => {
   const {
@@ -39,11 +40,18 @@ const SignupPage: React.FC = () => {
       );
       const userId = userCredential?.user?.uid;
 
+      if (!userId) return;
+
+      const user: AppUser = {
+        id: userId,
+        name: name,
+        email: email,
+        createdAt: new Date(),
+      };
+
       if (userId) {
-        await setDoc(doc(db, "users", userId), {
-          name,
-          email,
-          createdAt: new Date(),
+        await setDoc(doc(db, "users", userId), user, {
+          merge: true,
         });
       }
 
@@ -54,13 +62,6 @@ const SignupPage: React.FC = () => {
       setError(err.message);
     }
   };
-
-  useEffect(() => {
-    // Prevent "back" navigation to this page
-    if (window.history) {
-      window.history.replaceState(null, "", window.location.href);
-    }
-  }, []);
 
   return (
     <SignupForm

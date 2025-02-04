@@ -1,5 +1,6 @@
 import React from "react";
 import TextInput from "@/components/TextInput";
+import Link from "next/link";
 
 interface SignupFormProps {
   name: string;
@@ -91,9 +92,9 @@ const SignupForm: React.FC<SignupFormProps> = ({
           </form>
           <p className="text-center text-gray-600 mt-4">
             Already registered?{" "}
-            <a href="#" className="text-blue-500 hover:underline">
+            <Link href="/login" className="text-blue-500 hover:underline">
               Log in
-            </a>
+            </Link>
           </p>
         </div>
       </div>

@@ -1,0 +1,69 @@
+[
+  {
+    "id": "material_1",
+    "text": "The sun is a star that provides light and heat to our planet. It is the center of our solar system, and all the planets orbit around it. The sun's energy helps plants grow and gives warmth to living beings. Without the sun, life on Earth would not exist. It rises in the east and sets in the west, creating day and night.",
+    "questions": [
+      {
+        "title": "What does the sun provide to Earth?",
+        "options": [
+          "Water and air",
+          "Light and heat",
+          "Food and shelter",
+          "Oxygen and nitrogen"
+        ],
+        "answer": "Light and heat"
+      },
+      {
+        "title": "Where does the sun rise?",
+        "options": ["North", "South", "East", "West"],
+        "answer": "East"
+      },
+      {
+        "title": "What would happen if the sun did not exist?",
+        "options": [
+          "Earth would freeze",
+          "Earth would get brighter",
+          "More plants would grow",
+          "Oceans would dry up"
+        ],
+        "answer": "Earth would freeze"
+      },
+      {
+        "title": "What does the sun help plants do?",
+        "options": ["Grow", "Fly", "Sing", "Disappear"],
+        "answer": "Grow"
+      }
+    ]
+  },
+  {
+    "id": "material_2",
+    "text": "Anna loves reading books. Every afternoon, she sits under a big oak tree in her backyard and reads her favorite stories. She enjoys adventure books the most because they take her to different worlds. One day, she found an old book in the library with a golden cover. It was full of magical tales. Anna spent hours reading and imagining the wonderful places described in the book.",
+    "questions": [
+      {
+        "title": "What does Anna love to do?",
+        "options": ["Play soccer", "Read books", "Watch movies", "Sing songs"],
+        "answer": "Read books"
+      },
+      {
+        "title": "Where does Anna sit when she reads?",
+        "options": ["Under a tree", "On the roof", "At school", "In a car"],
+        "answer": "Under a tree"
+      },
+      {
+        "title": "What kind of books does Anna enjoy the most?",
+        "options": ["Science", "Adventure", "Math", "Cooking"],
+        "answer": "Adventure"
+      },
+      {
+        "title": "What was special about the book Anna found?",
+        "options": [
+          "It was very heavy",
+          "It had a golden cover",
+          "It was missing pages",
+          "It was written in another language"
+        ],
+        "answer": "It had a golden cover"
+      }
+    ]
+  }
+]
