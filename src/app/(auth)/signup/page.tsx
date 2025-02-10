@@ -6,7 +6,8 @@ import { useSignupStore } from "@/hooks/useSignupStore";
 import { useCreateUserWithEmailAndPassword } from "react-firebase-hooks/auth";
 import { auth, db } from "@/firebase/client_app";
 import { doc, setDoc } from "firebase/firestore";
-import { AppUser } from "@/interface/user";
+import { AppUser, UserRole } from "@/interface/user";
+import { useRouter } from "next/navigation";
 
 const SignupPage: React.FC = () => {
   const {
@@ -21,6 +22,7 @@ const SignupPage: React.FC = () => {
     setError,
     reset,
   } = useSignupStore();
+  const router = useRouter();
 
   const [createUserWithEmailAndPassword, , loading, authError] =
     useCreateUserWithEmailAndPassword(auth);
@@ -47,12 +49,15 @@ const SignupPage: React.FC = () => {
         name: name,
         email: email,
         createdAt: new Date(),
+        role: UserRole.STUDENT,
       };
 
       if (userId) {
         await setDoc(doc(db, "users", userId), user, {
           merge: true,
         });
+
+        router.push("/");
       }
 
       reset();

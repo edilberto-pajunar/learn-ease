@@ -4,24 +4,31 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/firebase/client_app";
+import { useAuthStore } from "@/hooks/useAuthStore";
+import { UserRole } from "@/interface/user";
 
 const HomePage: React.FC = () => {
   const router = useRouter();
   const [loading, setLoading] = useState(true); // State for managing loading
+  const { user, setUser } = useAuthStore(); // Ensure you can update user info from Firebase
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (!user) {
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      console.log(user?.role);
+      if (!firebaseUser) {
         // If user is not logged in, redirect to login
         router.push("/login");
       } else {
-        // User is logged in
-        setLoading(false); // Stop loading once user is authenticated
+        // Check if the user is admin
+        if (user?.role === UserRole.ADMIN) {
+          router.push("/admin");
+        }
+        setLoading(false);
       }
     });
 
     return () => unsubscribe();
-  }, [router]);
+  }, [user, router]);
 
   if (loading) {
     // Render loading indicator while checking auth state

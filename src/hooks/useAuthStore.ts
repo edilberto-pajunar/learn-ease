@@ -1,7 +1,7 @@
 import { create } from "zustand";
-import { onAuthStateChanged, User } from "firebase/auth";
+import { onAuthStateChanged, signOut, User } from "firebase/auth";
 import { auth, db } from "@/firebase/client_app";
-import { AppUser } from "@/interface/user";
+import { AppUser, UserRole } from "@/interface/user";
 import {
   collection,
   doc,
@@ -19,6 +19,7 @@ interface AuthState {
   initializeAuthState: () => void;
   setUser: (user: AppUser | null) => void;
   setSubmissions: () => void;
+  logout: () => void;
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -46,6 +47,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
               name: firebaseUser.displayName || "Anonymous",
               email: firebaseUser.email || "",
               createdAt: new Date(firebaseUser.metadata.creationTime || ""),
+              role: UserRole.STUDENT,
             };
           }
 
@@ -83,5 +85,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         set({ submissions: null });
       }
     }
+  },
+  logout: async () => {
+    await signOut(auth);
+    set({
+      user: null,
+      isAuthenticated: false,
+    });
   },
 }));

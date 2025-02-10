@@ -1,6 +1,7 @@
 "use client";
 
 import BoldEachLetter from "@/components/BoldEachLetter";
+import Clock from "@/components/Clock"; // Import the Clock component
 import { FC, useEffect } from "react";
 import { useReadStore } from "@/hooks/useReadStore";
 import { useAuthStore } from "@/hooks/useAuthStore";
@@ -80,8 +81,15 @@ const ReadingPage: FC = () => {
           </div>
         </div>
 
-        <div className="flex flex-col md:flex-row items-center gap-4 mb-6">
-          <BoldEachLetter text={material["text"]} bionic={bionic} />
+        <div className="flex flex-wrap gap-6">
+          <div className="flex flex-col items-center gap-4 mb-6 p-4 border rounded-lg shadow-lg w-full md:w-auto">
+            <BoldEachLetter text={material["text"]} bionic={bionic} />
+            <Clock /> {/* Display the clock beside the card */}
+          </div>
+          <div className="flex flex-col items-center gap-4 mb-6 p-4 border rounded-lg shadow-lg w-full md:w-auto">
+            <BoldEachLetter text={material["text"]} bionic={bionic} />
+            <Clock /> {/* Display the clock beside the card */}
+          </div>
         </div>
 
         <div className="border-t border-gray-300 pt-4">
