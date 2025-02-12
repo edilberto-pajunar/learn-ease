@@ -1,34 +1,62 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "@/firebase/client_app";
+import { useEffect, useLayoutEffect, useState } from "react";
+import { redirect, useRouter } from "next/navigation";
 import { useAuthStore } from "@/hooks/useAuthStore";
-import { UserRole } from "@/interface/user";
+import { AppUser, UserRole } from "@/interface/user";
+import { onAuthStateChanged, User } from "firebase/auth";
+import { auth, db } from "@/firebase/client_app";
+import withAuth from "@/components/withAuth";
+import { sessionStatus } from "../utils/session";
+import { doc, getDoc } from "firebase/firestore";
 
 const HomePage: React.FC = () => {
+  const [loading, setLoading] = useState(true);
+  const {setUser, setIsAuthenticated} = useAuthStore();
   const router = useRouter();
-  const [loading, setLoading] = useState(true); // State for managing loading
-  const { user, setUser } = useAuthStore(); // Ensure you can update user info from Firebase
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      console.log(user?.role);
-      if (!firebaseUser) {
-        // If user is not logged in, redirect to login
-        router.push("/login");
-      } else {
-        // Check if the user is admin
-        if (user?.role === UserRole.ADMIN) {
-          router.push("/admin");
+  const fetchData = async () => {
+    onAuthStateChanged(auth, async (firebaseUser: User | null) => {
+      console.log(firebaseUser);
+      if (firebaseUser) {
+        try {
+          const userRef = doc(db, "users", firebaseUser.uid);
+          const userSnap = await getDoc(userRef);
+
+          let user: AppUser;
+
+          if (userSnap.exists()) {
+            user = userSnap.data() as AppUser;
+          } else {
+            // 🔹 If no Firestore record, create a fallback user object
+            user = {
+              id: firebaseUser.uid,
+              name: firebaseUser.displayName || "Anonymous",
+              email: firebaseUser.email || "",
+              createdAt: new Date(firebaseUser.metadata.creationTime || ""),
+              role: UserRole.STUDENT,
+            };
+          }
+          setUser(user);
+          setIsAuthenticated(true);
+          if (user.role === UserRole.ADMIN) {
+            router.push("/admin");
+          }
+          setLoading(false);
+        } catch (e) {
+          console.error("Error initializing auth state: ", e);
         }
-        setLoading(false);
+      } else {
+        setUser(null);
+        setIsAuthenticated(false);
+        redirect("/login");
       }
     });
+  };
 
-    return () => unsubscribe();
-  }, [user, router]);
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   if (loading) {
     // Render loading indicator while checking auth state
@@ -69,7 +97,7 @@ const HomePage: React.FC = () => {
               progress.
             </p>
             <button
-              onClick={() => router.push("/reading")}
+              // onClick={() => router.push("/reading")}
               className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
             >
               Start Reading Test
@@ -83,7 +111,7 @@ const HomePage: React.FC = () => {
               Visualize your learning progress and set your next goals.
             </p>
             <button
-              onClick={() => router.push("/dashboard")}
+              // onClick={() => router.push("/dashboard")}
               className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
             >
               View Dashboard
@@ -97,7 +125,7 @@ const HomePage: React.FC = () => {
               Access a curated list of resources to boost your skills.
             </p>
             <button
-              onClick={() => router.push("/resources")}
+              // onClick={() => router.push("/resources")}
               className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
             >
               Explore Resources

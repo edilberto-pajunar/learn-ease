@@ -6,18 +6,14 @@ import { UserRole } from "@/interface/user";
 import { signOut } from "firebase/auth";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { redirect, usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const Navbar: React.FC = () => {
   const pathname = usePathname();
   const router = useRouter();
-  const { isAuthenticated, initializeAuthState, user, logout } = useAuthStore();
+  const { isAuthenticated, user, logout } = useAuthStore();
   const [showDialog, setShowDialog] = useState(false);
-
-  useEffect(() => {
-    initializeAuthState();
-  }, [initializeAuthState]);
 
   // Navigation Links based on user role
   const links =
@@ -28,9 +24,9 @@ const Navbar: React.FC = () => {
           { href: "/admin/summary", label: "Summary" },
         ]
       : [
-          { href: "/", label: "Home" },
-          { href: "/reading", label: "Reading Test" },
-          { href: "/dashboard", label: "Progress Dashboard" },
+          { href: "/student", label: "Home" },
+          { href: "/student/reading", label: "Reading Test" },
+          { href: "/student/dashboard", label: "Progress Dashboard" },
         ];
 
   const handleLogout = async () => {

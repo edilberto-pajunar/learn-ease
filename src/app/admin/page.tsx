@@ -1,14 +1,68 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { auth, db } from "@/firebase/client_app";
+import { useAuthStore } from "@/hooks/useAuthStore";
+import { AppUser, UserRole } from "@/interface/user";
+import { onAuthStateChanged, User } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
+import { redirect, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function AdminPage() {
   const router = useRouter();
+  const [loading, setLoading] = useState(true);
+  const {user, setUser, isAuthenticated, setIsAuthenticated} = useAuthStore();
+
+  const fetchData = async () => {
+    onAuthStateChanged(auth, async (firebaseUser: User | null) => {
+      console.log(firebaseUser);
+      if (firebaseUser) {
+        try {
+          const userRef = doc(db, "users", firebaseUser.uid);
+          const userSnap = await getDoc(userRef);
+
+          let user: AppUser;
+
+          if (userSnap.exists()) {
+            user = userSnap.data() as AppUser;
+          } else {
+            // 🔹 If no Firestore record, create a fallback user object
+            user = {
+              id: firebaseUser.uid,
+              name: firebaseUser.displayName || "Anonymous",
+              email: firebaseUser.email || "",
+              createdAt: new Date(firebaseUser.metadata.creationTime || ""),
+              role: UserRole.STUDENT,
+            };
+          }
+          setUser(user);
+          setIsAuthenticated(true);
+          if (user.role === UserRole.STUDENT) {
+            router.push("/student");
+          }
+          setLoading(false);
+        } catch (e) {
+          console.error("Error initializing auth state: ", e);
+        }
+      } else {
+        setUser(null);
+        setIsAuthenticated(false);
+        redirect("/login");
+      }
+    });
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   const handleNavigation = (path: string) => {
     router.push(path);
   };
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="max-w-6xl mx-auto p-8">

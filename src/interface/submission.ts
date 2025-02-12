@@ -4,4 +4,5 @@ interface Submission {
   score: number;
   studentId: string;
   submittedAt: Date;
+  recordTime: Record<string, string>;
 }

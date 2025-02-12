@@ -16,7 +16,6 @@ interface AuthState {
   user: AppUser | null;
   submissions: Submission[] | null;
   setIsAuthenticated: (isAuthenticated: boolean) => void;
-  initializeAuthState: () => void;
   setUser: (user: AppUser | null) => void;
   setSubmissions: () => void;
   logout: () => void;
@@ -28,39 +27,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   submissions: null,
   setIsAuthenticated: (isAuthenticated: boolean) => {
     set({ isAuthenticated });
-  },
-  initializeAuthState: () => {
-    onAuthStateChanged(auth, async (firebaseUser: User | null) => {
-      if (firebaseUser) {
-        try {
-          const userRef = doc(db, "users", firebaseUser.uid);
-          const userSnap = await getDoc(userRef);
-
-          let user: AppUser;
-
-          if (userSnap.exists()) {
-            user = userSnap.data() as AppUser;
-          } else {
-            // 🔹 If no Firestore record, create a fallback user object
-            user = {
-              id: firebaseUser.uid,
-              name: firebaseUser.displayName || "Anonymous",
-              email: firebaseUser.email || "",
-              createdAt: new Date(firebaseUser.metadata.creationTime || ""),
-              role: UserRole.STUDENT,
-            };
-          }
-
-          set({ isAuthenticated: true, user });
-
-          // const { setSubmissions } = get();
-          // await setSubmissions();
-        } catch (e) {
-          console.error("Error initializing auth state: ", e);
-          set({ isAuthenticated: false, user: null });
-        }
-      }
-    });
   },
   setUser: (user) => set({ user }),
   setSubmissions: async () => {

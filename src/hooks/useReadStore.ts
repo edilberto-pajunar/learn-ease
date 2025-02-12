@@ -2,6 +2,7 @@
 
 import { db } from "@/firebase/client_app";
 import { Material, StudentAnswer } from "@/interface/material";
+import { readingService } from "@/services/readingService";
 import { doc, setDoc } from "firebase/firestore";
 import { create } from "zustand";
 
@@ -22,6 +23,7 @@ interface ReadStore {
   calculateMistakes: () => void;
   resetAnswers: () => void;
   setIsSubmitted: () => void;
+  setTime: (studentId: string, time: Record<string, any>) => void;
 }
 
 export const useReadStore = create<ReadStore>((set, get) => ({
@@ -96,5 +98,12 @@ export const useReadStore = create<ReadStore>((set, get) => ({
   setIsSubmitted: () => {
     const { isSubmitted } = get();
     set({ isSubmitted: !isSubmitted });
+  },
+  setTime: async (studentId, time) => {
+    const {currentMaterial} = get();
+
+    if (!currentMaterial) return;
+
+    await readingService.setTime(studentId, currentMaterial.id, time);
   },
 }));

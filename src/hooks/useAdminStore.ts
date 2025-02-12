@@ -2,14 +2,22 @@ import { AppUser, UserRole } from "@/interface/user";
 import { create } from "zustand";
 import { db } from "@/firebase/client_app";
 import { collection, getDocs, query, where } from "firebase/firestore";
+import { Material, Question } from "@/interface/material";
+import { adminService } from "@/services/adminService";
 
 interface AdminState {
   students: AppUser[];
+  materials: Material[];
+  loading: boolean;
   setStudents: () => void;
+  setMaterials: () => () => void;
+  addMaterial: () => void;
 }
 
 export const useAdminStore = create<AdminState>((set) => ({
   students: [],
+  materials: [],
+  loading: false,
   setStudents: async () => {
     try {
       const studentsRef = collection(db, "users");
@@ -26,5 +34,27 @@ export const useAdminStore = create<AdminState>((set) => ({
       });
       set({ students: studentUsers });
     } catch (e) {}
+  },
+  setMaterials: () => {
+    set({ loading: true});
+    const unsubscribe = adminService.listenToMaterials((data) => {
+      set({ materials: data, loading: false});
+    });
+
+    return unsubscribe;
+  },
+  addMaterial: () => {
+    const question : Question = {
+      title: "",
+      answer: "",
+      options: [],
+    }
+
+    const material : Material = {
+      id: "",
+      questions: [],
+      text: "",
+    }
+    adminService.addMaterial(material);
   },
 }));

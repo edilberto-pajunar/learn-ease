@@ -84,11 +84,15 @@ const ReadingPage: FC = () => {
         <div className="flex flex-wrap gap-6">
           <div className="flex flex-col items-center gap-4 mb-6 p-4 border rounded-lg shadow-lg w-full md:w-auto">
             <BoldEachLetter text={material["text"]} bionic={bionic} />
-            <Clock /> {/* Display the clock beside the card */}
+            <Clock 
+              onStop={() => {}}
+            /> {/* Display the clock beside the card */}
           </div>
           <div className="flex flex-col items-center gap-4 mb-6 p-4 border rounded-lg shadow-lg w-full md:w-auto">
             <BoldEachLetter text={material["text"]} bionic={bionic} />
-            <Clock /> {/* Display the clock beside the card */}
+            <Clock 
+              onStop={() => {}}
+            /> {/* Display the clock beside the card */}
           </div>
         </div>
 

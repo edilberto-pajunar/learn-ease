@@ -8,9 +8,9 @@ const AdminStudentsPage: React.FC = () => {
   const { students, setStudents } = useAdminStore();
   const router = useRouter();
 
-  useEffect(() => {
-    setStudents(); // Fetch students when the component mounts
-  }, [setStudents]); // Add setStudents to dependency array to prevent unnecessary re-renders
+  // useEffect(() => {
+  //   setStudents(); // Fetch students when the component mounts
+  // }, [setStudents]); // Add setStudents to dependency array to prevent unnecessary re-renders
 
   const handleNavigate = (id: string) => {
     router.push(`/admin/students/${id}`);
