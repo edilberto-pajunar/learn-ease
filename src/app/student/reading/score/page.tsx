@@ -1,46 +1,45 @@
 "use client";
 
 import { useAuthStore } from "@/hooks/useAuthStore";
+import { useScoreStore } from "@/hooks/useScoreStore";
 import { useEffect } from "react";
+import MaterialCard from "../component/MaterialCard";
 
+
+// 📊 Score Page for Multiple Materials
 const ScorePage = () => {
-  const { submissions, setSubmissions, isAuthenticated, user } = useAuthStore();
+  const {submissions, setSubmissions} = useScoreStore();
+  const {user} = useAuthStore();
 
+  const studentId = user?.id;
+
+  // Simulate fetching submissions
   useEffect(() => {
-    if (isAuthenticated && user) {
-      setSubmissions();
-    }
-  }, [isAuthenticated, user, setSubmissions]);
+    if (!studentId) return;
+    setSubmissions(studentId);
+  }, [studentId]);
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-4">Your Score</h1>
-      {submissions && submissions.length > 0 ? (
-        <table className="table-auto border-collapse w-full border border-gray-200">
-          <thead>
-            <tr className="bg-gray-100 border-b border-gray-300">
-              <th className="px-4 py-2 text-left">Item</th>
-              <th className="px-4 py-2 text-left">Score</th>
-              <th className="px-4 py-2 text-left">Date</th>
-            </tr>
-          </thead>
-          <tbody>
-            {submissions.map((submission, index) => (
-              <tr
-                key={index}
-                className={`border-b border-gray-200 ${
-                  index % 2 === 0 ? "bg-gray-50" : ""
-                }`}
-              >
-                <td className="px-4 py-2">{submission.materialId}</td>
-                <td className="px-4 py-2">{submission.score}</td>
-              </tr>
+    <div className="bg-gray-50 min-h-screen py-10">
+      <div className="max-w-6xl mx-auto px-6">
+        {/* Header */}
+        <h1 className="text-4xl font-bold text-blue-800 mb-6 text-center">
+          📚 All Material Submissions
+        </h1>
+
+        {/* Submission List */}
+        {submissions.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+            {submissions.map((submission) => (
+              <MaterialCard key={submission.materialId} submission={submission} />
             ))}
-          </tbody>
-        </table>
-      ) : (
-        <p className="text-lg">No submissions found.</p>
-      )}
+          </div>
+        ) : (
+          <p className="text-center text-gray-500 mt-12">
+            No submissions found. Start your reading journey!
+          </p>
+        )}
+      </div>
     </div>
   );
 };

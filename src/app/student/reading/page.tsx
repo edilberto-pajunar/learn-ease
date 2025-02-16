@@ -1,62 +1,94 @@
 "use client";
 
 import BoldEachLetter from "@/components/BoldEachLetter";
-import Clock from "@/components/Clock"; // Import the Clock component
-import { FC, useEffect } from "react";
+import Clock from "@/components/Clock";
+import { FC, useEffect, useState } from "react";
 import { useReadStore } from "@/hooks/useReadStore";
 import { useAuthStore } from "@/hooks/useAuthStore";
-import materials from "@/data/reading_comprehension.json";
 import { useRouter } from "next/navigation";
+import { z } from "zod";
+import { wordCount } from "@/app/utils/wordCount";
+import FunFact from "./component/FunFact";
+
+// ✅ 1. Define Zod Schema for validation
+const questionSchema = z.object({
+  answers: z.record(
+    z.string(),
+    z.string().min(1, "All questions must be answered.")
+  ),
+});
 
 const ReadingPage: FC = () => {
   const {
-    bionic,
-    setBionic,
+    materials,
     currentIndex,
-    setCurrentIndex,
-    setCurrentMaterial,
-    submitAnswer,
-    handleAnswerChange,
     selectedAnswers,
     mistakes,
-    calculateMistakes,
     isSubmitted,
+    submitAnswer,
+    handleAnswerChange,
+    fetchMaterials,
+    stopListening,
+    setTime,
+    calculateMistakes,
+    setCurrentIndex,
     setIsSubmitted,
+    isLoading,
   } = useReadStore();
   const { user } = useAuthStore();
   const router = useRouter();
+  const [formError, setFormError] = useState<string | null>(null);
 
-  const material = materials[currentIndex];
+  useEffect(() => {
+    fetchMaterials();
+    return () => stopListening();
+  }, [fetchMaterials, stopListening]);
+
+  if (materials.length === 0) {
+    return <p>Loading...</p>;
+  }
+
   const studentId = user?.id;
+  const material = materials[currentIndex];
 
+  // ✅ 2. Use Zod for Validation on Submit
   const handleSubmit = async () => {
-    console.log(isSubmitted);
+    const validation = questionSchema.safeParse({
+      answers: selectedAnswers,
+    });
+
+    // ✅ Show Error if Validation Fails
+    if (!validation.success) {
+      setFormError("❌ Please answer all questions before submitting.");
+      return;
+    }
+
+    setFormError(null); // Clear error if passed
+
+
     if (!isSubmitted) {
       calculateMistakes();
-      console.log(
-        `Submitted Answers: ${JSON.stringify(selectedAnswers, null, 2)}`
-      );
-      console.log(studentId);
-
       if (!studentId) return;
-
       await submitAnswer(studentId);
       setIsSubmitted();
     } else {
       if (currentIndex < materials.length - 1) {
         setCurrentIndex(currentIndex + 1);
       } else {
-        console.log("Finished all passages");
-        router.push("/reading/score");
+        router.push("/student/reading/score");
       }
       setIsSubmitted();
     }
   };
 
-  useEffect(() => {
-    const material = materials[currentIndex];
-    setCurrentMaterial(material);
-  }, [currentIndex, setCurrentMaterial]);
+  const handleTime = async (time: number, bionic: boolean) => {
+    if (!studentId) return;
+    await setTime(studentId, {
+      recordTime: bionic
+        ? { bionic: time }
+        : { nonBionic: time },
+    });
+  };
 
   return (
     <div className="flex flex-col items-center px-6 py-8 max-w-4xl mx-auto">
@@ -66,36 +98,45 @@ const ReadingPage: FC = () => {
             Interactive Reading Passage
           </h1>
 
-          <div className="flex gap-2">
-            <button
-              onClick={() => setBionic(!bionic)}
-              className={`px-4 h-6 rounded-full flex items-center transition-colors duration-300 ${
-                bionic ? "bg-blue-600 text-white" : "bg-gray-300"
-              }`}
-            >
-              Bionic
-            </button>
-            <p>
-              {currentIndex + 1}/{materials.length}
-            </p>
+          <div className="flex items-center gap-4 p-2 bg-blue-50 border border-blue-200 rounded-lg shadow-sm">
+            <div className="flex items-center gap-2">
+              <span className="text-blue-500 font-bold text-lg">
+                {wordCount(material.text)}
+              </span>
+              <p className="text-gray-500 text-sm font-semibold">words</p>
+            </div>
+            <div className="flex items-center gap-1 text-gray-700 text-sm font-medium">
+              <span className="px-2 py-1 bg-gray-200 rounded-md">
+                {currentIndex + 1}
+              </span>
+              <span className="text-gray-400">/</span>
+              <span className="px-2 py-1 bg-gray-200 rounded-md">
+                {materials.length}
+              </span>
+            </div>
           </div>
         </div>
 
+        {/* Show Form Error if exists */}
+        {formError && (
+          <div className="mb-4 p-3 text-red-600 bg-red-100 border border-red-400 rounded">
+            {formError}
+          </div>
+        )}
+
+        {/* Reading Passages */}
         <div className="flex flex-wrap gap-6">
           <div className="flex flex-col items-center gap-4 mb-6 p-4 border rounded-lg shadow-lg w-full md:w-auto">
-            <BoldEachLetter text={material["text"]} bionic={bionic} />
-            <Clock 
-              onStop={() => {}}
-            /> {/* Display the clock beside the card */}
+            <BoldEachLetter text={material.text} bionic={false} />
+            <Clock onStop={(time) => handleTime(time, false)} />
           </div>
           <div className="flex flex-col items-center gap-4 mb-6 p-4 border rounded-lg shadow-lg w-full md:w-auto">
-            <BoldEachLetter text={material["text"]} bionic={bionic} />
-            <Clock 
-              onStop={() => {}}
-            /> {/* Display the clock beside the card */}
+            <BoldEachLetter text={material.text} bionic={true} />
+            <Clock onStop={(time) => handleTime(time, true)} />
           </div>
         </div>
 
+        {/* Comprehension Questions */}
         <div className="border-t border-gray-300 pt-4">
           <h2 className="text-lg font-semibold mb-4">
             Comprehension Questions
@@ -125,6 +166,7 @@ const ReadingPage: FC = () => {
                   ))}
                 </div>
 
+                {/* Show Mistakes if Submitted */}
                 {isSubmitted && mistakes[question.title] && (
                   <p
                     className={`mt-2 ${
@@ -139,38 +181,31 @@ const ReadingPage: FC = () => {
               </div>
             ))}
 
-            <button
-              type="submit"
-              className="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700"
-              onClick={handleSubmit}
-            >
-              {isSubmitted
-                ? currentIndex === materials.length - 1
-                  ? "Finish"
-                  : "Next"
-                : "Submit"}
-            </button>
+            {/* Submit Button */}
+            {isLoading ? (
+              <div>
+                <p>Loading...</p>
+              </div>
+            ) : (
+               <button
+               type="submit"
+               className="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700"
+               onClick={handleSubmit}
+             >
+               {isSubmitted
+                 ? currentIndex === materials.length - 1
+                   ? "Finish"
+                   : "Next"
+                 : "Submit"}
+             </button>
+            )}
+            
           </div>
         </div>
       </div>
 
-      <div className="mt-8 bg-gray-100 p-6 rounded-lg shadow-md">
-        <h2 className="text-lg font-semibold mb-4">Fun Facts and Tips</h2>
-        <ul className="list-disc pl-6 space-y-2">
-          <li>
-            <strong>Did you know?</strong> Reading can improve your focus and
-            concentration!
-          </li>
-          <li>
-            <strong>Tip:</strong> Set a daily reading goal to build a consistent
-            habit!
-          </li>
-          <li>
-            <strong>Fun Fact:</strong> Reading fiction can enhance your empathy
-            and understanding of others.
-          </li>
-        </ul>
-      </div>
+      {/* Fun Facts Section */}
+      <FunFact />
     </div>
   );
 };

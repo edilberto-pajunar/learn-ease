@@ -6,9 +6,12 @@ import { auth } from "@/firebase/client_app";
 import TextInput from "@/components/TextInput"; // Import the reusable TextInput component
 import Link from "next/link";
 import {  redirect, useRouter } from "next/navigation";
+import { useAuthStore } from "@/hooks/useAuthStore";
+import { UserRole } from "@/interface/user";
 
 function LoginPage() {
   const router = useRouter();
+  const { isAuthenticated, user } = useAuthStore();
 
   // State for form inputs and error handling
   const [email, setEmail] = useState("");
@@ -34,6 +37,16 @@ function LoginPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      if (user?.role == UserRole.STUDENT) {
+        router.push("/student");
+      } else {
+        router.push("/admin");
+      }
+    }
+  }, [user]);
 
   return (
     <>

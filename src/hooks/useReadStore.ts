@@ -3,21 +3,26 @@
 import { db } from "@/firebase/client_app";
 import { Material, StudentAnswer } from "@/interface/material";
 import { readingService } from "@/services/readingService";
-import { doc, setDoc } from "firebase/firestore";
+import { unsubscribe } from "diagnostics_channel";
+import { collection, doc, onSnapshot, setDoc } from "firebase/firestore";
 import { create } from "zustand";
 
 interface ReadStore {
+  isLoading: boolean;
+  materials: Material[];
   bionic: boolean;
   currentIndex: number;
-  currentMaterial: Material | null;
   studentAnswers: StudentAnswer[];
   selectedAnswers: Record<string, string>;
   mistakes: Record<string, string>;
   isSubmitted: boolean;
   score: number;
+  setLoading: (value: boolean) => void;
+  fetchMaterials: () => void;
+  stopListening: () => void;
+  unsubscribe: (() => void) | null;
   setBionic: (bionic: boolean) => void;
   setCurrentIndex: (currentIndex: number) => void;
-  setCurrentMaterial: (material: Material) => void;
   submitAnswer: (studentId: string) => void;
   handleAnswerChange: (questionTitle: string, studentAnswer: string) => void;
   calculateMistakes: () => void;
@@ -27,6 +32,7 @@ interface ReadStore {
 }
 
 export const useReadStore = create<ReadStore>((set, get) => ({
+  isLoading: false,
   bionic: false,
   currentIndex: 0,
   currentMaterial: null,
@@ -35,37 +41,29 @@ export const useReadStore = create<ReadStore>((set, get) => ({
   mistakes: {},
   isSubmitted: false,
   score: 0,
+  materials: [],
+  unsubscribe: null,
+  setLoading: (value) => {
+    set({ isLoading: value });
+  },
   setBionic: (bionic) => set({ bionic }),
   setCurrentIndex: (currentIndex) => set({ currentIndex }),
-  setCurrentMaterial: (material) => set({ currentMaterial: material }),
   submitAnswer: async (studentId) => {
-    const { selectedAnswers, currentMaterial, resetAnswers, score } = get();
 
-    if (!currentMaterial) return;
+    const { selectedAnswers, resetAnswers, score, currentIndex, materials, setLoading} = get();
+    setLoading(true);
+    const currentMaterial = materials[currentIndex];
 
-    const submissionRef = doc(
-      db,
-      "submissions",
-      `${studentId}_${currentMaterial.id}`
+    await readingService.submitAnswer(
+      studentId,
+      currentMaterial.id,
+      selectedAnswers,
+      score
     );
 
-    const submissionData = {
-      studentId,
-      materialId: currentMaterial.id,
-      answers: selectedAnswers,
-      submittedAt: new Date(),
-      score: score,
-    };
-
-    try {
-      await setDoc(submissionRef, submissionData, { merge: true });
-      console.log(`Answers submitted: ${submissionData}`);
-      resetAnswers();
-    } catch (e) {
-      console.log(`Error submitting answers: ${e}`);
-    }
+    resetAnswers();
+    setLoading(false);
   },
-
   handleAnswerChange: (questionTitle, studentAnswer) => {
     const { selectedAnswers } = get();
     set({
@@ -76,8 +74,9 @@ export const useReadStore = create<ReadStore>((set, get) => ({
     });
   },
   calculateMistakes: () => {
-    const { currentMaterial, selectedAnswers, score } = get();
-    if (!currentMaterial) return;
+    const { currentIndex, materials, selectedAnswers, score } = get();
+
+    const currentMaterial = materials[currentIndex];
 
     const mistakes: Record<string, string> = {};
 
@@ -95,15 +94,30 @@ export const useReadStore = create<ReadStore>((set, get) => ({
     set({ mistakes });
   },
   resetAnswers: () => set({ selectedAnswers: {} }),
-  setIsSubmitted: () => {
-    const { isSubmitted } = get();
-    set({ isSubmitted: !isSubmitted });
-  },
+  setIsSubmitted: () => set((state) => ({ isSubmitted: !state.isSubmitted })),
   setTime: async (studentId, time) => {
-    const {currentMaterial} = get();
+    const {currentIndex, materials} = get();
 
-    if (!currentMaterial) return;
+    const currentMaterial = materials[currentIndex];
 
     await readingService.setTime(studentId, currentMaterial.id, time);
+  },
+  fetchMaterials: () => {
+    const materialsRef = collection(db, "materials");
+
+    const unsubscribe = onSnapshot(materialsRef, (snapshot) => {
+      const materials: Material[] = snapshot.docs.map((doc) => (doc.data()) as Material);
+      console.log(materials);
+
+      set({ materials });
+    });
+
+    set({ unsubscribe });
+  },
+  stopListening: () => {
+    const {unsubscribe} = get();
+    if (unsubscribe) {
+      set({unsubscribe: null});
+    }
   },
 }));

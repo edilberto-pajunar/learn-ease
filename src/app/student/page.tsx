@@ -1,75 +1,16 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useState } from "react";
-import { redirect, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/hooks/useAuthStore";
-import { AppUser, UserRole } from "@/interface/user";
-import { onAuthStateChanged, User } from "firebase/auth";
-import { auth, db } from "@/firebase/client_app";
-import withAuth from "@/components/withAuth";
-import { sessionStatus } from "../utils/session";
-import { doc, getDoc } from "firebase/firestore";
 
 const HomePage: React.FC = () => {
-  const [loading, setLoading] = useState(true);
-  const {setUser, setIsAuthenticated} = useAuthStore();
+  const {user} = useAuthStore();
   const router = useRouter();
 
-  const fetchData = async () => {
-    onAuthStateChanged(auth, async (firebaseUser: User | null) => {
-      console.log(firebaseUser);
-      if (firebaseUser) {
-        try {
-          const userRef = doc(db, "users", firebaseUser.uid);
-          const userSnap = await getDoc(userRef);
-
-          let user: AppUser;
-
-          if (userSnap.exists()) {
-            user = userSnap.data() as AppUser;
-          } else {
-            // 🔹 If no Firestore record, create a fallback user object
-            user = {
-              id: firebaseUser.uid,
-              name: firebaseUser.displayName || "Anonymous",
-              email: firebaseUser.email || "",
-              createdAt: new Date(firebaseUser.metadata.creationTime || ""),
-              role: UserRole.STUDENT,
-            };
-          }
-          setUser(user);
-          setIsAuthenticated(true);
-          if (user.role === UserRole.ADMIN) {
-            router.push("/admin");
-          }
-          setLoading(false);
-        } catch (e) {
-          console.error("Error initializing auth state: ", e);
-        }
-      } else {
-        setUser(null);
-        setIsAuthenticated(false);
-        redirect("/login");
-      }
-    });
-  };
-
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  if (loading) {
-    // Render loading indicator while checking auth state
-    return (
-      <div className="h-screen flex items-center justify-center bg-blue-50">
-        <div className="flex flex-col items-center">
-          <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-          <p className="mt-4 text-blue-600 text-lg font-semibold">
-            Checking authentication...
-          </p>
-        </div>
-      </div>
-    );
+  if (!user) {
+    return <p>
+      Loading...
+    </p>;
   }
 
   return (
@@ -97,7 +38,7 @@ const HomePage: React.FC = () => {
               progress.
             </p>
             <button
-              // onClick={() => router.push("/reading")}
+              onClick={() => router.push("/student/reading")}
               className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
             >
               Start Reading Test
