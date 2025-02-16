@@ -4,6 +4,6 @@ module.exports = {
     "plugin:prettier/recommended", // Add Prettier's recommended configuration
   ],
   rules: {
-    "@typescript-eslint/no-unused-vars": "off", // Disable unused variable warnings
+    "@typescript-eslint/no-unused-vars": "on", // Disable unused variable warnings
   },
 };
