@@ -21,7 +21,7 @@ export const readingService = {
         }
     },
 
-    async submitAnswer(studentId: string, materialId: string, answers: Record<string, string>, score: number) {
+    async submitAnswer(studentId: string, materialId: string, answers: Record<string, string>, score: number, numberOfWords: number) {
         try {
             const ref = doc(db, `submissions`, `${studentId}_${materialId}`);
             await setDoc(ref, {
@@ -30,6 +30,7 @@ export const readingService = {
                 score: score,
                 studentId: studentId,
                 submittedAt: new Date(),
+                numberOfWords: numberOfWords,
             }, {merge: true});
             console.log(`StudentID: ${studentId}: Answer submitted: ${materialId}`);
         } catch (error) {

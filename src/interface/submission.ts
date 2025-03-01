@@ -6,4 +6,5 @@ interface Submission {
   submittedAt: Date;
   recordTime: Record<string, string>;
   miscues: string[];
+  numberOfWords: number;
 }

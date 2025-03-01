@@ -1,5 +1,6 @@
 "use client";
 
+import { wordCount } from "@/app/utils/wordCount";
 import { db } from "@/firebase/client_app";
 import { Material, StudentAnswer } from "@/interface/material";
 import { readingService } from "@/services/readingService";
@@ -57,12 +58,14 @@ export const useReadStore = create<ReadStore>((set, get) => ({
     const { selectedAnswers, resetAnswers, score, currentIndex, materials, setLoading} = get();
     setLoading(true);
     const currentMaterial = materials[currentIndex];
+    const numberOfWords = wordCount(currentMaterial.text);
 
     await readingService.submitAnswer(
       studentId,
       currentMaterial.id,
       selectedAnswers,
-      score
+      score,
+      numberOfWords,
     );
 
     resetAnswers();
@@ -128,7 +131,7 @@ export const useReadStore = create<ReadStore>((set, get) => ({
   addMiscues: (word) => {
     const {miscues} = get();
 
-    set({miscues: [...miscues, word]});
+    set({miscues: [...miscues, word]}); 
   },
   removeMiscues: (word) => {
     const {miscues} = get();
