@@ -6,7 +6,7 @@ interface ClockProps {
 }
 
 const Clock = ({
-  onStop
+  onStop,
 } : ClockProps) => {
   const [time, setTime] = useState(0); // Time in seconds
   const [isRunning, setIsRunning] = useState(false); // Whether the clock is running

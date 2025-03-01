@@ -1,13 +1,16 @@
 import { db } from "@/firebase/client_app";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc, arrayUnion, getDoc, updateDoc, arrayRemove } from "firebase/firestore";
 
 export const readingService = {
   
-    async setTime(studentId: string, materialId: string, time: Record<string, string>) {
+    async endTime(studentId: string, materialId: string, time: Record<string, string>, miscues: string[]) {
         
         try {
             const ref = doc(db, `submissions`, `${studentId}_${materialId}`);
-            const docRef = await setDoc(ref, time, {
+            await setDoc(ref, {
+                recordTime: time,
+                miscues: miscues,
+            }, {
               merge: true,
             });
             console.log(`Student ID: ${studentId}: ${JSON.stringify(time)}`);
@@ -21,7 +24,7 @@ export const readingService = {
     async submitAnswer(studentId: string, materialId: string, answers: Record<string, string>, score: number) {
         try {
             const ref = doc(db, `submissions`, `${studentId}_${materialId}`);
-            const docRef = await setDoc(ref, {
+            await setDoc(ref, {
                 answers,
                 materialId: materialId,
                 score: score,
@@ -32,6 +35,5 @@ export const readingService = {
         } catch (error) {
             console.log("Error submitting answer: ", error);
         }
-    }
-
+    },
 };

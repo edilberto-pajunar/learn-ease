@@ -17,6 +17,7 @@ interface ReadStore {
   mistakes: Record<string, string>;
   isSubmitted: boolean;
   score: number;
+  miscues: string[];
   setLoading: (value: boolean) => void;
   fetchMaterials: () => void;
   stopListening: () => void;
@@ -28,7 +29,9 @@ interface ReadStore {
   calculateMistakes: () => void;
   resetAnswers: () => void;
   setIsSubmitted: () => void;
-  setTime: (studentId: string, time: Record<string, any>) => void;
+  endTime: (studentId: string, time: Record<string, any>) => void;
+  addMiscues: (word: string) => void;
+  removeMiscues: (word: string) => void;
 }
 
 export const useReadStore = create<ReadStore>((set, get) => ({
@@ -43,6 +46,7 @@ export const useReadStore = create<ReadStore>((set, get) => ({
   score: 0,
   materials: [],
   unsubscribe: null,
+  miscues: [],
   setLoading: (value) => {
     set({ isLoading: value });
   },
@@ -95,12 +99,13 @@ export const useReadStore = create<ReadStore>((set, get) => ({
   },
   resetAnswers: () => set({ selectedAnswers: {} }),
   setIsSubmitted: () => set((state) => ({ isSubmitted: !state.isSubmitted })),
-  setTime: async (studentId, time) => {
-    const {currentIndex, materials} = get();
+  endTime: async (studentId, time) => {
+    const {currentIndex, materials, miscues} = get();
 
     const currentMaterial = materials[currentIndex];
 
-    await readingService.setTime(studentId, currentMaterial.id, time);
+    await readingService.endTime(studentId, currentMaterial.id, time, miscues);
+    set({ miscues: []});
   },
   fetchMaterials: () => {
     const materialsRef = collection(db, "materials");
@@ -119,5 +124,15 @@ export const useReadStore = create<ReadStore>((set, get) => ({
     if (unsubscribe) {
       set({unsubscribe: null});
     }
+  },
+  addMiscues: (word) => {
+    const {miscues} = get();
+
+    set({miscues: [...miscues, word]});
+  },
+  removeMiscues: (word) => {
+    const {miscues} = get();
+
+    set({miscues: miscues.filter((m) => m !== word)});
   },
 }));

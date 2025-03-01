@@ -1,20 +1,30 @@
 import React from "react";
 import { textVide } from "text-vide";
 
-const BoldEachLetter: React.FC<{ text: string; bionic: boolean }> = ({
+const BoldEachLetter: React.FC<{ text: string; bionic: boolean; onWordTap?: (word: string) => void }> = ({
   text,
   bionic,
+  onWordTap,
 }) => {
-  const highlightedText = textVide(text, {
-    ignoreHtmlTag: false,
-    ignoreHtmlEntity: false,
-  });
+  const words = text.split(/(\s+)/); // Split by words and spaces (capturing spaces)
 
   return (
-    <p
-      className="text-justify"
-      dangerouslySetInnerHTML={{ __html: bionic ? highlightedText : text }}
-    />
+    <p className="text-justify">
+      {words.map((word, index) => {
+        if (/\s+/.test(word)) {
+          // If it's just whitespace, render it normally
+          return word;
+        }
+        return (
+          <span
+            key={index}
+            className="cursor-pointer hover:underline"
+            onClick={() => onWordTap && onWordTap(word)}
+            dangerouslySetInnerHTML={{ __html: bionic ? textVide(word) : word }}
+          />
+        );
+      })}
+    </p>
   );
 };
 

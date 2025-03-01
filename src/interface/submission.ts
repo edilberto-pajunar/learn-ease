@@ -5,4 +5,5 @@ interface Submission {
   studentId: string;
   submittedAt: Date;
   recordTime: Record<string, string>;
+  miscues: string[];
 }

@@ -25,22 +25,27 @@ const ReadingPage: FC = () => {
     selectedAnswers,
     mistakes,
     isSubmitted,
+    miscues,
+    isLoading,
     submitAnswer,
     handleAnswerChange,
     fetchMaterials,
     stopListening,
-    setTime,
+    endTime,
     calculateMistakes,
     setCurrentIndex,
     setIsSubmitted,
-    isLoading,
+    addMiscues,
+    removeMiscues,
   } = useReadStore();
+
   const { user } = useAuthStore();
   const router = useRouter();
   const [formError, setFormError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchMaterials();
+    
     return () => stopListening();
   }, [fetchMaterials, stopListening]);
 
@@ -83,12 +88,20 @@ const ReadingPage: FC = () => {
 
   const handleTime = async (time: number, bionic: boolean) => {
     if (!studentId) return;
-    await setTime(studentId, {
-      recordTime: bionic
+    endTime(studentId, 
+      bionic
         ? { bionic: time }
         : { nonBionic: time },
-    });
+    );
   };
+
+  const handleAddMiscues = (word: string) => {
+    addMiscues(word);
+  }
+
+  const handleRemoveMiscues = (word: string) => {
+    removeMiscues(word);
+  }
 
   return (
     <div className="flex flex-col items-center px-6 py-8 max-w-4xl mx-auto">
@@ -127,17 +140,45 @@ const ReadingPage: FC = () => {
         {/* Reading Passages */}
         <div className="flex flex-wrap gap-6">
           <div className="flex flex-col items-center gap-4 mb-6 p-4 border rounded-lg shadow-lg w-full md:w-auto">
-            <BoldEachLetter text={material.text} bionic={false} />
-            <Clock onStop={(time) => handleTime(time, false)} />
+            <BoldEachLetter 
+              text={material.text}
+              bionic={false}
+              onWordTap={handleAddMiscues}
+            />
+            <Clock
+              onStop={(time) => handleTime(time, false)}
+            />
           </div>
           <div className="flex flex-col items-center gap-4 mb-6 p-4 border rounded-lg shadow-lg w-full md:w-auto">
-            <BoldEachLetter text={material.text} bionic={true} />
-            <Clock onStop={(time) => handleTime(time, true)} />
+            <BoldEachLetter
+              text={material.text}
+              bionic={true}
+              onWordTap={handleAddMiscues}
+            />
+            <Clock
+              onStop={(time) => handleTime(time, true)}
+            />
           </div>
         </div>
 
+        {
+          miscues.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {miscues.map((word, index) => (
+                 <span
+                  onClick={() => {handleRemoveMiscues(word)}}
+                  key={index}
+                  className="bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-sm"
+                 >
+                  {word}
+                 </span>
+              ))}
+            </div>
+          )
+        }
+
         {/* Comprehension Questions */}
-        <div className="border-t border-gray-300 pt-4">
+        <div className="mt-4 border-t border-gray-300 pt-4">
           <h2 className="text-lg font-semibold mb-4">
             Comprehension Questions
           </h2>
