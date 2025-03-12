@@ -133,8 +133,8 @@ const ReadingPage: FC = () => {
         )}
 
         {/* Reading Passages */}
-        <div className="flex flex-wrap gap-6 ">
-          <div className="flex flex-col items-center gap-4 mb-6 p-4 border border-gray-700 rounded-lg shadow-xl w-full md:w-auto bg-gray-900">
+        <div className="flex flex-wrap gap-6">
+          <div className="flex flex-col items-center gap-4 mb-6 p-4 border rounded-lg shadow-lg w-full md:w-auto">
             <BoldEachLetter
               text={material.text}
               bionic={false}
@@ -142,8 +142,7 @@ const ReadingPage: FC = () => {
             />
             <Clock onStop={(time) => handleTime(time, false)} />
           </div>
-
-          <div className="flex flex-col items-center gap-4 mb-6 p-4 border border-gray-700 rounded-lg shadow-xl w-full md:w-auto bg-gray-900">
+          <div className="flex flex-col items-center gap-4 mb-6 p-4 border rounded-lg shadow-lg w-full md:w-auto">
             <BoldEachLetter
               text={material.text}
               bionic={true}
