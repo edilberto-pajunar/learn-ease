@@ -1,22 +1,22 @@
-"use client";
+'use client'
 
-import BoldEachLetter from "@/components/BoldEachLetter";
-import Clock from "@/components/Clock";
-import { FC, useEffect, useState } from "react";
-import { useReadStore } from "@/hooks/useReadStore";
-import { useAuthStore } from "@/hooks/useAuthStore";
-import { useRouter } from "next/navigation";
-import { z } from "zod";
-import { wordCount } from "@/app/utils/wordCount";
-import FunFact from "./component/FunFact";
+import BoldEachLetter from '@/components/BoldEachLetter'
+import Clock from '@/components/Clock'
+import { FC, useEffect, useState } from 'react'
+import { useReadStore } from '@/hooks/useReadStore'
+import { useAuthStore } from '@/hooks/useAuthStore'
+import { useRouter } from 'next/navigation'
+import { z } from 'zod'
+import { wordCount } from '@/app/utils/wordCount'
+import FunFact from './component/FunFact'
 
 // ✅ 1. Define Zod Schema for validation
 const questionSchema = z.object({
   answers: z.record(
     z.string(),
-    z.string().min(1, "All questions must be answered.")
+    z.string().min(1, 'All questions must be answered.'),
   ),
-});
+})
 
 const ReadingPage: FC = () => {
   const {
@@ -37,70 +37,65 @@ const ReadingPage: FC = () => {
     setIsSubmitted,
     addMiscues,
     removeMiscues,
-  } = useReadStore();
+  } = useReadStore()
 
-  const { user } = useAuthStore();
-  const router = useRouter();
-  const [formError, setFormError] = useState<string | null>(null);
+  const { user } = useAuthStore()
+  const router = useRouter()
+  const [formError, setFormError] = useState<string | null>(null)
 
   useEffect(() => {
-    fetchMaterials();
-    
-    return () => stopListening();
-  }, [fetchMaterials, stopListening]);
+    fetchMaterials()
+
+    return () => stopListening()
+  }, [fetchMaterials, stopListening])
 
   if (materials.length === 0) {
-    return <p>Loading...</p>;
+    return <p>Loading...</p>
   }
 
-  const studentId = user?.id;
-  const material = materials[currentIndex];
+  const studentId = user?.id
+  const material = materials[currentIndex]
 
   // ✅ 2. Use Zod for Validation on Submit
   const handleSubmit = async () => {
     const validation = questionSchema.safeParse({
       answers: selectedAnswers,
-    });
+    })
 
     // ✅ Show Error if Validation Fails
     if (!validation.success) {
-      setFormError("❌ Please answer all questions before submitting.");
-      return;
+      setFormError('❌ Please answer all questions before submitting.')
+      return
     }
 
-    setFormError(null); // Clear error if passed
-
+    setFormError(null) // Clear error if passed
 
     if (!isSubmitted) {
-      calculateMistakes();
-      if (!studentId) return;
-      await submitAnswer(studentId);
-      setIsSubmitted();
+      calculateMistakes()
+      if (!studentId) return
+      await submitAnswer(studentId)
+      setIsSubmitted()
     } else {
       if (currentIndex < materials.length - 1) {
-        setCurrentIndex(currentIndex + 1);
+        setCurrentIndex(currentIndex + 1)
       } else {
-        router.push("/student/reading/score");
+        router.push('/student/reading/score')
       }
-      setIsSubmitted();
+      setIsSubmitted()
     }
-  };
+  }
 
   const handleTime = async (time: number, bionic: boolean) => {
-    if (!studentId) return;
-    endTime(studentId, 
-      bionic
-        ? { bionic: time }
-        : { nonBionic: time },
-    );
-  };
+    if (!studentId) return
+    endTime(studentId, bionic ? { bionic: time } : { nonBionic: time })
+  }
 
   const handleAddMiscues = (word: string) => {
-    addMiscues(word);
+    addMiscues(word)
   }
 
   const handleRemoveMiscues = (word: string) => {
-    removeMiscues(word);
+    removeMiscues(word)
   }
 
   return (
@@ -138,44 +133,41 @@ const ReadingPage: FC = () => {
         )}
 
         {/* Reading Passages */}
-        <div className="flex flex-wrap gap-6">
-          <div className="flex flex-col items-center gap-4 mb-6 p-4 border rounded-lg shadow-lg w-full md:w-auto">
-            <BoldEachLetter 
+        <div className="flex flex-wrap gap-6 ">
+          <div className="flex flex-col items-center gap-4 mb-6 p-4 border border-gray-700 rounded-lg shadow-xl w-full md:w-auto bg-gray-900">
+            <BoldEachLetter
               text={material.text}
               bionic={false}
               onWordTap={handleAddMiscues}
             />
-            <Clock
-              onStop={(time) => handleTime(time, false)}
-            />
+            <Clock onStop={(time) => handleTime(time, false)} />
           </div>
-          <div className="flex flex-col items-center gap-4 mb-6 p-4 border rounded-lg shadow-lg w-full md:w-auto">
+
+          <div className="flex flex-col items-center gap-4 mb-6 p-4 border border-gray-700 rounded-lg shadow-xl w-full md:w-auto bg-gray-900">
             <BoldEachLetter
               text={material.text}
               bionic={true}
               onWordTap={handleAddMiscues}
             />
-            <Clock
-              onStop={(time) => handleTime(time, true)}
-            />
+            <Clock onStop={(time) => handleTime(time, true)} />
           </div>
         </div>
 
-        {
-          miscues.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {miscues.map((word, index) => (
-                 <span
-                  onClick={() => {handleRemoveMiscues(word)}}
-                  key={index}
-                  className="bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-sm"
-                 >
-                  {word}
-                 </span>
-              ))}
-            </div>
-          )
-        }
+        {miscues.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {miscues.map((word, index) => (
+              <span
+                onClick={() => {
+                  handleRemoveMiscues(word)
+                }}
+                key={index}
+                className="bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-sm"
+              >
+                {word}
+              </span>
+            ))}
+          </div>
+        )}
 
         {/* Comprehension Questions */}
         <div className="mt-4 border-t border-gray-300 pt-4">
@@ -211,9 +203,9 @@ const ReadingPage: FC = () => {
                 {isSubmitted && mistakes[question.title] && (
                   <p
                     className={`mt-2 ${
-                      mistakes[question.title] === "Correct!"
-                        ? "text-green-500"
-                        : "text-red-500"
+                      mistakes[question.title] === 'Correct!'
+                        ? 'text-green-500'
+                        : 'text-red-500'
                     }`}
                   >
                     {mistakes[question.title]}
@@ -228,19 +220,18 @@ const ReadingPage: FC = () => {
                 <p>Loading...</p>
               </div>
             ) : (
-               <button
-               type="submit"
-               className="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700"
-               onClick={handleSubmit}
-             >
-               {isSubmitted
-                 ? currentIndex === materials.length - 1
-                   ? "Finish"
-                   : "Next"
-                 : "Submit"}
-             </button>
+              <button
+                type="submit"
+                className="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700"
+                onClick={handleSubmit}
+              >
+                {isSubmitted
+                  ? currentIndex === materials.length - 1
+                    ? 'Finish'
+                    : 'Next'
+                  : 'Submit'}
+              </button>
             )}
-            
           </div>
         </div>
       </div>
@@ -248,7 +239,7 @@ const ReadingPage: FC = () => {
       {/* Fun Facts Section */}
       <FunFact />
     </div>
-  );
-};
+  )
+}
 
-export default ReadingPage;
+export default ReadingPage

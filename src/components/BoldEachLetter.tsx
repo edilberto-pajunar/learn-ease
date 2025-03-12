@@ -9,7 +9,7 @@ const BoldEachLetter: React.FC<{
   const words = text.split(/(\s+)/) // Split by words and spaces (capturing spaces)
 
   return (
-    <p className="text-justify text-yellow-400">
+    <p className="text-justify text-white">
       {words.map((word, index) => {
         if (/\s+/.test(word)) {
           // If it's just whitespace, render it normally

@@ -45,7 +45,7 @@ const Clock = ({
 
   return (
     <div className="text-center">
-      <p className="text-sm text-gray-600">
+      <p className="text-sm text-white">
         Time: {new Date(time * 1000).toISOString().substr(11, 8)}
       </p>
       <div className="flex gap-4 mt-4">
