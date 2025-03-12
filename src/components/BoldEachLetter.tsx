@@ -1,19 +1,19 @@
-import React from "react";
-import { textVide } from "text-vide";
+import React from 'react'
+import { textVide } from 'text-vide'
 
-const BoldEachLetter: React.FC<{ text: string; bionic: boolean; onWordTap?: (word: string) => void }> = ({
-  text,
-  bionic,
-  onWordTap,
-}) => {
-  const words = text.split(/(\s+)/); // Split by words and spaces (capturing spaces)
+const BoldEachLetter: React.FC<{
+  text: string
+  bionic: boolean
+  onWordTap?: (word: string) => void
+}> = ({ text, bionic, onWordTap }) => {
+  const words = text.split(/(\s+)/) // Split by words and spaces (capturing spaces)
 
   return (
-    <p className="text-justify text-black-400">
+    <p className="text-justify text-yellow-400">
       {words.map((word, index) => {
         if (/\s+/.test(word)) {
           // If it's just whitespace, render it normally
-          return word;
+          return word
         }
         return (
           <span
@@ -22,10 +22,10 @@ const BoldEachLetter: React.FC<{ text: string; bionic: boolean; onWordTap?: (wor
             onClick={() => onWordTap && onWordTap(word)}
             dangerouslySetInnerHTML={{ __html: bionic ? textVide(word) : word }}
           />
-        );
+        )
       })}
     </p>
-  );
-};
+  )
+}
 
-export default BoldEachLetter;
+export default BoldEachLetter
