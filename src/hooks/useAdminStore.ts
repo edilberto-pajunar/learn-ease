@@ -41,7 +41,7 @@ export const useAdminStore = create<AdminState>((set) => ({
       set({ materials: data, loading: false});
     });
 
-    return unsubscribe;
+    return () => unsubscribe;
   },
   addMaterial: () => {
     const question : Question = {

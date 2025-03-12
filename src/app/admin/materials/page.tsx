@@ -14,10 +14,10 @@ export default function MaterialsPage() {
     null,
   );
 
-  // useEffect(() => {
-  //   const unsubscribe = setMaterials();
-  //   return () => unsubscribe();
-  // }, [setMaterials]);
+  useEffect(() => {
+    const unsubscribe = setMaterials();
+    return () => unsubscribe();
+  }, [setMaterials]);
 
   if (loading) return <div className="text-center py-4">Loading...</div>;
 
@@ -43,6 +43,7 @@ export default function MaterialsPage() {
       {/* Material List */}
       <div>
         <h2 className="text-xl font-semibold mb-4">Materials List</h2>
+  
         <ul className="space-y-6">
           {materials.map((material) => (
             <li key={material.id} className="border p-4 rounded-lg shadow-lg">

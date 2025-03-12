@@ -30,7 +30,11 @@ function LoginPage() {
       await signInWithEmailAndPassword(auth, email, password);
 
       // Navigate to the student page
-      router.push("/student");
+      if (user?.role === UserRole.STUDENT) {
+        router.push("/student");
+      } else if (user?.role === UserRole.ADMIN) {
+        router.push("/admin");
+      }
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -40,9 +44,9 @@ function LoginPage() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      if (user?.role == UserRole.STUDENT) {
+      if (user?.role === UserRole.STUDENT) {
         router.push("/student");
-      } else {
+      } else if (user?.role === UserRole.ADMIN) {
         router.push("/admin");
       }
     }
