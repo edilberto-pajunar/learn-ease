@@ -10,10 +10,4 @@ interface Question {
   answer: string;
 }
 
-interface StudentAnswer {
-  questionTitle: string;
-  studentAnswer: string;
-  isCorrect: boolean;
-}
-
-export type { Material, Question, StudentAnswer };
+export type { Material, Question };

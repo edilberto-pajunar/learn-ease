@@ -1,37 +1,43 @@
 import { db } from "@/firebase/client_app";
-import { doc, setDoc, arrayUnion, getDoc, updateDoc, arrayRemove } from "firebase/firestore";
+import { useAuthStore } from "@/hooks/useAuthStore";
+import { Submission } from "@/interface/submission";
+import { doc, setDoc, arrayUnion, getDoc, updateDoc, arrayRemove, collection } from "firebase/firestore";
 
 export const readingService = {
-  
+
     async endTime(studentId: string, materialId: string, time: Record<string, string>, miscues: string[]) {
-        
+
         try {
-            const ref = doc(db, `submissions`, `${studentId}_${materialId}`);
+            const ref = doc((collection(db, "users", studentId, "submissions")));
             await setDoc(ref, {
                 recordTime: time,
-                miscues: miscues,
+                miscues: miscues ?? [],
             }, {
-              merge: true,
+                merge: true,
             });
             console.log(`Student ID: ${studentId}: ${JSON.stringify(time)}`);
-            
+
         } catch (error) {
             console.log("Error setting time: ", error);
 
         }
     },
 
-    async submitAnswer(studentId: string, materialId: string, answers: Record<string, string>, score: number, numberOfWords: number) {
+    async submitAnswer(submission: Submission) {
         try {
-            const ref = doc(db, `submissions`, `${studentId}_${materialId}`);
+            const ref = doc(collection(db, "submissions",));
+            const studentId = submission.studentId;
+            const materialId = submission.materialId;
             await setDoc(ref, {
-                answers,
+                id: ref.id,
+                answers: submission.answers,
                 materialId: materialId,
-                score: score,
+                score: submission.score,
                 studentId: studentId,
                 submittedAt: new Date(),
-                numberOfWords: numberOfWords,
-            }, {merge: true});
+                numberOfWords: submission.numberOfWords,
+                duration: submission.duration,
+            }, { merge: true });
             console.log(`StudentID: ${studentId}: Answer submitted: ${materialId}`);
         } catch (error) {
             console.log("Error submitting answer: ", error);

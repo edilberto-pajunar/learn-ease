@@ -1,5 +1,5 @@
 interface Submission {
-  answers: Record<string, string>;
+  answers: string[];
   materialId: string;
   score: number;
   studentId: string;
@@ -7,4 +7,12 @@ interface Submission {
   recordTime: Record<string, string>;
   miscues: string[];
   numberOfWords: number;
+  duration: number;
 }
+
+interface RecordTime {
+  startTime: Date;
+  endTime: Date;
+}
+
+export type { Submission, RecordTime };

@@ -1,107 +1,37 @@
 "use client";
 
-import BoldEachLetter from "@/components/BoldEachLetter";
-import Clock from "@/components/Clock";
 import { FC, useEffect, useState } from "react";
 import { useReadStore } from "@/hooks/useReadStore";
 import { useAuthStore } from "@/hooks/useAuthStore";
-import { useRouter } from "next/navigation";
-import { z } from "zod";
 import { wordCount } from "@/app/utils/wordCount";
 import FunFact from "./component/FunFact";
-
-// ✅ 1. Define Zod Schema for validation
-const questionSchema = z.object({
-  answers: z.record(
-    z.string(),
-    z.string().min(1, "All questions must be answered.")
-  ),
-});
+import QuestionCard from "./component/QuestionCard";
+import TimeCard from "./component/TimeCard";
 
 const ReadingPage: FC = () => {
   const {
     materials,
-    currentIndex,
-    selectedAnswers,
-    mistakes,
-    isSubmitted,
+    indexMaterial,
     miscues,
-    isLoading,
-    submitAnswer,
-    handleAnswerChange,
+    duration,
     fetchMaterials,
-    stopListening,
-    endTime,
-    calculateMistakes,
-    setCurrentIndex,
-    setIsSubmitted,
-    addMiscues,
-    removeMiscues,
   } = useReadStore();
 
   const { user } = useAuthStore();
-  const router = useRouter();
-  const [formError, setFormError] = useState<string | null>(null);
+  const [formError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchMaterials();
-    
-    return () => stopListening();
-  }, [fetchMaterials, stopListening]);
+
+    return () => { };
+  }, [fetchMaterials]);
 
   if (materials.length === 0) {
     return <p>Loading...</p>;
   }
 
   const studentId = user?.id;
-  const material = materials[currentIndex];
-
-  // ✅ 2. Use Zod for Validation on Submit
-  const handleSubmit = async () => {
-    const validation = questionSchema.safeParse({
-      answers: selectedAnswers,
-    });
-
-    // ✅ Show Error if Validation Fails
-    if (!validation.success) {
-      setFormError("❌ Please answer all questions before submitting.");
-      return;
-    }
-
-    setFormError(null); // Clear error if passed
-
-
-    if (!isSubmitted) {
-      calculateMistakes();
-      if (!studentId) return;
-      await submitAnswer(studentId);
-      setIsSubmitted();
-    } else {
-      if (currentIndex < materials.length - 1) {
-        setCurrentIndex(currentIndex + 1);
-      } else {
-        router.push("/student/reading/score");
-      }
-      setIsSubmitted();
-    }
-  };
-
-  const handleTime = async (time: number, bionic: boolean) => {
-    if (!studentId) return;
-    endTime(studentId, 
-      bionic
-        ? { bionic: time }
-        : { nonBionic: time },
-    );
-  };
-
-  const handleAddMiscues = (word: string) => {
-    addMiscues(word);
-  }
-
-  const handleRemoveMiscues = (word: string) => {
-    removeMiscues(word);
-  }
+  const material = materials[indexMaterial];
 
   return (
     <div className="flex flex-col items-center px-6 py-8 max-w-4xl mx-auto">
@@ -120,7 +50,7 @@ const ReadingPage: FC = () => {
             </div>
             <div className="flex items-center gap-1 text-gray-700 text-sm font-medium">
               <span className="px-2 py-1 bg-gray-200 rounded-md">
-                {currentIndex + 1}
+                {indexMaterial + 1}
               </span>
               <span className="text-gray-400">/</span>
               <span className="px-2 py-1 bg-gray-200 rounded-md">
@@ -138,40 +68,21 @@ const ReadingPage: FC = () => {
         )}
 
         {/* Reading Passages */}
-        <div className="flex flex-wrap gap-6">
-          <div className="flex flex-col items-center gap-4 mb-6 p-4 border rounded-lg shadow-lg w-full md:w-auto">
-            <BoldEachLetter 
-              text={material.text}
-              bionic={false}
-              onWordTap={handleAddMiscues}
-            />
-            <Clock
-              onStop={(time) => handleTime(time, false)}
-            />
-          </div>
-          <div className="flex flex-col items-center gap-4 mb-6 p-4 border rounded-lg shadow-lg w-full md:w-auto">
-            <BoldEachLetter
-              text={material.text}
-              bionic={true}
-              onWordTap={handleAddMiscues}
-            />
-            <Clock
-              onStop={(time) => handleTime(time, true)}
-            />
-          </div>
-        </div>
+        <TimeCard
+          material={material}
+        />
 
         {
           miscues.length > 0 && (
             <div className="flex flex-wrap gap-2">
               {miscues.map((word, index) => (
-                 <span
-                  onClick={() => {handleRemoveMiscues(word)}}
+                <span
+                  onClick={() => { }}
                   key={index}
                   className="bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-sm"
-                 >
+                >
                   {word}
-                 </span>
+                </span>
               ))}
             </div>
           )
@@ -182,72 +93,32 @@ const ReadingPage: FC = () => {
           <h2 className="text-lg font-semibold mb-4">
             Comprehension Questions
           </h2>
-          <div className="space-y-6">
-            {material.questions.map((question, index) => (
-              <div key={index} className="mb-6">
-                <h2 className="text-lg font-semibold mb-2">
-                  {index + 1}. {question.title}
-                </h2>
-
-                <div className="flex flex-col gap-2">
-                  {question.options.map((option, optIndex) => (
-                    <label key={optIndex} className="flex items-center">
-                      <input
-                        className="mr-2"
-                        type="radio"
-                        name={question.title}
-                        value={option}
-                        onChange={() =>
-                          handleAnswerChange(question.title, option)
-                        }
-                        checked={selectedAnswers[question.title] === option}
-                      />
-                      {option}
-                    </label>
-                  ))}
-                </div>
-
-                {/* Show Mistakes if Submitted */}
-                {isSubmitted && mistakes[question.title] && (
-                  <p
-                    className={`mt-2 ${
-                      mistakes[question.title] === "Correct!"
-                        ? "text-green-500"
-                        : "text-red-500"
-                    }`}
-                  >
-                    {mistakes[question.title]}
-                  </p>
-                )}
-              </div>
-            ))}
-
-            {/* Submit Button */}
-            {isLoading ? (
-              <div>
-                <p>Loading...</p>
-              </div>
-            ) : (
-               <button
-               type="submit"
-               className="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700"
-               onClick={handleSubmit}
-             >
-               {isSubmitted
-                 ? currentIndex === materials.length - 1
-                   ? "Finish"
-                   : "Next"
-                 : "Submit"}
-             </button>
-            )}
-            
+          <div>
+            <p className="text-gray-500 text-sm mb-4">
+              Answer the following comprehension questions.
+            </p>
           </div>
+
+          {duration ? (
+            <QuestionCard
+              questions={material.questions}
+              studentId={studentId!}
+            />
+          ) : (
+            <div>
+              <p className="text-red-500 text-sm mb-4 ">
+                Please complete the reading passage first.
+              </p>
+            </div>
+          )
+          }
+
         </div>
       </div>
 
       {/* Fun Facts Section */}
       <FunFact />
-    </div>
+    </div >
   );
 };
 

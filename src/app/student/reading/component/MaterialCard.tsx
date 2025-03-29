@@ -1,3 +1,5 @@
+import { Submission } from "@/interface/submission";
+
 interface MaterialCardProps {
   submission: Submission;
 }
@@ -31,8 +33,8 @@ const MaterialCard: React.FC<MaterialCardProps> = ({ submission }) => {
           <p>{submission.numberOfWords} words</p>
         </div>
       </div>
-      
-    
+
+
 
       {/* Record Times */}
       <div className="grid grid-cols-2 gap-4">
@@ -54,7 +56,7 @@ const MaterialCard: React.FC<MaterialCardProps> = ({ submission }) => {
         </span>
       </div>
 
-        {/* Reading Speed Section */}
+      {/* Reading Speed Section */}
       <div className="flex items-center gap-4 bg-yellow-50 p-3 rounded-lg border">
         <h4 className="text-yellow-600 font-semibold">Reading Speed:</h4>
         <span className="text-2xl font-bold text-yellow-700">

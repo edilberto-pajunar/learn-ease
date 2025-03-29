@@ -2,10 +2,12 @@
 
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/hooks/useAuthStore";
+import { useReadStore } from "@/hooks/useReadStore";
 
 const HomePage: React.FC = () => {
-  const {user} = useAuthStore();
+  const { user } = useAuthStore();
   const router = useRouter();
+  const { materials, indexMaterial, indexQuestion, setIndexMaterial, setIndexQuestion, resetScore } = useReadStore();
 
   if (!user) {
     return <p>
@@ -38,7 +40,17 @@ const HomePage: React.FC = () => {
               progress.
             </p>
             <button
-              onClick={() => router.push("/student/reading")}
+              onClick={() => {
+                console.log(materials);
+                if (materials.length !== 0) {
+                  setIndexMaterial(0);
+                  setIndexQuestion(0);
+                  resetScore();
+                }
+
+                router.push("/student/reading");
+
+              }}
               className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
             >
               Start Reading Test
