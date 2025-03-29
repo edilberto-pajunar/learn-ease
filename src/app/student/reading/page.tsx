@@ -1,4 +1,4 @@
-"use client";
+'use client'
 
 import { FC, useEffect, useState } from "react";
 import { useReadStore } from "@/hooks/useReadStore";
@@ -27,7 +27,7 @@ const ReadingPage: FC = () => {
   }, [fetchMaterials]);
 
   if (materials.length === 0) {
-    return <p>Loading...</p>;
+    return <p>Loading...</p>
   }
 
   const studentId = user?.id;
@@ -122,4 +122,4 @@ const ReadingPage: FC = () => {
   );
 };
 
-export default ReadingPage;
+export default ReadingPage
