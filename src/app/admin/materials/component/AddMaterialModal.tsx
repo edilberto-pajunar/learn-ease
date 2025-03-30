@@ -30,7 +30,8 @@ export function AddMaterialModal() {
                 options: ["", "", "", ""], // Default 4 choices
                 answer: ""
             }
-        ]
+        ],
+        mode: "",
     });
 
     const handleChange = (
