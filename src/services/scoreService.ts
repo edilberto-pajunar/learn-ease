@@ -1,4 +1,5 @@
 import { db } from "@/firebase/client_app";
+import { Submission } from "@/interface/submission";
 import { collection, getDocs, query, where } from "firebase/firestore";
 
 export const scoreService = {
