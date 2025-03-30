@@ -10,6 +10,7 @@ import {
   query,
   where,
 } from "firebase/firestore";
+import { Submission } from "@/interface/submission";
 
 interface AuthState {
   isAuthenticated: boolean;
