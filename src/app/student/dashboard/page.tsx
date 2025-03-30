@@ -1,4 +1,4 @@
-import { StudentProgressChart } from "./components/charts/StudentProgressChart";
+import StudentProgressChart from "./components/charts/StudentProgressChart";
 
 function DashboardPage() {
     return(

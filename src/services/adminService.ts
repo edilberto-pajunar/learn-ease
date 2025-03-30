@@ -3,7 +3,7 @@ import { Material } from "@/interface/material";
 import { addDoc, collection, onSnapshot } from "firebase/firestore"
 
 export const adminService = {
-    listenToMaterials(callback: (data: Material[]) => void) : () => void {
+    listenToMaterials(callback: (data: Material[]) => void): () => void {
         const unsubscribe = onSnapshot(
             collection(db, "materials"),
             (snapshot) => {
@@ -27,7 +27,7 @@ export const adminService = {
         try {
             const ref = collection(db, "materials");
             const docRef = await addDoc(ref, data);
-
+            console.log("Document written with ID: ", docRef.id);
         } catch (e) {
             console.log(e);
         }

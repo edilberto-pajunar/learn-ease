@@ -2,6 +2,7 @@
 
 import { useAdminStore } from "@/hooks/useAdminStore";
 import { useState, useEffect } from "react";
+import { AddMaterialModal } from "./component/AddMaterialModal";
 
 export default function MaterialsPage() {
   const { materials, loading, setMaterials } = useAdminStore((state) => state);
@@ -13,7 +14,7 @@ export default function MaterialsPage() {
   const [selectedMaterialId, setSelectedMaterialId] = useState<number | null>(
     null,
   );
-
+  const [confirmationModelOpen, setConfirmationModelOpen] = useState(false);
   useEffect(() => {
     const unsubscribe = setMaterials();
     return () => unsubscribe();
@@ -26,24 +27,15 @@ export default function MaterialsPage() {
       <h1 className="text-3xl font-bold mb-6">Materials Management</h1>
 
       {/* Create New Material Form */}
-      <div className="mb-8 p-4 border rounded shadow-lg">
-        <h2 className="text-xl font-semibold mb-4">Add New Material</h2>
-        <input
-          className="p-2 mb-4 w-full border rounded"
-          type="text"
-          value={newMaterialText}
-          onChange={(e) => setNewMaterialText(e.target.value)}
-          placeholder="Enter Material Text"
-        />
-        <button className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
-          Add Material
-        </button>
+      <div className="mb-12">
+        <AddMaterialModal />
+
       </div>
 
       {/* Material List */}
       <div>
         <h2 className="text-xl font-semibold mb-4">Materials List</h2>
-  
+
         <ul className="space-y-6">
           {materials.map((material) => (
             <li key={material.id} className="border p-4 rounded-lg shadow-lg">
@@ -75,7 +67,7 @@ export default function MaterialsPage() {
               {/* Buttons for Edit and Delete */}
               <div className="mt-4 flex space-x-4">
                 <button
-                  onClick={() => {}}
+                  onClick={() => { }}
                   className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
                 >
                   Edit

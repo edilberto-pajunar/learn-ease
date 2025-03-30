@@ -15,9 +15,10 @@ interface ReadStore {
   indexMaterial: number;
   indexQuestion: number;
   currentAnswers: string[];
-  duration: number;
+  duration: number | null;
   miscues: string[];
   score: number;
+  difficulty: string;
   setLoading: (value: boolean) => void;
   fetchMaterials: () => void;
   setIndexMaterial: (indexMaterial: number) => void;
@@ -28,6 +29,7 @@ interface ReadStore {
   submitAnswer: (studentId: string) => Promise<void>;
   setScore: () => void;
   resetScore: () => void;
+  setDifficulty: (difficulty: string) => void;
 }
 
 export const useReadStore = create<ReadStore>((set, get) => ({
@@ -40,12 +42,14 @@ export const useReadStore = create<ReadStore>((set, get) => ({
   duration: 0,
   miscues: [],
   score: 0,
+  difficulty: "",
   setLoading: (value) => set({ isLoading: value }),
   fetchMaterials: () => {
+    const { difficulty } = get();
     const materialsRef = collection(db, "materials");
 
     const unsubscribe = onSnapshot(materialsRef, (snapshot) => {
-      const materials: Material[] = snapshot.docs.map((doc) => (doc.data()) as Material);
+      const materials: Material[] = snapshot.docs.map((doc) => (doc.data()) as Material).filter((material) => material.mode === difficulty);
       console.log(materials);
 
       set({ materials });
@@ -82,25 +86,25 @@ export const useReadStore = create<ReadStore>((set, get) => ({
         studentId: studentId,
         submittedAt: new Date(),
         numberOfWords: numberOfWords,
-        duration: duration,
+        duration: duration!,
         recordTime: {},
         miscues: miscues,
+        mode: material.mode,
       }
 
       console.log(currentAnswers);
 
       await readingService.submitAnswer(submission);
-      set({ currentAnswers: [], score: 0, isLoading: false });
+      set({ currentAnswers: [], score: 0, isLoading: false, duration: null, miscues: [] });
 
     } catch (e) {
       console.error("Error submitting answer: ", e);
 
     }
-
-
   },
   setMiscues: (word) => set({ miscues: [...get().miscues, word] }),
   setDuration: (duration) => set({ duration }),
   setScore: () => set({ score: get().score + 1 }),
   resetScore: () => set({ score: 0 }),
+  setDifficulty: (difficulty) => set({ difficulty }),
 }));

@@ -1,31 +1,42 @@
 "use client";
 
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import React from 'react'
 
-const data = [
-    { month: 'Jan', comprehension: 65, reading: 70 },
-    { month: 'Feb', comprehension: 72, reading: 75 },
-    { month: 'Mar', comprehension: 78, reading: 80 },
-    { month: 'Apr', comprehension: 81, reading: 85 },
-    { month: 'May', comprehension: 85, reading: 88 },
-    { month: 'Jun', comprehension: 89, reading: 90 },
-];
+import { ChartContainer, type ChartConfig } from "@/components/ui/chart"
+import { Bar, BarChart } from 'recharts';
 
-export function StudentProgressChart() {
+const chartConfig = {
+    desktop: {
+        label: "Desktop",
+        color: "#2563eb",
+    },
+    mobile: {
+        label: "Mobile",
+        color: "#60a5fa",
+    },
+} satisfies ChartConfig
+
+
+function StudentProgressChart() {
+
+    const chartData = [
+        { month: "January", desktop: 186, mobile: 80 },
+        { month: "February", desktop: 305, mobile: 200 },
+        { month: "March", desktop: 237, mobile: 120 },
+        { month: "April", desktop: 73, mobile: 190 },
+        { month: "May", desktop: 209, mobile: 130 },
+        { month: "June", desktop: 214, mobile: 140 },
+    ]
+
+
     return (
-        <div style={{ width: '100%', height: 400 }}>
-            <h2>Student Progress in Comprehension & Reading</h2>
-            <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={data}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="month" />
-                    <YAxis domain={[60, 100]} />
-                    <Tooltip />
-                    <Legend />
-                    <Line type="monotone" dataKey="comprehension" stroke="#8884d8" name="Comprehension" />
-                    <Line type="monotone" dataKey="reading" stroke="#82ca9d" name="Reading" />
-                </LineChart>
-            </ResponsiveContainer>
-        </div>
-    );
+        <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
+            <BarChart accessibilityLayer data={chartData}>
+                <Bar dataKey="desktop" fill="var(--color-desktop)" radius={4} />
+                <Bar dataKey="mobile" fill="var(--color-mobile)" radius={4} />
+            </BarChart>
+        </ChartContainer>
+    )
 }
+
+export default StudentProgressChart

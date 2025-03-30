@@ -8,6 +8,7 @@ interface Submission {
   miscues: string[];
   numberOfWords: number;
   duration: number;
+  mode: string;
 }
 
 interface RecordTime {

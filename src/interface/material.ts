@@ -2,6 +2,7 @@ interface Material {
   id: string;
   text: string;
   questions: Question[];
+  mode: string;
 }
 
 interface Question {

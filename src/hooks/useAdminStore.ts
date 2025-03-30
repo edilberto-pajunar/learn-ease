@@ -11,7 +11,7 @@ interface AdminState {
   loading: boolean;
   setStudents: () => void;
   setMaterials: () => () => void;
-  addMaterial: () => void;
+  addMaterial: (material: Material) => Promise<void>;
 }
 
 export const useAdminStore = create<AdminState>((set) => ({
@@ -43,18 +43,7 @@ export const useAdminStore = create<AdminState>((set) => ({
 
     return () => unsubscribe;
   },
-  addMaterial: () => {
-    const question : Question = {
-      title: "",
-      answer: "",
-      options: [],
-    }
-
-    const material : Material = {
-      id: "",
-      questions: [],
-      text: "",
-    }
-    adminService.addMaterial(material);
+  addMaterial: async (material: Material)  => {
+    await adminService.addMaterial(material);
   },
 }));
