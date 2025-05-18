@@ -1,48 +1,48 @@
-"use client";
+'use client'
 
-import { auth } from "@/firebase/client_app";
-import { useAuthStore } from "@/hooks/useAuthStore";
-import { UserRole } from "@/interface/user";
-import { signOut } from "firebase/auth";
-import Image from "next/image";
-import Link from "next/link";
-import { redirect, usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { auth } from '@/firebase/client_app'
+import { useAuthStore } from '@/hooks/useAuthStore'
+import { UserRole } from '@/interface/user'
+import { signOut } from 'firebase/auth'
+import Image from 'next/image'
+import Link from 'next/link'
+import { redirect, usePathname, useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
 
 const Navbar: React.FC = () => {
-  const pathname = usePathname();
-  const router = useRouter();
-  const { isAuthenticated, user, logout } = useAuthStore();
-  const [showDialog, setShowDialog] = useState(false);
+  const pathname = usePathname()
+  const router = useRouter()
+  const { isAuthenticated, user, logout } = useAuthStore()
+  const [showDialog, setShowDialog] = useState(false)
 
   // Navigation Links based on user role
   const links =
     user?.role === UserRole.ADMIN
       ? [
-          { href: "/admin/students", label: "Students" },
-          { href: "/admin/materials", label: "Materials" },
-          { href: "/admin/summary", label: "Summary" },
+          { href: '/admin/students', label: 'Students' },
+          { href: '/admin/materials', label: 'Materials' },
+          { href: '/admin/summary', label: 'Summary' },
         ]
       : [
-          { href: "/student", label: "Home" },
-          { href: "/student/reading", label: "Reading Test" },
-          { href: "/student/dashboard", label: "Progress Dashboard" },
-        ];
+          { href: '/student', label: 'Home' },
+          { href: '/student/mode', label: 'Reading Test' },
+          { href: '/student/dashboard', label: 'Progress Dashboard' },
+        ]
 
   const handleLogout = async () => {
     try {
-      await logout();
-      setShowDialog(false);
-      router.push("/login");
+      await logout()
+      setShowDialog(false)
+      router.push('/login')
     } catch (error) {
-      console.error("Error logging out: ", error);
+      console.error('Error logging out: ', error)
     }
-  };
+  }
 
   return (
     <nav className="bg-white shadow-md sticky top-0 z-10">
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-        <button onClick={() => router.push("/")}>
+        <button onClick={() => router.push('/')}>
           <div className="flex items-center space-x-2">
             <Image
               src="/logo.svg"
@@ -62,8 +62,8 @@ const Navbar: React.FC = () => {
                 href={link.href}
                 className={`text-sm font-medium ${
                   pathname === link.href
-                    ? "text-blue-600 border-b-2 border-blue-600 pb-1"
-                    : "text-gray-600 hover:text-blue-600"
+                    ? 'text-blue-600 border-b-2 border-blue-600 pb-1'
+                    : 'text-gray-600 hover:text-blue-600'
                 }`}
               >
                 {link.label}
@@ -102,7 +102,7 @@ const Navbar: React.FC = () => {
         )}
       </div>
     </nav>
-  );
-};
+  )
+}
 
-export default Navbar;
+export default Navbar

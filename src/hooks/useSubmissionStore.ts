@@ -1,27 +1,32 @@
-import { db } from "@/firebase/client_app";
-import { Submission } from "@/interface/submission";
-import { collection, doc, onSnapshot } from "firebase/firestore";
-import { create } from "zustand";
+import { db } from '@/firebase/client_app'
+import { Submission } from '@/interface/submission'
+import { collection, doc, onSnapshot } from 'firebase/firestore'
+import { create } from 'zustand'
 
 interface SubmissionStore {
-  submissions: Submission[],
-  fetchSubmissions: (studentId: string) => Promise<void>,
-  unsubscribe: (() => void) | null;
+  submissions: Submission[]
+  fetchSubmissions: (studentId: string) => Promise<void>
+  unsubscribe: (() => void) | null
 }
 
 export const useSubmissionStore = create<SubmissionStore>((set, get) => ({
   submissions: [],
   fetchSubmissions: async (studentId) => {
-    const submissionsRef = collection(doc(db, "users", studentId), "submissions");
+    const submissionsRef = collection(
+      doc(db, 'users', studentId),
+      'submissions',
+    )
 
     const unsubscribe = onSnapshot(submissionsRef, (snapshot) => {
-      const submissions: Submission[] = snapshot.docs.map((doc) => (doc.data()) as Submission);
+      const submissions: Submission[] = snapshot.docs.map(
+        (doc) => doc.data() as Submission,
+      )
+      console.log(submissions)
 
+      set({ submissions })
+    })
 
-      set({ submissions });
-    });
-
-    set({ unsubscribe });
+    set({ unsubscribe })
   },
   unsubscribe: null,
-}));
+}))

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { textVide } from 'text-vide'
 
 const BoldEachLetter: React.FC<{
@@ -9,22 +9,26 @@ const BoldEachLetter: React.FC<{
   const words = text.split(/(\s+)/) // Split by words and spaces (capturing spaces)
 
   return (
-    <p className="text-justify text-black-400 text-2xl">
-      {words.map((word, index) => {
-        if (/\s+/.test(word)) {
-          // If it's just whitespace, render it normally
-          return word
-        }
-        return (
-          <span
-            key={index}
-            className="cursor-pointer hover:underline"
-            onClick={() => onWordTap && onWordTap(word)}
-            dangerouslySetInnerHTML={{ __html: bionic ? textVide(word) : word }}
-          />
-        )
-      })}
-    </p>
+    <div className="relative">
+      <p className="text-justify text-black-400 text-2xl">
+        {words.map((word, index) => {
+          if (/\s+/.test(word)) {
+            // If it's just whitespace, render it normally
+            return word
+          }
+          return (
+            <span
+              key={index}
+              className="cursor-pointer hover:underline"
+              onClick={() => onWordTap && onWordTap(word)}
+              dangerouslySetInnerHTML={{
+                __html: bionic ? textVide(word) : word,
+              }}
+            />
+          )
+        })}
+      </p>
+    </div>
   )
 }
 
