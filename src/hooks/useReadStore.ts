@@ -8,6 +8,18 @@ import { collection, doc, onSnapshot, setDoc } from 'firebase/firestore'
 import { create } from 'zustand'
 import { Submission } from '@/interface/submission'
 
+enum ComprehensionStatus {
+  NOT_STARTED = 'NOT_STARTED',
+  IN_PROGRESS = 'IN_PROGRESS',
+  COMPLETED = 'COMPLETED',
+}
+
+enum ReadingStatus {
+  NOT_STARTED = 'NOT_STARTED',
+  IN_PROGRESS = 'IN_PROGRESS',
+  COMPLETED = 'COMPLETED',
+}
+
 interface ReadStore {
   isLoading: boolean
   materials: Material[]
@@ -91,7 +103,7 @@ export const useReadStore = create<ReadStore>((set, get) => ({
     try {
       const numberOfWords = wordCount(material.text)
       const submission: Submission = {
-        id: doc(collection(db, 'users', studentId), 'submissions').id,
+        id: doc(collection(db, 'users', studentId, 'submissions')).id,
         answers: currentAnswers,
         materialId: material.id,
         score: score,
