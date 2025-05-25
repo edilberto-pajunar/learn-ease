@@ -4,7 +4,13 @@ import { wordCount } from '@/app/utils/wordCount'
 import { db } from '@/firebase/client_app'
 import { Material, Question } from '@/interface/material'
 import { readingService } from '@/services/readingService'
-import { collection, doc, onSnapshot, setDoc } from 'firebase/firestore'
+import {
+  collection,
+  doc,
+  onSnapshot,
+  setDoc,
+  Timestamp,
+} from 'firebase/firestore'
 import { create } from 'zustand'
 import { Submission } from '@/interface/submission'
 
@@ -108,7 +114,7 @@ export const useReadStore = create<ReadStore>((set, get) => ({
         materialId: material.id,
         score: score,
         studentId: studentId,
-        submittedAt: new Date(),
+        submittedAt: Timestamp.now(),
         numberOfWords: numberOfWords,
         duration: duration!,
         recordTime: {},
