@@ -1,10 +1,12 @@
+import { Timestamp } from "firebase/firestore"
+
 interface Submission {
   id: string
   answers: string[]
   materialId: string
   score: number
   studentId: string
-  submittedAt: Date
+  submittedAt: Timestamp
   recordTime: Record<string, string>
   miscues: string[]
   numberOfWords: number

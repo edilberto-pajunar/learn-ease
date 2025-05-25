@@ -1,20 +1,20 @@
-"use client";
+'use client'
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { useAdminStore } from "@/hooks/useAdminStore";
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { useAdminStore } from '@/hooks/useAdminStore'
 
 const AdminStudentsPage: React.FC = () => {
-  const { students, setStudents } = useAdminStore();
-  const router = useRouter();
+  const { students, setStudents } = useAdminStore()
+  const router = useRouter()
 
-  // useEffect(() => {
-  //   setStudents(); // Fetch students when the component mounts
-  // }, [setStudents]); // Add setStudents to dependency array to prevent unnecessary re-renders
+  useEffect(() => {
+    setStudents() // Fetch students when the component mounts
+  }, [setStudents]) // Add setStudents to dependency array to prevent unnecessary re-renders
 
   const handleNavigate = (id: string) => {
-    router.push(`/admin/students/${id}`);
-  };
+    router.push(`/admin/students/${id}`)
+  }
 
   return (
     <div className="max-w-4xl mx-auto p-6">
@@ -28,7 +28,7 @@ const AdminStudentsPage: React.FC = () => {
             >
               <div>
                 <h2 className="text-lg font-semibold text-gray-800">
-                  {student.name || "Unnamed Student"}
+                  {student.name || 'Unnamed Student'}
                 </h2>
                 <p className="text-gray-600">{student.email}</p>
               </div>
@@ -45,7 +45,7 @@ const AdminStudentsPage: React.FC = () => {
         )}
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default AdminStudentsPage;
+export default AdminStudentsPage
