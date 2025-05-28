@@ -1,18 +1,25 @@
-"use client";
+'use client'
 
-import { useRouter } from "next/navigation";
-import { useAuthStore } from "@/hooks/useAuthStore";
-import { useReadStore } from "@/hooks/useReadStore";
+import { useRouter } from 'next/navigation'
+import { useAuthStore } from '@/hooks/useAuthStore'
+import { useReadStore } from '@/hooks/useReadStore'
+import { useAdminStore } from '@/hooks/useAdminStore'
+import { useEffect } from 'react'
 
 const HomePage: React.FC = () => {
-  const { user } = useAuthStore();
-  const router = useRouter();
-  const { materials, indexMaterial, indexQuestion, setIndexMaterial, setIndexQuestion, resetScore } = useReadStore();
+  const { user } = useAuthStore()
+  const { getQuarter } = useAdminStore()
+  const router = useRouter()
+
+  useEffect(() => {
+    getQuarter()
+  }, [])
+
+  const { materials, setIndexMaterial, setIndexQuestion, resetScore } =
+    useReadStore()
 
   if (!user) {
-    return <p>
-      Loading...
-    </p>;
+    return <p>Loading...</p>
   }
 
   return (
@@ -41,16 +48,16 @@ const HomePage: React.FC = () => {
             </p>
             <button
               onClick={() => {
-                console.log(materials);
+                console.log(materials)
                 if (materials.length !== 0) {
-                  setIndexMaterial(0);
-                  setIndexQuestion(0);
-                  resetScore();
+                  setIndexMaterial(0)
+                  setIndexQuestion(0)
+                  resetScore()
                 }
 
-                // router.push("/student/reading");
-                router.push("student/mode");
+                router.push('/student/mode')
 
+                // router.push('/student/reading')
               }}
               className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
             >
@@ -88,7 +95,7 @@ const HomePage: React.FC = () => {
         </section>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default HomePage;
+export default HomePage

@@ -7,10 +7,12 @@ import { wordCount } from '@/app/utils/wordCount'
 import FunFact from './component/FunFact'
 import QuestionCard from './component/QuestionCard'
 import TimeCard from './component/TimeCard'
+import { useAdminStore } from '@/hooks/useAdminStore'
 
 const ReadingPage: FC = () => {
   const { materials, indexMaterial, miscues, duration, fetchMaterials } =
     useReadStore()
+  const { quarter } = useAdminStore()
 
   const { user } = useAuthStore()
   const [formError] = useState<string | null>(null)
@@ -18,7 +20,7 @@ const ReadingPage: FC = () => {
   const [speechRate, setSpeechRate] = useState(1)
 
   useEffect(() => {
-    fetchMaterials()
+    fetchMaterials(quarter)
 
     return () => {}
   }, [fetchMaterials])
@@ -53,7 +55,7 @@ const ReadingPage: FC = () => {
         <div className="flex gap-4 items-center mb-4 justify-between">
           <div className="flex gap-4">
             <h1 className="text-xl font-bold text-center">
-              Interactive Reading Passage
+              {quarter} Interactive Reading Passage
             </h1>
 
             <div className="flex items-center gap-2">
@@ -164,6 +166,7 @@ const ReadingPage: FC = () => {
             <QuestionCard
               questions={material.questions}
               studentId={studentId!}
+              totalQuestions={material.questions.length}
             />
           ) : (
             <div>

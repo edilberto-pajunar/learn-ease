@@ -22,10 +22,12 @@ const Navbar: React.FC = () => {
           { href: '/admin/students', label: 'Students' },
           { href: '/admin/materials', label: 'Materials' },
           { href: '/admin/summary', label: 'Summary' },
+          { href: '/admin/skills', label: 'Skills' },
         ]
       : [
           { href: '/student', label: 'Home' },
           { href: '/student/mode', label: 'Reading Test' },
+          { href: '/student/reading/score', label: 'Score' },
           { href: '/student/dashboard', label: 'Progress Dashboard' },
         ]
 

@@ -1,47 +1,90 @@
-import { db } from "@/firebase/client_app";
-import { useAuthStore } from "@/hooks/useAuthStore";
-import { Submission } from "@/interface/submission";
-import { doc, setDoc, arrayUnion, getDoc, updateDoc, arrayRemove, collection } from "firebase/firestore";
+import { db } from '@/firebase/client_app'
+import { useAuthStore } from '@/hooks/useAuthStore'
+import { Submission } from '@/interface/submission'
+import {
+  doc,
+  setDoc,
+  arrayUnion,
+  getDoc,
+  updateDoc,
+  arrayRemove,
+  collection,
+  getDocs,
+  query,
+  where,
+} from 'firebase/firestore'
 
 export const readingService = {
+  async endTime(
+    studentId: string,
+    materialId: string,
+    time: Record<string, string>,
+    miscues: string[],
+  ) {
+    try {
+      const ref = doc(collection(db, 'users', studentId, 'submissions'))
+      await setDoc(
+        ref,
+        {
+          recordTime: time,
+          miscues: miscues ?? [],
+        },
+        {
+          merge: true,
+        },
+      )
+      console.log(`Student ID: ${studentId}: ${JSON.stringify(time)}`)
+    } catch (error) {
+      console.log('Error setting time: ', error)
+    }
+  },
 
-    async endTime(studentId: string, materialId: string, time: Record<string, string>, miscues: string[]) {
+  async submitAnswer(submission: Submission) {
+    try {
+      const submissionsRef = collection(db, 'submissions')
+      const studentId = submission.studentId
+      const materialId = submission.materialId
+      const testType = submission.testType
 
-        try {
-            const ref = doc((collection(db, "users", studentId, "submissions")));
-            await setDoc(ref, {
-                recordTime: time,
-                miscues: miscues ?? [],
-            }, {
-                merge: true,
-            });
-            console.log(`Student ID: ${studentId}: ${JSON.stringify(time)}`);
+      // Check for existing submission
+      const existingSubmissions = await getDocs(
+        query(
+          submissionsRef,
+          where('studentId', '==', studentId),
+          where('materialId', '==', materialId),
+          where('testType', '==', testType),
+        ),
+      )
 
-        } catch (error) {
-            console.log("Error setting time: ", error);
+      if (!existingSubmissions.empty) {
+        console.log(
+          `Student ${studentId} has already submitted an answer for material ${materialId} with test type ${testType}`,
+        )
+        return false
+      }
 
-        }
-    },
-
-    async submitAnswer(submission: Submission) {
-        try {
-            const ref = doc(collection(doc(db, "users", submission.studentId), "submissions"));
-            const studentId = submission.studentId;
-            const materialId = submission.materialId;
-            await setDoc(ref, {
-                id: ref.id,
-                answers: submission.answers,
-                materialId: materialId,
-                score: submission.score,
-                studentId: studentId,
-                submittedAt: new Date(),
-                numberOfWords: submission.numberOfWords,
-                duration: submission.duration,
-                mode: submission.mode,
-            }, { merge: true });
-            console.log(`StudentID: ${studentId}: Answer submitted: ${materialId}`);
-        } catch (error) {
-            console.log("Error submitting answer: ", error);
-        }
-    },
-};
+      const docRef = doc(submissionsRef)
+      await setDoc(
+        docRef,
+        {
+          id: docRef.id,
+          answers: submission.answers,
+          materialId: materialId,
+          score: submission.score,
+          studentId: studentId,
+          submittedAt: new Date(),
+          numberOfWords: submission.numberOfWords,
+          duration: submission.duration,
+          mode: submission.mode,
+          testType: submission.testType,
+        },
+        { merge: true },
+      )
+      console.log(`StudentID: ${studentId}: Answer submitted: ${materialId}`)
+      return true
+    } catch (error) {
+      console.log('Error submitting answer: ', error)
+      return false
+    }
+  },
+}

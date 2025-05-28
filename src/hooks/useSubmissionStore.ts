@@ -1,6 +1,6 @@
 import { db } from '@/firebase/client_app'
 import { Submission } from '@/interface/submission'
-import { collection, doc, onSnapshot } from 'firebase/firestore'
+import { collection, query, where, onSnapshot } from 'firebase/firestore'
 import { create } from 'zustand'
 
 interface SubmissionStore {
@@ -12,14 +12,12 @@ interface SubmissionStore {
 export const useSubmissionStore = create<SubmissionStore>((set, get) => ({
   submissions: [],
   fetchSubmissions: async (studentId) => {
-    const submissionsRef = collection(
-      doc(db, 'users', studentId),
-      'submissions',
-    )
+    const submissionsRef = collection(db, 'submissions')
+    const q = query(submissionsRef, where('studentId', '==', studentId))
 
-    const unsubscribe = onSnapshot(submissionsRef, (snapshot) => {
+    const unsubscribe = onSnapshot(q, (snapshot) => {
       const submissions: Submission[] = snapshot.docs.map(
-        (doc) => doc.data() as Submission,
+        (doc) => ({ id: doc.id, ...doc.data() }) as Submission,
       )
       console.log(submissions)
 

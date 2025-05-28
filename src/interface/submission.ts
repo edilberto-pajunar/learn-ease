@@ -1,4 +1,4 @@
-import { Timestamp } from "firebase/firestore"
+import { Timestamp } from 'firebase/firestore'
 
 interface Submission {
   id: string
@@ -12,6 +12,8 @@ interface Submission {
   numberOfWords: number
   duration: number
   mode: string
+  testType: string // pre_test or post_test,
+  totalQuestions: number
 }
 
 interface RecordTime {

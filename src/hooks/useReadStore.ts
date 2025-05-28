@@ -37,13 +37,17 @@ interface ReadStore {
   score: number
   difficulty: string
   setLoading: (value: boolean) => void
-  fetchMaterials: () => void
+  fetchMaterials: (quarter: string) => void
   setIndexMaterial: (indexMaterial: number) => void
   setIndexQuestion: (indexQuestion: number) => void
   setCurrentAnswers: (word: string) => void
   setDuration: (time: number) => void
   setMiscues: (word: string) => void
-  submitAnswer: (studentId: string) => Promise<void>
+  submitAnswer: (
+    studentId: string,
+    testType: string,
+    totalQuestions: number,
+  ) => Promise<void>
   setScore: () => void
   resetScore: () => void
   setDifficulty: (difficulty: string) => void
@@ -61,15 +65,11 @@ export const useReadStore = create<ReadStore>((set, get) => ({
   score: 0,
   difficulty: '',
   setLoading: (value) => set({ isLoading: value }),
-  fetchMaterials: () => {
-    const { difficulty } = get()
-    const materialsRef = collection(db, 'materials')
-
-    const unsubscribe = onSnapshot(materialsRef, (snapshot) => {
+  fetchMaterials: (quarter: string) => {
+    const unsubscribe = onSnapshot(collection(db, 'materials'), (snapshot) => {
       const materials: Material[] = snapshot.docs
         .map((doc) => doc.data() as Material)
-        .filter((material) => material.mode === difficulty)
-      console.log(materials)
+        .filter((material) => material.quarter === quarter)
 
       set({ materials })
     })
@@ -91,7 +91,7 @@ export const useReadStore = create<ReadStore>((set, get) => ({
       currentAnswers: [...state.currentAnswers, word],
     }))
   },
-  submitAnswer: async (studentId) => {
+  submitAnswer: async (studentId, testType, totalQuestions) => {
     const {
       indexMaterial,
       materials,
@@ -120,9 +120,9 @@ export const useReadStore = create<ReadStore>((set, get) => ({
         recordTime: {},
         miscues: miscues,
         mode: material.mode,
+        testType: testType,
+        totalQuestions: totalQuestions,
       }
-
-      console.log(currentAnswers)
 
       await readingService.submitAnswer(submission)
       set({
@@ -142,3 +142,4 @@ export const useReadStore = create<ReadStore>((set, get) => ({
   resetScore: () => set({ score: 0 }),
   setDifficulty: (difficulty) => set({ difficulty }),
 }))
+
