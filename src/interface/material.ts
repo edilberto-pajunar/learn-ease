@@ -4,6 +4,7 @@ interface Material {
   questions: Question[]
   mode: string
   quarter: string
+  skill: string
 }
 
 interface Question {

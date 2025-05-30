@@ -1,11 +1,9 @@
 import { create } from "zustand";
-import { onAuthStateChanged, signOut, User } from "firebase/auth";
+import { signOut, } from "firebase/auth";
 import { auth, db } from "@/firebase/client_app";
-import { AppUser, UserRole } from "@/interface/user";
+import { AppUser, } from "@/interface/user";
 import {
   collection,
-  doc,
-  getDoc,
   getDocs,
   query,
   where,

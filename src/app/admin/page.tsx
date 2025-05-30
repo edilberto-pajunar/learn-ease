@@ -11,7 +11,7 @@ import { useEffect, useState } from "react";
 export default function AdminPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
-  const {user, setUser, isAuthenticated, setIsAuthenticated} = useAuthStore();
+  const {setUser, setIsAuthenticated} = useAuthStore();
 
   const fetchData = async () => {
     onAuthStateChanged(auth, async (firebaseUser: User | null) => {

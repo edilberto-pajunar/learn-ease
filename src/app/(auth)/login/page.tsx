@@ -1,56 +1,56 @@
-"use client";
+'use client'
 
-import { useEffect, useState } from "react";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "@/firebase/client_app";
-import TextInput from "@/components/TextInput"; // Import the reusable TextInput component
-import Link from "next/link";
-import {  redirect, useRouter } from "next/navigation";
-import { useAuthStore } from "@/hooks/useAuthStore";
-import { UserRole } from "@/interface/user";
+import { useEffect, useState } from 'react'
+import { signInWithEmailAndPassword } from 'firebase/auth'
+import { auth } from '@/firebase/client_app'
+import TextInput from '@/components/TextInput' // Import the reusable TextInput component
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { useAuthStore } from '@/hooks/useAuthStore'
+import { UserRole } from '@/interface/user'
 
 function LoginPage() {
-  const router = useRouter();
-  const { isAuthenticated, user } = useAuthStore();
+  const router = useRouter()
+  const { isAuthenticated, user } = useAuthStore()
 
   // State for form inputs and error handling
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
 
   // Handle form submission
   const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null); // Clear any previous errors
-    setLoading(true);
+    e.preventDefault()
+    setError(null) // Clear any previous errors
+    setLoading(true)
 
     try {
       // Authenticate the user
-      await signInWithEmailAndPassword(auth, email, password);
+      await signInWithEmailAndPassword(auth, email, password)
 
       // Navigate to the student page
       if (user?.role === UserRole.STUDENT) {
-        router.push("/student");
+        router.push('/student')
       } else if (user?.role === UserRole.ADMIN) {
-        router.push("/admin");
+        router.push('/admin')
       }
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   useEffect(() => {
     if (isAuthenticated) {
       if (user?.role === UserRole.STUDENT) {
-        router.push("/student");
+        router.push('/student')
       } else if (user?.role === UserRole.ADMIN) {
-        router.push("/admin");
+        router.push('/admin')
       }
     }
-  }, [user]);
+  }, [user])
 
   return (
     <>
@@ -91,11 +91,11 @@ function LoginPage() {
                 className="w-full py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
                 disabled={loading}
               >
-                {loading ? "Logging in..." : "Log in"}
+                {loading ? 'Logging in...' : 'Log in'}
               </button>
             </form>
             <p className="text-center text-gray-600 mt-4">
-              Don’t have an account?{" "}
+              Don’t have an account?{' '}
               <Link href="/signup" className="text-blue-500 hover:underline">
                 Create an account
               </Link>
@@ -104,7 +104,7 @@ function LoginPage() {
         </div>
       </div>
     </>
-  );
+  )
 }
 
-export default LoginPage;
+export default LoginPage

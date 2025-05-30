@@ -1,13 +1,8 @@
 import { db } from '@/firebase/client_app'
-import { useAuthStore } from '@/hooks/useAuthStore'
 import { Submission } from '@/interface/submission'
 import {
   doc,
   setDoc,
-  arrayUnion,
-  getDoc,
-  updateDoc,
-  arrayRemove,
   collection,
   getDocs,
   query,

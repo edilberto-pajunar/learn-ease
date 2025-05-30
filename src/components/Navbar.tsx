@@ -1,13 +1,11 @@
 'use client'
 
-import { auth } from '@/firebase/client_app'
 import { useAuthStore } from '@/hooks/useAuthStore'
 import { UserRole } from '@/interface/user'
-import { signOut } from 'firebase/auth'
 import Image from 'next/image'
 import Link from 'next/link'
-import { redirect, usePathname, useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { usePathname, useRouter } from 'next/navigation'
+import { useState } from 'react'
 
 const Navbar: React.FC = () => {
   const pathname = usePathname()

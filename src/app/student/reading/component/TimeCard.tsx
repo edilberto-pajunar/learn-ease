@@ -10,9 +10,12 @@ export default function TimeCard({ material }: { material: Material }) {
     setDuration(time)
   }
 
+  const poem = `${material.text}`
+  console.log(poem)
+
   return (
     <div className="flex flex-wrap gap-6">
-      <div className="flex flex-col items-center gap-4 mb-6 p-4 border rounded-lg shadow-lg w-full md:w-auto">
+      <div className="flex flex-col items-center gap-4 mb-6 p-4 border rounded-lg shadow-lg md:w-auto">
         <BoldEachLetter
           text={material.text}
           bionic={false}

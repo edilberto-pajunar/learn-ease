@@ -1,6 +1,5 @@
 "use client";
 
-import React, { useEffect } from "react";
 import SignupForm from "@/components/SignupForm";
 import { useSignupStore } from "@/hooks/useSignupStore";
 import { useCreateUserWithEmailAndPassword } from "react-firebase-hooks/auth";

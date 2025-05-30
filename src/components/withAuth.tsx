@@ -1,7 +1,7 @@
 "use client";
 
 import { redirect } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { sessionStatus } from "@/app/utils/session";
 
 export default function withAuth(Component: any) {

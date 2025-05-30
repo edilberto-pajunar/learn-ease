@@ -2,29 +2,28 @@
 
 import { wordCount } from '@/app/utils/wordCount'
 import { db } from '@/firebase/client_app'
-import { Material, Question } from '@/interface/material'
+import { Material } from '@/interface/material'
 import { readingService } from '@/services/readingService'
 import {
   collection,
   doc,
   onSnapshot,
-  setDoc,
   Timestamp,
 } from 'firebase/firestore'
 import { create } from 'zustand'
 import { Submission } from '@/interface/submission'
 
-enum ComprehensionStatus {
-  NOT_STARTED = 'NOT_STARTED',
-  IN_PROGRESS = 'IN_PROGRESS',
-  COMPLETED = 'COMPLETED',
-}
+// enum ComprehensionStatus {
+//   NOT_STARTED = 'NOT_STARTED',
+//   IN_PROGRESS = 'IN_PROGRESS',
+//   COMPLETED = 'COMPLETED',
+// }
 
-enum ReadingStatus {
-  NOT_STARTED = 'NOT_STARTED',
-  IN_PROGRESS = 'IN_PROGRESS',
-  COMPLETED = 'COMPLETED',
-}
+// enum ReadingStatus {
+//   NOT_STARTED = 'NOT_STARTED',
+//   IN_PROGRESS = 'IN_PROGRESS',
+//   COMPLETED = 'COMPLETED',
+// }
 
 interface ReadStore {
   isLoading: boolean

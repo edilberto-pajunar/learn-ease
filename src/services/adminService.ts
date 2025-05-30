@@ -40,11 +40,13 @@ export const adminService = {
     }
   },
 
-  async addQuestion() {
-    try {
-      const ref = collection(db, 'materials')
-    } catch (e) {}
-  },
+  // async addQuestion() {
+  //   try {
+  //     const ref = collection(db, 'materials')
+  //   } catch (e) {
+  //     console.log(e)
+  //   }
+  // },
 
   async getQuarter() {
     try {

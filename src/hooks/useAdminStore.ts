@@ -2,7 +2,7 @@ import { AppUser, UserRole } from '@/interface/user'
 import { create } from 'zustand'
 import { db } from '@/firebase/client_app'
 import { collection, getDocs, query, where } from 'firebase/firestore'
-import { Material, Question } from '@/interface/material'
+import { Material } from '@/interface/material'
 import { adminService } from '@/services/adminService'
 
 interface AdminState {
@@ -40,7 +40,9 @@ export const useAdminStore = create<AdminState>((set) => ({
         }
       })
       set({ students: studentUsers })
-    } catch (e) {}
+    } catch (e) {
+      console.error('Error fetching students:', e)
+    }
   },
   setMaterials: () => {
     set({ loading: true })

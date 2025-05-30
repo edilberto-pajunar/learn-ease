@@ -68,7 +68,9 @@ export default function QuestionCard({
       </div>
 
       {/* Question Text */}
-      <h1 className="text-2xl font-semibold mb-6">{question.title}</h1>
+      <h1 className="text-2xl font-semibold mb-6 ">
+        {question.title}
+      </h1>
 
       {/* Options */}
       <div className="space-y-3">
