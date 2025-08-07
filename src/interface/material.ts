@@ -5,6 +5,8 @@ interface Material {
   mode: string
   quarter: string
   skill: string
+  title?: string
+  author?: string
 }
 
 interface Question {

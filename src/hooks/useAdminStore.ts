@@ -15,6 +15,8 @@ interface AdminState {
   setMaterials: () => () => void
   toggleQuarter: (quarter: string) => void
   addMaterial: (material: Material) => Promise<void>
+  updateMaterial: (id: string, material: Partial<Material>) => Promise<void>
+  deleteMaterial: (id: string) => Promise<void>
   getQuarter: () => Promise<void>
   getSkills: () => Promise<void>
 }
@@ -54,6 +56,12 @@ export const useAdminStore = create<AdminState>((set) => ({
   },
   addMaterial: async (material: Material) => {
     await adminService.addMaterial(material)
+  },
+  updateMaterial: async (id: string, material: Partial<Material>) => {
+    await adminService.updateMaterial(id, material)
+  },
+  deleteMaterial: async (id: string) => {
+    await adminService.deleteMaterial(id)
   },
   toggleQuarter: async (quarter: string) => {
     await adminService.toggleQuarter(quarter)

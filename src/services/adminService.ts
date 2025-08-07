@@ -8,6 +8,8 @@ import {
   getDoc,
   setDoc,
   getDocs,
+  updateDoc,
+  deleteDoc,
 } from 'firebase/firestore'
 
 export const adminService = {
@@ -37,6 +39,28 @@ export const adminService = {
       console.log('Document written with ID: ', docRef.id)
     } catch (e) {
       console.log(e)
+    }
+  },
+
+  async updateMaterial(id: string, data: Partial<Material>) {
+    try {
+      const docRef = doc(db, 'materials', id)
+      await updateDoc(docRef, data)
+      console.log('Document updated successfully')
+    } catch (e) {
+      console.log(e)
+      throw e
+    }
+  },
+
+  async deleteMaterial(id: string) {
+    try {
+      const docRef = doc(db, 'materials', id)
+      await deleteDoc(docRef)
+      console.log('Document deleted successfully')
+    } catch (e) {
+      console.log(e)
+      throw e
     }
   },
 

@@ -3,13 +3,17 @@
 import React from 'react'
 import { useRouter } from 'next/navigation'
 import { useReadStore } from '@/hooks/useReadStore'
+import { useAdminStore } from '@/hooks/useAdminStore'
 
 function ModePage() {
   const router = useRouter()
   const { materials, setIndexMaterial, setIndexQuestion, resetScore } =
     useReadStore()
+  const { getQuarter, quarter } = useAdminStore()
 
-  const handleTestType = (testType: string) => {
+  const handleTestType = async (testType: string) => {
+    await getQuarter()
+
     // Handle difficulty selection\
     if (materials.length !== 0) {
       setIndexMaterial(0)
@@ -17,7 +21,7 @@ function ModePage() {
       resetScore()
     }
 
-    router.push(`/student/reading?testType=${testType}`)
+    router.push(`/student/reading?testType=${testType}&quarter=${quarter}`)
   }
 
   return (
