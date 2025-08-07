@@ -2,6 +2,7 @@ import BoldEachLetter from '@/components/BoldEachLetter'
 import Clock from '@/components/Clock'
 import { useReadStore } from '@/hooks/useReadStore'
 import { Material } from '@/interface/material'
+import { RotateCcw } from 'lucide-react'
 
 export default function TimeCard({ material }: { material: Material }) {
   const { setDuration, duration } = useReadStore()
@@ -15,32 +16,27 @@ export default function TimeCard({ material }: { material: Material }) {
 
   return (
     <div className="flex flex-wrap gap-6">
-      <div className="flex flex-col items-center gap-4 mb-6 p-4 border rounded-lg shadow-lg md:w-auto">
+      <div className="flex flex-col items-center gap-4 mb-6 p-4 border rounded-lg w-full">
         <BoldEachLetter
           text={material.text}
           bionic={false}
           onWordTap={() => {}}
         />
-        <Clock onStop={(time) => handleTime(time)} />
-        <div>
-          <h1>
-            {' '}
-            {duration === 0 || duration === null
-              ? ''
-              : `Time taken: ${duration} seconds`}
-          </h1>
-        </div>
+        {duration === 0 || duration === null ? (
+          <Clock onStop={(time) => handleTime(time)} />
+        ) : (
+          <div className="flex justify-center items-center gap-4">
+            <h1>Time taken: {duration} seconds</h1>
+            <button
+              className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
+              onClick={() => handleTime(0)}
+              aria-label="Restart"
+            >
+              <RotateCcw size={20} />
+            </button>
+          </div>
+        )}
       </div>
-      {/* <div className="flex flex-col items-center gap-4 mb-6 p-4 border rounded-lg shadow-lg w-full md:w-auto">
-                <BoldEachLetter
-                    text={material.text}
-                    bionic={true}
-                    onWordTap={() => { }}
-                />
-                <Clock
-                    onStop={(time) => handleTime(time, true)}
-                />
-            </div> */}
     </div>
   )
 }

@@ -72,7 +72,7 @@ const HomePage: React.FC = () => {
               Visualize your learning progress and set your next goals.
             </p>
             <button
-              // onClick={() => router.push("/dashboard")}
+              onClick={() => router.push('/student/dashboard')}
               className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
             >
               View Dashboard
@@ -86,7 +86,7 @@ const HomePage: React.FC = () => {
               Access a curated list of resources to boost your skills.
             </p>
             <button
-              // onClick={() => router.push("/resources")}
+              onClick={() => router.push('/student/resources')}
               className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
             >
               Explore Resources
