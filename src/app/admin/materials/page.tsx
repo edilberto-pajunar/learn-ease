@@ -43,6 +43,7 @@ export default function MaterialsPage() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [editingMaterial, setEditingMaterial] = useState<Material | null>(null)
+  const [isQuarterLoading, setIsQuarterLoading] = useState(false)
   const [formData, setFormData] = useState({
     title: '',
     text: '',
@@ -112,6 +113,17 @@ export default function MaterialsPage() {
     })
   }
 
+  const handleQuarterToggle = async () => {
+    setIsQuarterLoading(true)
+    try {
+      await toggleQuarter(quarter === 'Q1' ? 'Q2' : 'Q1')
+    } catch (error) {
+      console.error('Error toggling quarter:', error)
+    } finally {
+      setIsQuarterLoading(false)
+    }
+  }
+
   const addQuestion = () => {
     setFormData((prev) => ({
       ...prev,
@@ -155,9 +167,17 @@ export default function MaterialsPage() {
         <div className="flex gap-4">
           <Button
             variant="outline"
-            onClick={() => toggleQuarter(quarter === 'Q1' ? 'Q2' : 'Q1')}
+            onClick={handleQuarterToggle}
+            disabled={isQuarterLoading}
           >
-            Current Quarter: {quarter}
+            {isQuarterLoading ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2"></div>
+                Loading...
+              </>
+            ) : (
+              `Current Quarter: ${quarter}`
+            )}
           </Button>
           <CreateMaterial
             isCreateDialogOpen={isCreateDialogOpen}

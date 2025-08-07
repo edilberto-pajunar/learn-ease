@@ -113,4 +113,38 @@ export const adminService = {
       throw error
     }
   },
+
+  async addSkill(data: { title: string }) {
+    try {
+      const ref = collection(db, 'skills')
+      const docRef = await addDoc(ref, data)
+      console.log('Skill added with ID: ', docRef.id)
+      return docRef.id
+    } catch (e) {
+      console.log(e)
+      throw e
+    }
+  },
+
+  async updateSkill(id: string, data: { title: string }) {
+    try {
+      const docRef = doc(db, 'skills', id)
+      await updateDoc(docRef, data)
+      console.log('Skill updated successfully')
+    } catch (e) {
+      console.log(e)
+      throw e
+    }
+  },
+
+  async deleteSkill(id: string) {
+    try {
+      const docRef = doc(db, 'skills', id)
+      await deleteDoc(docRef)
+      console.log('Skill deleted successfully')
+    } catch (e) {
+      console.log(e)
+      throw e
+    }
+  },
 }

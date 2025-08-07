@@ -19,11 +19,9 @@ const AdminStudentPage = ({
     fetchSubmissions(studentId)
   }, [])
 
-  console.log(submissions[0].submittedAt.toDate())
-
   return (
     <div className="max-w-4xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">Student Info {student?.name}</h1>
+      <h1 className="text-2xl font-bold mb-6">Student Info:  {student?.name}</h1>
       <div className="grid grid-cols-1 gap-6">
         <div className="flex justify-between items-center p-4 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow">
           <h2 className="text-l font-semibold text-gray-800">
