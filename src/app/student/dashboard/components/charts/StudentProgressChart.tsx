@@ -1,7 +1,6 @@
 'use client'
 
-import React, { useEffect } from 'react'
-
+import React, { useEffect, useState } from 'react'
 import { ChartContainer, type ChartConfig } from '@/components/ui/chart'
 import {
   Bar,
@@ -11,14 +10,14 @@ import {
   YAxis,
   Tooltip,
   Legend,
-  PieChart,
-  Pie,
-  Cell,
   LineChart,
   Line,
+  ResponsiveContainer,
 } from 'recharts'
 import { useSubmissionStore } from '@/hooks/useSubmissionStore'
 import { useAuthStore } from '@/hooks/useAuthStore'
+import { Card, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 
 const chartConfig = {
   desktop: {
@@ -31,170 +30,456 @@ const chartConfig = {
   },
 } satisfies ChartConfig
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8']
-
 function StudentProgressChart() {
   const { fetchSubmissions, submissions } = useSubmissionStore()
   const { user } = useAuthStore()
+  const [activeTab, setActiveTab] = useState<'pre_test' | 'post_test'>(
+    'pre_test',
+  )
 
   useEffect(() => {
-    fetchSubmissions(user?.id || '')
-  }, [])
-
-  // Calculate total scores for pre-test and post-test
-  const totalScores = submissions.reduce((acc: any, submission) => {
-    if (submission.testType === 'pre_test') {
-      acc.preTestScore = (acc.preTestScore || 0) + submission.score
-    } else if (submission.testType === 'post_test') {
-      acc.postTestScore = (acc.postTestScore || 0) + submission.score
+    if (user?.id) {
+      fetchSubmissions(user.id)
     }
-    return acc
-  }, {})
+  }, [user?.id, fetchSubmissions])
 
-  // Calculate reading metrics
-  const readingMetrics = submissions.reduce((acc: any, submission) => {
-    if (submission.testType === 'pre_test') {
-      acc.preTestWords = (acc.preTestWords || 0) + submission.numberOfWords
-      acc.preTestDuration = (acc.preTestDuration || 0) + submission.duration
-    } else if (submission.testType === 'post_test') {
-      acc.postTestWords = (acc.postTestWords || 0) + submission.numberOfWords
-      acc.postTestDuration = (acc.postTestDuration || 0) + submission.duration
-    }
-    return acc
-  }, {})
+  // Filter submissions by active tab
+  const filteredSubmissions = submissions.filter(
+    (sub) => sub.testType === activeTab,
+  )
 
-  const barChartData = [
-    {
-      name: 'Pre-test',
-      score: totalScores.preTestScore || 0,
+  // Calculate statistics for the active tab
+  const stats = filteredSubmissions.reduce(
+    (acc, submission) => {
+      acc.totalScore += submission.score || 0
+      acc.totalQuestions += submission.totalQuestions || 0
+      acc.totalWords += submission.numberOfWords || 0
+      acc.totalDuration += submission.duration || 0
+      acc.totalMiscues += Array.isArray(submission.miscues)
+        ? submission.miscues.length
+        : 0
+      return acc
     },
     {
-      name: 'Post-test',
-      score: totalScores.postTestScore || 0,
+      totalScore: 0,
+      totalQuestions: 0,
+      totalWords: 0,
+      totalDuration: 0,
+      totalMiscues: 0,
     },
-  ]
+  )
 
-  const lineChartData = [
-    {
-      name: 'Pre-test',
-      words: readingMetrics.preTestWords || 0,
-      duration: readingMetrics.preTestDuration || 0,
+  // Calculate averages
+  const averageScore =
+    filteredSubmissions.length > 0
+      ? Math.round((stats.totalScore / stats.totalQuestions) * 100)
+      : 0
+  const averageWordsPerMinute =
+    filteredSubmissions.length > 0
+      ? Math.round((stats.totalWords / stats.totalDuration) * 60)
+      : 0
+  const averageAccuracy =
+    filteredSubmissions.length > 0
+      ? Math.round(
+          ((stats.totalQuestions - stats.totalMiscues) / stats.totalQuestions) *
+            100,
+        )
+      : 0
+
+  // Prepare chart data for progress over time
+  const progressData = filteredSubmissions.map((submission, index) => ({
+    name: `Material ${index + 1}`,
+    timeTaken: Math.round(submission.duration || 0),
+    questionsCorrect: submission.score || 0,
+    accuracy: submission.totalQuestions
+      ? Math.round((submission.score / submission.totalQuestions) * 100)
+      : 0,
+    wordsRead: submission.numberOfWords || 0,
+  }))
+
+  // Overall progress comparison (pre-test vs post-test)
+  const overallProgress = submissions.reduce(
+    (acc, submission) => {
+      if (submission.testType === 'pre_test') {
+        acc.preTestScore += submission.score || 0
+        acc.preTestQuestions += submission.totalQuestions || 0
+        acc.preTestDuration += submission.duration || 0
+      } else if (submission.testType === 'post_test') {
+        acc.postTestScore += submission.score || 0
+        acc.postTestQuestions += submission.totalQuestions || 0
+        acc.postTestDuration += submission.duration || 0
+      }
+      return acc
     },
     {
-      name: 'Post-test',
-      words: readingMetrics.postTestWords || 0,
-      duration: readingMetrics.postTestDuration || 0,
+      preTestScore: 0,
+      preTestQuestions: 0,
+      preTestDuration: 0,
+      postTestScore: 0,
+      postTestQuestions: 0,
+      postTestDuration: 0,
     },
-  ]
+  )
+
+  const preTestAverage =
+    overallProgress.preTestQuestions > 0
+      ? Math.round(
+          (overallProgress.preTestScore / overallProgress.preTestQuestions) *
+            100,
+        )
+      : 0
+  const postTestAverage =
+    overallProgress.postTestQuestions > 0
+      ? Math.round(
+          (overallProgress.postTestScore / overallProgress.postTestQuestions) *
+            100,
+        )
+      : 0
+  const improvement = postTestAverage - preTestAverage
 
   return (
-    <div className="flex flex-col space-y-8">
-      <div className="flex gap-8">
-        {/* Pre-test vs Post-test Comparison Chart */}
-        <div className="flex-1 p-4 bg-white rounded-lg shadow">
-          <h2 className="text-xl font-semibold mb-4">
-            Pre-test vs Post-test Total Scores
-          </h2>
-          <ChartContainer config={chartConfig} className="min-h-[300px] w-full">
-            <BarChart data={barChartData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis
-                label={{
-                  value: 'Total Score',
-                  angle: -90,
-                  position: 'insideLeft',
-                }}
-              />
-              <Tooltip />
-              <Legend />
-              <Bar
-                dataKey="score"
-                fill="#2563eb"
-                name="Total Score"
-                radius={4}
-              />
-            </BarChart>
-          </ChartContainer>
+    <div className="space-y-8">
+      {/* Header */}
+      <div className="text-center mb-12">
+        <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-3xl shadow-2xl shadow-blue-500/25 mb-6">
+          <svg
+            className="w-10 h-10 text-white"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+            />
+          </svg>
         </div>
+        <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-foreground via-blue-600 to-indigo-600 bg-clip-text text-transparent mb-4">
+          Learning Dashboard
+        </h1>
+        <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+          Track your reading progress and performance across all materials
+        </p>
+      </div>
 
-        {/* Reading Metrics Line Chart */}
-        <div className="flex-1 p-4 bg-white rounded-lg shadow">
-          <h2 className="text-xl font-semibold mb-4">Reading Metrics</h2>
-          <ChartContainer config={chartConfig} className="min-h-[300px] w-full">
-            <LineChart data={lineChartData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis
-                yAxisId="left"
-                label={{
-                  value: 'Number of Words',
-                  angle: -90,
-                  position: 'insideLeft',
-                }}
-              />
-              <YAxis
-                yAxisId="right"
-                orientation="right"
-                label={{
-                  value: 'Duration (seconds)',
-                  angle: 90,
-                  position: 'insideRight',
-                }}
-              />
-              <Tooltip />
-              <Legend />
-              <Line
-                yAxisId="left"
-                type="monotone"
-                dataKey="words"
-                stroke="#2563eb"
-                name="Number of Words"
-              />
-              <Line
-                yAxisId="right"
-                type="monotone"
-                dataKey="duration"
-                stroke="#60a5fa"
-                name="Duration"
-              />
-            </LineChart>
-          </ChartContainer>
+      {/* Test Type Toggle */}
+      <div className="flex justify-center mb-8">
+        <div className="bg-white/80 backdrop-blur-sm rounded-xl p-1 shadow-lg border border-gray-200">
+          <Button
+            variant={activeTab === 'pre_test' ? 'default' : 'ghost'}
+            onClick={() => setActiveTab('pre_test')}
+            className={`px-6 py-2 rounded-lg transition-all duration-200 ${
+              activeTab === 'pre_test'
+                ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg'
+                : 'text-gray-600 hover:text-gray-800'
+            }`}
+          >
+            📝 Pre-Test Results
+          </Button>
+          <Button
+            variant={activeTab === 'post_test' ? 'default' : 'ghost'}
+            onClick={() => setActiveTab('post_test')}
+            className={`px-6 py-2 rounded-lg transition-all duration-200 ${
+              activeTab === 'post_test'
+                ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg'
+                : 'text-gray-600 hover:text-gray-800'
+            }`}
+          >
+            🎯 Post-Test Results
+          </Button>
         </div>
       </div>
 
-      {/* Pie Chart Section */}
-      <div className="p-4 bg-white rounded-lg shadow">
-        <h2 className="text-xl font-semibold mb-4">Performance Distribution</h2>
-        <ChartContainer config={chartConfig} className="min-h-[300px] w-full">
-          <PieChart>
-            <Pie
-              data={[
-                {
-                  name: 'Improvement',
-                  value: totalScores.preTestScore
-                    ? (((totalScores.postTestScore || 0) -
-                        (totalScores.preTestScore || 0)) /
-                        totalScores.preTestScore) *
-                      100
-                    : 0,
-                },
-              ]}
-              cx="50%"
-              cy="50%"
-              labelLine={false}
-              label={({ name, value }) => `${name}: ${value.toFixed(1)}%`}
-              outerRadius={100}
-              fill="#8884d8"
-              dataKey="value"
+      {/* Statistics Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100">
+          <CardContent className="p-6 text-center">
+            <div className="inline-flex items-center justify-center w-12 h-12 bg-blue-500 rounded-xl mb-4">
+              <svg
+                className="w-6 h-6 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+            </div>
+            <div className="text-2xl font-bold text-blue-600 mb-2">
+              {averageScore}%
+            </div>
+            <div className="text-sm text-blue-600 font-medium">
+              Average Score
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-0 shadow-lg bg-gradient-to-br from-green-50 to-green-100">
+          <CardContent className="p-6 text-center">
+            <div className="inline-flex items-center justify-center w-12 h-12 bg-green-500 rounded-xl mb-4">
+              <svg
+                className="w-6 h-6 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+            </div>
+            <div className="text-2xl font-bold text-green-600 mb-2">
+              {averageWordsPerMinute}
+            </div>
+            <div className="text-sm text-green-600 font-medium">
+              Words per Minute
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-0 shadow-lg bg-gradient-to-br from-purple-50 to-purple-100">
+          <CardContent className="p-6 text-center">
+            <div className="inline-flex items-center justify-center w-12 h-12 bg-purple-500 rounded-xl mb-4">
+              <svg
+                className="w-6 h-6 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M13 10V3L4 14h7v7l9-11h-7z"
+                />
+              </svg>
+            </div>
+            <div className="text-2xl font-bold text-purple-600 mb-2">
+              {averageAccuracy}%
+            </div>
+            <div className="text-sm text-purple-600 font-medium">
+              Reading Accuracy
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-0 shadow-lg bg-gradient-to-br from-orange-50 to-orange-100">
+          <CardContent className="p-6 text-center">
+            <div className="inline-flex items-center justify-center w-12 h-12 bg-orange-500 rounded-xl mb-4">
+              <svg
+                className="w-6 h-6 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                />
+              </svg>
+            </div>
+            <div className="text-2xl font-bold text-orange-600 mb-2">
+              {filteredSubmissions.length}
+            </div>
+            <div className="text-sm text-orange-600 font-medium">
+              Materials Completed
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Progress Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        {/* Time Progress Chart */}
+        <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
+          <CardContent className="p-6">
+            <h3 className="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
+              <svg
+                className="w-5 h-5 text-blue-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              Time Progress
+            </h3>
+            <ChartContainer
+              config={chartConfig}
+              className="min-h-[300px] w-full"
             >
-              <Cell fill={COLORS[0]} />
-            </Pie>
-            <Tooltip formatter={(value: number) => `${value.toFixed(1)}%`} />
-            <Legend />
-          </PieChart>
-        </ChartContainer>
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={progressData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                  <XAxis dataKey="name" stroke="#6b7280" />
+                  <YAxis stroke="#6b7280" />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: 'white',
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '8px',
+                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                    }}
+                  />
+                  <Legend />
+                  <Line
+                    type="monotone"
+                    dataKey="timeTaken"
+                    stroke="#3b82f6"
+                    strokeWidth={3}
+                    dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4 }}
+                    activeDot={{ r: 6, stroke: '#3b82f6', strokeWidth: 2 }}
+                    name="Time Taken (seconds)"
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </ChartContainer>
+          </CardContent>
+        </Card>
+
+        {/* Questions Correct Chart */}
+        <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
+          <CardContent className="p-6">
+            <h3 className="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
+              <svg
+                className="w-5 h-5 text-green-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              Questions Correct
+            </h3>
+            <ChartContainer
+              config={chartConfig}
+              className="min-h-[300px] w-full"
+            >
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={progressData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                  <XAxis dataKey="name" stroke="#6b7280" />
+                  <YAxis stroke="#6b7280" />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: 'white',
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '8px',
+                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                    }}
+                  />
+                  <Legend />
+                  <Bar
+                    dataKey="questionsCorrect"
+                    fill="#10b981"
+                    radius={[4, 4, 0, 0]}
+                    name="Questions Correct"
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartContainer>
+          </CardContent>
+        </Card>
       </div>
+
+      {/* Overall Progress Comparison */}
+      <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-blue-50/30">
+        <CardContent className="p-8">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold text-foreground mb-2">
+              Overall Progress Comparison
+            </h2>
+            <p className="text-muted-foreground">
+              Track your improvement from pre-test to post-test
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="text-center p-6 bg-blue-50 rounded-xl border border-blue-200">
+              <div className="text-3xl font-bold text-blue-600 mb-2">
+                {preTestAverage}%
+              </div>
+              <div className="text-sm text-blue-600 font-medium">
+                Pre-test Average
+              </div>
+            </div>
+            <div className="text-center p-6 bg-green-50 rounded-xl border border-green-200">
+              <div className="text-3xl font-bold text-green-600 mb-2">
+                {postTestAverage}%
+              </div>
+              <div className="text-sm text-green-600 font-medium">
+                Post-test Average
+              </div>
+            </div>
+            <div className="text-center p-6 bg-purple-50 rounded-xl border border-purple-200">
+              <div
+                className={`text-3xl font-bold mb-2 ${improvement > 0 ? 'text-green-600' : 'text-red-600'}`}
+              >
+                {improvement > 0 ? '+' : ''}
+                {improvement}%
+              </div>
+              <div className="text-sm text-purple-600 font-medium">
+                {improvement > 0 ? 'Improvement ↑' : 'Change ↓'}
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* No Data State */}
+      {filteredSubmissions.length === 0 && (
+        <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
+          <CardContent className="p-12 text-center">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-2xl mb-6">
+              <svg
+                className="w-8 h-8 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                />
+              </svg>
+            </div>
+            <h3 className="text-xl font-semibold text-foreground mb-2">
+              No {activeTab === 'pre_test' ? 'Pre-test' : 'Post-test'} Data Yet
+            </h3>
+            <p className="text-muted-foreground mb-6">
+              Complete some{' '}
+              {activeTab === 'pre_test' ? 'pre-test' : 'post-test'} assessments
+              to see your progress here.
+            </p>
+            <Button className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700">
+              Start Assessment
+            </Button>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }
