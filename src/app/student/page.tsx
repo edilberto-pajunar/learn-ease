@@ -15,7 +15,7 @@ const HomePage: React.FC = () => {
 
   useEffect(() => {
     getQuarter()
-  }, [])
+  })
 
   const { materials, setIndexMaterial, setIndexQuestion, resetScore } =
     useReadStore()

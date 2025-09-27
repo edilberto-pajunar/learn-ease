@@ -85,21 +85,21 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
     }
   }
 
-  const handleNextQuestion = () => {
-    if (indexQuestion < questions.length - 1) {
-      setIndexQuestion(indexQuestion + 1)
-      setSelectedAnswer('')
-      setShowFeedback(false)
-    }
-  }
+  // const handleNextQuestion = () => {
+  //   if (indexQuestion < questions.length - 1) {
+  //     setIndexQuestion(indexQuestion + 1)
+  //     setSelectedAnswer('')
+  //     setShowFeedback(false)
+  //   }
+  // }
 
-  const handlePreviousQuestion = () => {
-    if (indexQuestion > 0) {
-      setIndexQuestion(indexQuestion - 1)
-      setSelectedAnswer('')
-      setShowFeedback(false)
-    }
-  }
+  // const handlePreviousQuestion = () => {
+  //   if (indexQuestion > 0) {
+  //     setIndexQuestion(indexQuestion - 1)
+  //     setSelectedAnswer('')
+  //     setShowFeedback(false)
+  //   }
+  // }
 
   const getQuestionStatus = (questionIndex: number) => {
     if (questionIndex < currentAnswers.length) {
@@ -134,52 +134,6 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
               }}
             />
           </div>
-        </div>
-
-        {/* Navigation */}
-        <div className="flex items-center gap-2">
-          <Button
-            onClick={handlePreviousQuestion}
-            variant="outline"
-            size="sm"
-            disabled={indexQuestion === 0}
-            className="px-3"
-          >
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 19l-7-7 7-7"
-              />
-            </svg>
-          </Button>
-          <Button
-            onClick={handleNextQuestion}
-            variant="outline"
-            size="sm"
-            disabled={indexQuestion === questions.length - 1}
-            className="px-3"
-          >
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 5l7 7-7 7"
-              />
-            </svg>
-          </Button>
         </div>
       </div>
 

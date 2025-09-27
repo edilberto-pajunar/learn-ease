@@ -235,8 +235,8 @@ const ReadingPage: FC = () => {
                     d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                   />
                 </svg>
-            Question
-            <span className="text-red-600 font-medium">{formError}</span>
+                Question
+                <span className="text-red-600 font-medium">{formError}</span>
               </div>
             </CardContent>
           </Card>
@@ -269,7 +269,7 @@ const ReadingPage: FC = () => {
                 {miscues.map((word, index) => (
                   <span
                     key={index}
-                    className="bg-amber-100 text-amber-800 px-3 py-2 rounded-lg text-sm font-medium border border-amber-200 hover:bg-amber-200 transition-colors duration-200 cursor-pointer"
+                    className="bg-amber-100 text-amber-800 px-3 py-2 rounded-lg text-sm font-medium border border-amber-200 hover:bg-amber-200 transition-colors duration-200 pointer-events-none"
                   >
                     {word}
                   </span>

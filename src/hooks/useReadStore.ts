@@ -62,7 +62,7 @@ export const useReadStore = create<ReadStore>((set, get) => ({
   difficulty: '',
   setLoading: (value) => set({ isLoading: value }),
   fetchMaterials: (quarter: string) => {
-    const unsubscribe = onSnapshot(collection(db, 'materials'), (snapshot) => {
+    onSnapshot(collection(db, 'materials'), (snapshot) => {
       const materials: Material[] = snapshot.docs
         .map((doc) => doc.data() as Material)
         .filter((material) => material.quarter === quarter)
@@ -96,8 +96,6 @@ export const useReadStore = create<ReadStore>((set, get) => ({
       setLoading,
       miscues,
       score,
-      resetScore,
-      setCurrentAnswers,
     } = get()
     const material = materials[indexMaterial]
     setLoading(true)
