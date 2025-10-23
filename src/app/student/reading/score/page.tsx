@@ -43,44 +43,68 @@ const ScorePage = () => {
     (sub) => sub.testType === 'post_test',
   )
 
-  // Calculate average scores
-  const calculateAverageScore = (submissions: Submission[]) => {
-    if (submissions.length === 0) return 0
-
-    // Calculate total score and total questions across all submissions
-    const totals = submissions.reduce(
-      (acc, sub) => {
-        // Ensure we have valid numbers, default to 0 if undefined/null
-        const score = typeof sub.score === 'number' ? sub.score : 0
-        const totalQuestions =
-          typeof sub.totalQuestions === 'number' ? sub.totalQuestions : 1
-
-        return {
-          totalScore: acc.totalScore + score,
-          totalQuestions: acc.totalQuestions + totalQuestions,
+  // Group submissions by materialBatch
+  const groupSubmissionsByBatch = (submissions: Submission[]) => {
+    const grouped = submissions.reduce(
+      (acc, submission) => {
+        const batch = submission.materialBatch || 'no-batch'
+        if (!acc[batch]) {
+          acc[batch] = []
         }
+        acc[batch].push(submission)
+        return acc
       },
-      { totalScore: 0, totalQuestions: 0 },
+      {} as Record<string, Submission[]>,
     )
 
-    // Prevent division by zero and ensure valid calculation
-    if (totals.totalQuestions === 0) return 0
-
-    // Calculate overall average percentage
-    const average = (totals.totalScore / totals.totalQuestions) * 100
-    return Math.round(average)
+    return Object.entries(grouped).map(([batch, subs]) => ({
+      batch,
+      submissions: subs,
+      // averageScore: calculateAverageScore(subs),
+    }))
   }
 
-  // Debug: Log the submissions to see the actual data structure
-  console.log('Pre-test submissions:', preTestSubmissions)
-  console.log('Post-test submissions:', postTestSubmissions)
+  const preTestBatches = groupSubmissionsByBatch(preTestSubmissions)
+  const postTestBatches = groupSubmissionsByBatch(postTestSubmissions)
 
-  const preTestAverage = calculateAverageScore(preTestSubmissions)
-  const postTestAverage = calculateAverageScore(postTestSubmissions)
+  // // Calculate average scores
+  // const calculateAverageScore = (submissions: Submission[]) => {
+  //   if (submissions.length === 0) return 0
+
+  //   // Calculate total score and total questions across all submissions
+  //   const totals = submissions.reduce(
+  //     (acc, sub) => {
+  //       // Ensure we have valid numbers, default to 0 if undefined/null
+  //       const score = typeof sub.score === 'number' ? sub.score : 0
+  //       const totalQuestions =
+  //         typeof sub.totalQuestions === 'number' ? sub.totalQuestions : 1
+
+  //       return {
+  //         totalScore: acc.totalScore + score,
+  //         totalQuestions: acc.totalQuestions + totalQuestions,
+  //       }
+  //     },
+  //     { totalScore: 0, totalQuestions: 0 },
+  //   )
+
+  //   // Prevent division by zero and ensure valid calculation
+  //   if (totals.totalQuestions === 0) return 0
+
+  //   // Calculate overall average percentage
+  //   const average = (totals.totalScore / totals.totalQuestions) * 100
+  //   return Math.round(average)
+  // }
+
+  // Debug: Log the submissions to see the actual data structure
+  // console.log('Pre-test submissions:', preTestSubmissions)
+  // console.log('Post-test submissions:', postTestSubmissions)
+
+  // const preTestAverage = calculateAverageScore(preTestSubmissions)
+  // const postTestAverage = calculateAverageScore(postTestSubmissions)
 
   // Debug: Log the calculated averages
-  console.log('Pre-test average:', preTestAverage)
-  console.log('Post-test average:', postTestAverage)
+  // console.log('Pre-test average:', preTestAverage)
+  // console.log('Post-test average:', postTestAverage)
 
   // Get material details by ID
   const getMaterialDetails = (materialId: string): Material | undefined => {
@@ -88,7 +112,9 @@ const ScorePage = () => {
   }
 
   const renderSubmissionCard = (submission: Submission) => {
-    const material: Material | undefined = getMaterialDetails(submission.materialId)
+    const material: Material | undefined = getMaterialDetails(
+      submission.materialId,
+    )
     if (!material) return null
     const materialTitle = material?.title || `Material ${submission.materialId}`
     const materialText = material?.text || 'No content available'
@@ -204,7 +230,7 @@ const ScorePage = () => {
                         : 'Post-test Results'}
                     </h2>
                   </div>
-                  {selectedTestType === 'pre_test' &&
+                  {/* {selectedTestType === 'pre_test' &&
                     preTestSubmissions.length > 0 && (
                       <Card className="border-0 shadow-lg bg-gradient-to-r from-blue-500 to-indigo-600">
                         <CardContent className="p-4 text-center">
@@ -227,11 +253,11 @@ const ScorePage = () => {
                           </p>
                         </CardContent>
                       </Card>
-                    )}
+                    )} */}
                 </div>
 
                 {selectedTestType === 'pre_test' ? (
-                  preTestSubmissions.length === 0 ? (
+                  preTestBatches.length === 0 ? (
                     <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
                       <CardContent className="p-8 text-center">
                         <p className="text-muted-foreground">
@@ -240,11 +266,28 @@ const ScorePage = () => {
                       </CardContent>
                     </Card>
                   ) : (
-                    <div className="grid gap-6">
-                      {preTestSubmissions.map(renderSubmissionCard)}
+                    <div className="space-y-8">
+                      {preTestBatches.map((batchGroup) => (
+                        <div key={batchGroup.batch}>
+                          {batchGroup.batch !== 'no-batch' && (
+                            <div className="flex items-center gap-3 mb-4">
+                              <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+                              <h3 className="text-lg font-semibold text-foreground">
+                                Batch: {batchGroup.batch}
+                              </h3>
+                              <div className="text-sm text-muted-foreground">
+                                ({batchGroup.submissions.length} materials)
+                              </div>
+                            </div>
+                          )}
+                          <div className="grid gap-6">
+                            {batchGroup.submissions.map(renderSubmissionCard)}
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   )
-                ) : postTestSubmissions.length === 0 ? (
+                ) : postTestBatches.length === 0 ? (
                   <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
                     <CardContent className="p-8 text-center">
                       <p className="text-muted-foreground">
@@ -253,8 +296,25 @@ const ScorePage = () => {
                     </CardContent>
                   </Card>
                 ) : (
-                  <div className="grid gap-6">
-                    {postTestSubmissions.map(renderSubmissionCard)}
+                  <div className="space-y-8">
+                    {postTestBatches.map((batchGroup) => (
+                      <div key={batchGroup.batch}>
+                        {batchGroup.batch !== 'no-batch' && (
+                          <div className="flex items-center gap-3 mb-4">
+                            <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                            <h3 className="text-lg font-semibold text-foreground">
+                              Batch: {batchGroup.batch}
+                            </h3>
+                            <div className="text-sm text-muted-foreground">
+                              ({batchGroup.submissions.length} materials)
+                            </div>
+                          </div>
+                        )}
+                        <div className="grid gap-6">
+                          {batchGroup.submissions.map(renderSubmissionCard)}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>
@@ -274,7 +334,7 @@ const ScorePage = () => {
                         </p>
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div className="text-center p-6 bg-blue-50 rounded-xl border border-blue-200">
                           <div className="text-3xl font-bold text-blue-600 mb-2">
                             {preTestAverage}%
@@ -303,7 +363,7 @@ const ScorePage = () => {
                               : 'Change ↓'}
                           </div>
                         </div>
-                      </div>
+                      </div> */}
                     </CardContent>
                   </Card>
                 )}

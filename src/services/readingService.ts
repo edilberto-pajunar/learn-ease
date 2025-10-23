@@ -1,13 +1,6 @@
 import { db } from '@/firebase/client_app'
 import { Submission } from '@/interface/submission'
-import {
-  doc,
-  setDoc,
-  collection,
-  getDocs,
-  query,
-  where,
-} from 'firebase/firestore'
+import { doc, setDoc, collection } from 'firebase/firestore'
 
 export const readingService = {
   async endTime(
@@ -39,24 +32,6 @@ export const readingService = {
       const submissionsRef = collection(db, 'submissions')
       const studentId = submission.studentId
       const materialId = submission.materialId
-      const testType = submission.testType
-
-      // Check for existing submission
-      const existingSubmissions = await getDocs(
-        query(
-          submissionsRef,
-          where('studentId', '==', studentId),
-          where('materialId', '==', materialId),
-          where('testType', '==', testType),
-        ),
-      )
-
-      if (!existingSubmissions.empty) {
-        console.log(
-          `Student ${studentId} has already submitted an answer for material ${materialId} with test type ${testType}`,
-        )
-        return false
-      }
 
       const docRef = doc(submissionsRef)
       await setDoc(
@@ -72,6 +47,8 @@ export const readingService = {
           duration: submission.duration,
           mode: submission.mode,
           testType: submission.testType,
+          materialBatch: submission.materialBatch,
+          miscues: submission.miscues,
         },
         { merge: true },
       )

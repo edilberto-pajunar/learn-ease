@@ -4,7 +4,7 @@ import { wordCount } from '@/app/utils/wordCount'
 import { db } from '@/firebase/client_app'
 import { Material } from '@/interface/material'
 import { readingService } from '@/services/readingService'
-import { collection, doc, onSnapshot, Timestamp } from 'firebase/firestore'
+import { collection, onSnapshot, Timestamp } from 'firebase/firestore'
 import { create } from 'zustand'
 import { Submission } from '@/interface/submission'
 
@@ -30,6 +30,7 @@ interface ReadStore {
   miscues: string[]
   score: number
   difficulty: string
+  materialBatch: string | null
   setLoading: (value: boolean) => void
   fetchMaterials: (quarter: string) => void
   setIndexMaterial: (indexMaterial: number) => void
@@ -47,6 +48,7 @@ interface ReadStore {
   resetScore: () => void
   resetAll: () => void
   setDifficulty: (difficulty: string) => void
+  setMaterialBatch: (materialBatch: string) => void
 }
 
 export const useReadStore = create<ReadStore>((set, get) => ({
@@ -60,6 +62,7 @@ export const useReadStore = create<ReadStore>((set, get) => ({
   miscues: [],
   score: 0,
   difficulty: '',
+  materialBatch: null,
   setLoading: (value) => set({ isLoading: value }),
   fetchMaterials: (quarter: string) => {
     onSnapshot(collection(db, 'materials'), (snapshot) => {
@@ -96,6 +99,7 @@ export const useReadStore = create<ReadStore>((set, get) => ({
       setLoading,
       miscues,
       score,
+      materialBatch,
     } = get()
     const material = materials[indexMaterial]
     setLoading(true)
@@ -103,20 +107,22 @@ export const useReadStore = create<ReadStore>((set, get) => ({
     try {
       const numberOfWords = wordCount(material.text)
       const submission: Submission = {
-        id: doc(collection(db, 'users', studentId, 'submissions')).id,
+        id: null,
         answers: currentAnswers,
         materialId: material.id,
         score: score,
         studentId: studentId,
         submittedAt: Timestamp.now(),
         numberOfWords: numberOfWords,
-        duration: duration!,
+        duration: duration ?? 0,
         recordTime: {},
         miscues: miscues,
         mode: material.mode,
         testType: testType,
         totalQuestions: totalQuestions,
+        materialBatch: materialBatch,
       }
+      console.log(`Submission: ${JSON.stringify(submission)}`)
 
       await readingService.submitAnswer(submission)
       set({
@@ -130,7 +136,16 @@ export const useReadStore = create<ReadStore>((set, get) => ({
       console.error('Error submitting answer: ', e)
     }
   },
-  setMiscues: (word) => set({ miscues: [...get().miscues, word] }),
+  setMiscues: (word) => {
+    const currentMiscues = get().miscues
+    if (currentMiscues.includes(word)) {
+      // Remove word if it already exists
+      set({ miscues: currentMiscues.filter((w) => w !== word) })
+    } else {
+      // Add word if it doesn't exist
+      set({ miscues: [...currentMiscues, word] })
+    }
+  },
   clearMiscues: () => set({ miscues: [] }),
   setDuration: (duration) => set({ duration }),
   setScore: () => set({ score: get().score + 1 }),
@@ -145,4 +160,5 @@ export const useReadStore = create<ReadStore>((set, get) => ({
       score: 0,
     }),
   setDifficulty: (difficulty) => set({ difficulty }),
+  setMaterialBatch: (materialBatch) => set({ materialBatch }),
 }))

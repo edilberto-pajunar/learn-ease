@@ -5,7 +5,7 @@ import { useReadStore } from '@/hooks/useReadStore'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Question } from '@/interface/material'
-import { useSearchParams, useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 
 interface QuestionCardProps {
   questions: Question[]
@@ -19,7 +19,6 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
   totalQuestions,
 }) => {
   const searchParams = useSearchParams()
-  const router = useRouter()
   const testType = searchParams.get('testType') || 'pre_test'
 
   const {
@@ -33,10 +32,13 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
     setIndexMaterial,
     setDuration,
     clearMiscues,
+    materialBatch,
+    setScore,
   } = useReadStore()
   const [selectedAnswer, setSelectedAnswer] = useState<string>('')
   const [showFeedback, setShowFeedback] = useState(false)
   const [isCorrect, setIsCorrect] = useState(false)
+  const router = useRouter()
 
   const currentQuestion = questions[indexQuestion]
   const hasSubmission = currentAnswers.length > indexQuestion
@@ -45,6 +47,9 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
     if (!selectedAnswer) return
 
     const correct = selectedAnswer === currentQuestion.answer
+    if (correct) {
+      setScore()
+    }
     setIsCorrect(correct)
     setShowFeedback(true)
 
@@ -69,7 +74,10 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
           } else {
             // All materials completed - redirect to scores page
             console.log('All materials completed! Redirecting to scores...')
-            router.push('/student/reading/score')
+            console.log('Material Batch: ', materialBatch)
+            router.push(`/student/reading/score/${materialBatch}`)
+
+            // router.push('/student/reading/score')
           }
         } catch (error) {
           console.error('Error submitting answers:', error)

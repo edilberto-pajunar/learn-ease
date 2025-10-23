@@ -1,7 +1,7 @@
 import { Timestamp } from 'firebase/firestore'
 
 interface Submission {
-  id: string
+  id: string | null
   answers: string[]
   materialId: string
   score: number
@@ -13,7 +13,7 @@ interface Submission {
   duration: number
   mode: string
   testType: string // pre_test or post_test,
-  totalQuestions: number
+  materialBatch: string | null
 }
 
 interface RecordTime {

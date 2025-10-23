@@ -7,6 +7,19 @@ interface SubmissionCardProps {
   materialText: string
 }
 
+// Helper function to format duration
+const formatDuration = (seconds: number): string => {
+  if (seconds < 60) {
+    return `${Math.round(seconds)} seconds`
+  } else {
+    const minutes = Math.floor(seconds / 60)
+    const remainingSeconds = Math.round(seconds % 60)
+    return remainingSeconds > 0
+      ? `${minutes} minutes ${remainingSeconds} seconds`
+      : `${minutes} minutes`
+  }
+}
+
 // Helper function to calculate reading level based on questionnaire performance
 const calculateReadingLevel = (
   score: number,
@@ -16,6 +29,7 @@ const calculateReadingLevel = (
   color: string
   bgColor: string
   borderColor: string
+  percentage: number
 } => {
   const percentage = (score / totalQuestions) * 100
 
@@ -25,6 +39,7 @@ const calculateReadingLevel = (
       color: 'text-green-600',
       bgColor: 'bg-green-50',
       borderColor: 'border-green-200',
+      percentage: percentage,
     }
   } else if (percentage >= 60) {
     return {
@@ -32,6 +47,7 @@ const calculateReadingLevel = (
       color: 'text-yellow-600',
       bgColor: 'bg-yellow-50',
       borderColor: 'border-yellow-200',
+      percentage: percentage,
     }
   } else {
     return {
@@ -39,6 +55,7 @@ const calculateReadingLevel = (
       color: 'text-red-600',
       bgColor: 'bg-red-50',
       borderColor: 'border-red-200',
+      percentage: percentage,
     }
   }
 }
@@ -48,7 +65,7 @@ export default function SubmissionCard(props: SubmissionCardProps) {
 
   const readingLevel = calculateReadingLevel(
     submission.score,
-    submission.totalQuestions,
+    submission.answers.length,
   )
 
   return (
@@ -79,7 +96,11 @@ export default function SubmissionCard(props: SubmissionCardProps) {
                 </h2>
                 <p className="text-sm text-muted-foreground">
                   Submitted on{' '}
-                  {submission.submittedAt.toDate().toLocaleDateString()}
+                  {submission.submittedAt.toDate().toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                  })}
                 </p>
               </div>
             </div>
@@ -87,9 +108,9 @@ export default function SubmissionCard(props: SubmissionCardProps) {
 
           {/* Score and Level */}
           <div className="text-right">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl shadow-xl shadow-blue-500/25 mb-2">
-              <span className="text-2xl font-bold text-white">
-                {submission.score}%
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl shadow-xl shadow-blue-500/25 mb-2 mr-2">
+              <span className="text-xl font-bold text-white">
+                {Math.round(readingLevel.percentage)}%
               </span>
             </div>
             <div
@@ -98,6 +119,9 @@ export default function SubmissionCard(props: SubmissionCardProps) {
               <span className={`text-sm font-semibold ${readingLevel.color}`}>
                 {readingLevel.level} Level
               </span>
+            </div>
+            <div className="text-xs text-muted-foreground mt-1">
+              {submission.score}/{submission.answers.length} correct
             </div>
           </div>
         </div>
@@ -115,10 +139,10 @@ export default function SubmissionCard(props: SubmissionCardProps) {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
           <div className="text-center p-3 bg-blue-50 rounded-lg border border-blue-200">
             <div className="text-lg font-bold text-blue-600">
-              {Math.round(submission.duration)}s
+              {formatDuration(submission.duration)}
             </div>
             <div className="text-xs text-blue-600 font-medium">Duration</div>
           </div>
@@ -131,10 +155,16 @@ export default function SubmissionCard(props: SubmissionCardProps) {
           <div className="text-center p-3 bg-purple-50 rounded-lg border border-purple-200">
             <div className="text-lg font-bold text-purple-600">
               {Math.round(
-                (submission.numberOfWords / submission.duration) * 60,
+                submission.numberOfWords / (submission.duration / 60),
               )}
             </div>
             <div className="text-xs text-purple-600 font-medium">WPM</div>
+          </div>
+          <div className="text-center p-3 bg-indigo-50 rounded-lg border border-indigo-200">
+            <div className="text-lg font-bold text-indigo-600">
+              {submission.score}
+            </div>
+            <div className="text-xs text-indigo-600 font-medium">Score</div>
           </div>
           <div className="text-center p-3 bg-orange-50 rounded-lg border border-orange-200">
             <div className="text-lg font-bold text-orange-600">

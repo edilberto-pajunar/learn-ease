@@ -1,18 +1,39 @@
-import { db } from "@/firebase/client_app";
-import { Submission } from "@/interface/submission";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { db } from '@/firebase/client_app'
+import { Submission } from '@/interface/submission'
+import { collection, getDocs, query, where } from 'firebase/firestore'
 
 export const submissionService = {
-    async getSubmissions(studentId: string) {
-        try {
-            const ref = collection(db, "submissions");
-            const q = query(ref, where("studentId", "==", studentId));
-            const querySnapshot = await getDocs(q);
+  async getSubmissions(studentId: string) {
+    try {
+      const ref = collection(db, 'submissions')
+      const q = query(ref, where('studentId', '==', studentId))
+      const querySnapshot = await getDocs(q)
 
-            const submissions = querySnapshot.docs.map((doc) => (doc.data()) as Submission);
-            return submissions;
-        } catch (e) {
-            console.log("Error getting scores: ", e);
-        }
+      const submissions = querySnapshot.docs.map(
+        (doc) => doc.data() as Submission,
+      )
+      return submissions
+    } catch (e) {
+      console.log('Error getting scores: ', e)
     }
+  },
+
+  async getSubmissionsByBatch(studentId: string, materialBatch: string) {
+    try {
+      const ref = collection(db, 'submissions')
+      const q = query(
+        ref,
+        where('studentId', '==', studentId),
+        where('materialBatch', '==', materialBatch),
+      )
+      const querySnapshot = await getDocs(q)
+
+      const submissions = querySnapshot.docs.map(
+        (doc) => doc.data() as Submission,
+      )
+      return submissions
+    } catch (e) {
+      console.log('Error getting batch submissions: ', e)
+    }
+  },
 }
