@@ -90,7 +90,7 @@ export const useReadStore = create<ReadStore>((set, get) => ({
       currentAnswers: [...state.currentAnswers, word],
     }))
   },
-  submitAnswer: async (studentId, testType, totalQuestions) => {
+  submitAnswer: async (studentId, testType) => {
     const {
       indexMaterial,
       materials,
@@ -119,7 +119,6 @@ export const useReadStore = create<ReadStore>((set, get) => ({
         miscues: miscues,
         mode: material.mode,
         testType: testType,
-        totalQuestions: totalQuestions,
         materialBatch: materialBatch,
       }
       console.log(`Submission: ${JSON.stringify(submission)}`)
