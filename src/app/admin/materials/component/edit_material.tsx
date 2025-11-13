@@ -156,6 +156,20 @@ export default function EditMaterial({
                     />
                   </div>
                   <div>
+                    <Label>Question Type</Label>
+                    <select
+                      value={question.type || ''}
+                      onChange={(e) =>
+                        updateQuestion(index, 'type', e.target.value)
+                      }
+                      className="w-full p-2 border border-gray-300 rounded-md"
+                    >
+                      <option value="">Select question type</option>
+                      <option value="COMPREHENSION">Comprehension</option>
+                      <option value="VOCABULARY">Vocabulary</option>
+                    </select>
+                  </div>
+                  <div>
                     <Label>Options</Label>
                     {question.options.map(
                       (option: string, optionIndex: number) => (

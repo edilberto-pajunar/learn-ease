@@ -133,12 +133,17 @@ export default function MaterialsPage() {
           title: '',
           options: ['', '', '', ''],
           answer: '',
+          type: '',
         },
       ],
     }))
   }
 
-  const updateQuestion = (index: number, field: keyof Question, value: any) => {
+  const updateQuestion = (
+    index: number,
+    field: keyof Question,
+    value: string | string[],
+  ) => {
     setFormData((prev) => ({
       ...prev,
       questions: prev.questions.map((q, i) =>

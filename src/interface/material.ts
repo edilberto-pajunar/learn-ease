@@ -13,6 +13,7 @@ interface Question {
   title: string
   options: string[]
   answer: string
+  type: string // COMPREHENSION or VOCABULARY
 }
 
 export type { Material, Question }
