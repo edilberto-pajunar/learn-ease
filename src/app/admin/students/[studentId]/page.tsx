@@ -82,7 +82,7 @@ const AdminStudentPage = ({
                         </div>
                         <div className="text-right">
                           <p className="text-lg font-semibold text-gray-800">
-                            Score: {submission.score}
+                            Score: {submission.comprehensionScore + submission.vocabularyScore}
                           </p>
                           <p className="text-sm text-gray-600">
                             Mode: {submission.mode}
