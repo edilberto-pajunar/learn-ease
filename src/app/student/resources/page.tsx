@@ -383,7 +383,7 @@ export default function ResourcesPage() {
             No resources found
           </h3>
           <p className="text-gray-600">
-            Try adjusting your search terms or filters to find what you're
+            Try adjusting your search terms or filters to find what you are
             looking for.
           </p>
         </div>

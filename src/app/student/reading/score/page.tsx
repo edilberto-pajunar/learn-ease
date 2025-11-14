@@ -116,15 +116,12 @@ const ScorePage = () => {
       submission.materialId,
     )
     if (!material) return null
-    const materialTitle = material?.title || `Material ${submission.materialId}`
-    const materialText = material?.text || 'No content available'
 
     return (
       <SubmissionCard
         key={submission.id}
         submission={submission}
-        materialTitle={materialTitle}
-        materialText={materialText}
+        material={material}
       />
     )
   }

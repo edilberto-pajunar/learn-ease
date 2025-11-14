@@ -10,13 +10,11 @@ import { useRouter, useSearchParams } from 'next/navigation'
 interface QuestionCardProps {
   questions: Question[]
   studentId: string
-  totalQuestions: number
 }
 
 const QuestionCard: React.FC<QuestionCardProps> = ({
   questions,
   studentId,
-  totalQuestions,
 }) => {
   const searchParams = useSearchParams()
   const testType = searchParams.get('testType') || 'pre_test'
@@ -33,7 +31,8 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
     setDuration,
     clearMiscues,
     materialBatch,
-    setScore,
+    setComprehensionScore,
+    setVocabularyScore,
   } = useReadStore()
   const [selectedAnswer, setSelectedAnswer] = useState<string>('')
   const [showFeedback, setShowFeedback] = useState(false)
@@ -43,12 +42,18 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
   const currentQuestion = questions[indexQuestion]
   const hasSubmission = currentAnswers.length > indexQuestion
 
+  const totalQuestions = questions.length
+
   const handleAnswerSubmit = () => {
     if (!selectedAnswer) return
 
     const correct = selectedAnswer === currentQuestion.answer
     if (correct) {
-      setScore()
+      if (currentQuestion.type === 'COMPREHENSION') {
+        setComprehensionScore()
+      } else if (currentQuestion.type === 'VOCABULARY') {
+        setVocabularyScore()
+      }
     }
     setIsCorrect(correct)
     setShowFeedback(true)

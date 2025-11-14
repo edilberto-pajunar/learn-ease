@@ -1,10 +1,10 @@
 import { Card, CardContent } from '@/components/ui/card'
+import { Material } from '@/interface/material'
 import { Submission } from '@/interface/submission'
 
 interface SubmissionCardProps {
   submission: Submission
-  materialTitle: string
-  materialText: string
+  material: Material
 }
 
 // Helper function to format duration
@@ -22,7 +22,8 @@ const formatDuration = (seconds: number): string => {
 
 // Helper function to calculate reading level based on questionnaire performance
 const calculateReadingLevel = (
-  score: number,
+  comprehensionScore: number,
+  vocabularyScore: number,
   totalQuestions: number,
 ): {
   level: string
@@ -31,7 +32,8 @@ const calculateReadingLevel = (
   borderColor: string
   percentage: number
 } => {
-  const percentage = (score / totalQuestions) * 100
+  const percentage =
+    ((comprehensionScore + vocabularyScore) / totalQuestions) * 100
 
   if (percentage >= 80) {
     return {
@@ -61,10 +63,14 @@ const calculateReadingLevel = (
 }
 
 export default function SubmissionCard(props: SubmissionCardProps) {
-  const { submission, materialTitle, materialText } = props
+  const { submission, material } = props
+
+  const materialTitle = material?.title || `Material ${submission.materialId}`
+  const materialText = material?.text || 'No content available'
 
   const readingLevel = calculateReadingLevel(
-    submission.score,
+    submission.comprehensionScore,
+    submission.vocabularyScore,
     submission.answers.length,
   )
 
@@ -121,7 +127,8 @@ export default function SubmissionCard(props: SubmissionCardProps) {
               </span>
             </div>
             <div className="text-xs text-muted-foreground mt-1">
-              {submission.score}/{submission.answers.length} correct
+              {submission.comprehensionScore + submission.vocabularyScore}/
+              {submission.answers.length} correct
             </div>
           </div>
         </div>
@@ -154,17 +161,19 @@ export default function SubmissionCard(props: SubmissionCardProps) {
           </div>
           <div className="text-center p-3 bg-purple-50 rounded-lg border border-purple-200">
             <div className="text-lg font-bold text-purple-600">
-              {Math.round(
-                submission.numberOfWords / (submission.duration / 60),
-              )}
+              {submission.comprehensionScore}
             </div>
-            <div className="text-xs text-purple-600 font-medium">WPM</div>
+            <div className="text-xs text-purple-600 font-medium">
+              Comprehension Score
+            </div>
           </div>
           <div className="text-center p-3 bg-indigo-50 rounded-lg border border-indigo-200">
             <div className="text-lg font-bold text-indigo-600">
-              {submission.score}
+              {submission.vocabularyScore}
             </div>
-            <div className="text-xs text-indigo-600 font-medium">Score</div>
+            <div className="text-xs text-indigo-600 font-medium">
+              Vocabulary Score
+            </div>
           </div>
           <div className="text-center p-3 bg-orange-50 rounded-lg border border-orange-200">
             <div className="text-lg font-bold text-orange-600">

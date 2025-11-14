@@ -65,15 +65,12 @@ export default function ScorePage({
       submission.materialId,
     )
     if (!material) return null
-    const materialTitle = material?.title || `Material ${submission.materialId}`
-    const materialText = material?.text || 'No content available'
 
     return (
       <SubmissionCard
         key={submission.id}
         submission={submission}
-        materialTitle={materialTitle}
-        materialText={materialText}
+        material={material}
       />
     )
   }
@@ -181,25 +178,6 @@ export default function ScorePage({
 
               {/* Action Buttons */}
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button
-                  className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700"
-                  onClick={() => window.history.back()}
-                >
-                  <svg
-                    className="w-4 h-4 mr-2"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M10 19l-7-7m0 0l7-7m-7 7h18"
-                    />
-                  </svg>
-                  Back to Results
-                </Button>
                 <Button
                   variant="outline"
                   className="border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300"

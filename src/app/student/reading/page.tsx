@@ -297,11 +297,11 @@ const ReadingPage: FC = () => {
                     d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                   />
                 </svg>
-                Comprehension Questions
+                Questions
               </h2>
               <p className="text-muted-foreground">
                 Answer the following questions to test your understanding of the
-                reading passage.
+                reading passage. This will test your comprehension and vocabulary of the reading passage
               </p>
             </div>
 
@@ -309,7 +309,6 @@ const ReadingPage: FC = () => {
               <QuestionCard
                 questions={material.questions}
                 studentId={studentId!}
-                totalQuestions={material.questions.length}
               />
             ) : (
               <div className="text-center py-8">
@@ -333,7 +332,7 @@ const ReadingPage: FC = () => {
                 </h3>
                 <p className="text-muted-foreground">
                   Please finish reading the passage before attempting the
-                  comprehension questions.
+                  questions.
                 </p>
               </div>
             )}

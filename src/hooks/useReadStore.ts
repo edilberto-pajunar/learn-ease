@@ -28,7 +28,8 @@ interface ReadStore {
   currentAnswers: string[]
   duration: number | null
   miscues: string[]
-  score: number
+  comprehensionScore: number
+  vocabularyScore: number
   difficulty: string
   materialBatch: string | null
   setLoading: (value: boolean) => void
@@ -44,7 +45,8 @@ interface ReadStore {
     testType: string,
     totalQuestions: number,
   ) => Promise<void>
-  setScore: () => void
+  setComprehensionScore: () => void
+  setVocabularyScore: () => void
   resetScore: () => void
   resetAll: () => void
   setDifficulty: (difficulty: string) => void
@@ -60,7 +62,8 @@ export const useReadStore = create<ReadStore>((set, get) => ({
   currentAnswers: [],
   duration: 0,
   miscues: [],
-  score: 0,
+  comprehensionScore: 0,
+  vocabularyScore: 0,
   difficulty: '',
   materialBatch: null,
   setLoading: (value) => set({ isLoading: value }),
@@ -98,7 +101,8 @@ export const useReadStore = create<ReadStore>((set, get) => ({
       duration,
       setLoading,
       miscues,
-      score,
+      comprehensionScore,
+      vocabularyScore,
       materialBatch,
     } = get()
     const material = materials[indexMaterial]
@@ -110,7 +114,8 @@ export const useReadStore = create<ReadStore>((set, get) => ({
         id: null,
         answers: currentAnswers,
         materialId: material.id,
-        score: score,
+        comprehensionScore: comprehensionScore,
+        vocabularyScore: vocabularyScore,
         studentId: studentId,
         submittedAt: Timestamp.now(),
         numberOfWords: numberOfWords,
@@ -126,7 +131,8 @@ export const useReadStore = create<ReadStore>((set, get) => ({
       await readingService.submitAnswer(submission)
       set({
         currentAnswers: [],
-        score: 0,
+        comprehensionScore: 0,
+        vocabularyScore: 0,
         isLoading: false,
         duration: null,
         miscues: [],
@@ -147,8 +153,10 @@ export const useReadStore = create<ReadStore>((set, get) => ({
   },
   clearMiscues: () => set({ miscues: [] }),
   setDuration: (duration) => set({ duration }),
-  setScore: () => set({ score: get().score + 1 }),
-  resetScore: () => set({ score: 0 }),
+  setComprehensionScore: () =>
+    set({ comprehensionScore: get().comprehensionScore + 1 }),
+  setVocabularyScore: () => set({ vocabularyScore: get().vocabularyScore + 1 }),
+  resetScore: () => set({ comprehensionScore: 0, vocabularyScore: 0 }),
   resetAll: () =>
     set({
       indexMaterial: 0,
@@ -156,7 +164,8 @@ export const useReadStore = create<ReadStore>((set, get) => ({
       currentAnswers: [],
       duration: null,
       miscues: [],
-      score: 0,
+      comprehensionScore: 0,
+      vocabularyScore: 0,
     }),
   setDifficulty: (difficulty) => set({ difficulty }),
   setMaterialBatch: (materialBatch) => set({ materialBatch }),

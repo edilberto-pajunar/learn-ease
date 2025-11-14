@@ -4,7 +4,8 @@ interface Submission {
   id: string | null
   answers: string[]
   materialId: string
-  score: number
+  comprehensionScore: number
+  vocabularyScore: number
   studentId: string
   submittedAt: Timestamp
   recordTime: Record<string, string>

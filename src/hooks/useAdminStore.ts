@@ -4,13 +4,14 @@ import { db } from '@/firebase/client_app'
 import { collection, getDocs, query, where } from 'firebase/firestore'
 import { Material } from '@/interface/material'
 import { adminService } from '@/services/adminService'
+import { Skill } from '@/interface/skill'
 
 interface AdminState {
   students: AppUser[]
   materials: Material[]
   quarter: string
   loading: boolean
-  skills: any[]
+  skills: Skill[]
   setStudents: () => void
   setMaterials: () => () => void
   toggleQuarter: (quarter: string) => void

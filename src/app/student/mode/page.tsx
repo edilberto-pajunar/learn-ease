@@ -78,7 +78,7 @@ function ModePage() {
           </h1>
 
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Select whether you're taking a pre-test to assess your current
+            Select whether you are taking a pre-test to assess your current
             knowledge or a post-test to measure your progress
           </p>
         </div>
