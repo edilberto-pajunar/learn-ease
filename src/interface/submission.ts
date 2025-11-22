@@ -1,8 +1,14 @@
 import { Timestamp } from 'firebase/firestore'
 
+interface Answer {
+  answer: string
+  type: string
+  isCorrect: boolean
+}
+
 interface Submission {
   id: string | null
-  answers: string[]
+  answers: Answer[]
   materialId: string
   comprehensionScore: number
   vocabularyScore: number
@@ -22,4 +28,4 @@ interface RecordTime {
   endTime: Date
 }
 
-export type { Submission, RecordTime }
+export type { Submission, RecordTime, Answer }

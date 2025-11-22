@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Question } from '@/interface/material'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { Answer } from '@/interface/submission'
 
 interface QuestionCardProps {
   questions: Question[]
@@ -34,7 +35,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
     setComprehensionScore,
     setVocabularyScore,
   } = useReadStore()
-  const [selectedAnswer, setSelectedAnswer] = useState<string>('')
+  const [selectedAnswer, setSelectedAnswer] = useState<Answer | null>(null)
   const [showFeedback, setShowFeedback] = useState(false)
   const [isCorrect, setIsCorrect] = useState(false)
   const router = useRouter()
@@ -47,7 +48,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
   const handleAnswerSubmit = () => {
     if (!selectedAnswer) return
 
-    const correct = selectedAnswer === currentQuestion.answer
+    const correct = selectedAnswer.answer === currentQuestion.answer
     if (correct) {
       if (currentQuestion.type === 'COMPREHENSION') {
         setComprehensionScore()
@@ -59,6 +60,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
     setShowFeedback(true)
 
     setCurrentAnswers(selectedAnswer)
+    console.log(selectedAnswer)
 
     // Check if this is the last question
     if (indexQuestion === questions.length - 1) {
@@ -71,28 +73,23 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
           if (indexMaterial < materials.length - 1) {
             setIndexMaterial(indexMaterial + 1)
             setIndexQuestion(0)
-            setSelectedAnswer('')
+            setSelectedAnswer(null)
             setShowFeedback(false)
-            // Reset reading state for next material
             setDuration(null)
             clearMiscues()
           } else {
-            // All materials completed - redirect to scores page
             console.log('All materials completed! Redirecting to scores...')
             console.log('Material Batch: ', materialBatch)
             router.push(`/student/reading/score/${materialBatch}`)
-
-            // router.push('/student/reading/score')
           }
         } catch (error) {
           console.error('Error submitting answers:', error)
         }
       }, 2000)
     } else {
-      // Auto-advance to next question after 2 seconds
       setTimeout(() => {
         setIndexQuestion(indexQuestion + 1)
-        setSelectedAnswer('')
+        setSelectedAnswer(null)
         setShowFeedback(false)
       }, 2000)
     }
@@ -118,7 +115,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
     if (questionIndex < currentAnswers.length) {
       const answer = currentAnswers[questionIndex]
       const question = questions[questionIndex]
-      return answer === question.answer ? 'correct' : 'incorrect'
+      return answer.answer === question.answer ? 'correct' : 'incorrect'
     }
     return 'unanswered'
   }
@@ -158,6 +155,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
             <h3 className="text-xl font-semibold text-foreground mb-4 leading-relaxed">
               {currentQuestion.title}
             </h3>
+            <p className="text-sm text-muted-foreground">{currentQuestion.type}</p>
           </div>
 
           {/* Answer Options */}
@@ -165,15 +163,22 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
             {currentQuestion.options.map((option, index) => (
               <button
                 key={index}
-                onClick={() => !hasSubmission && setSelectedAnswer(option)}
+                onClick={() =>
+                  !hasSubmission &&
+                  setSelectedAnswer({
+                    answer: option,
+                    type: currentQuestion.type,
+                    isCorrect: option === currentQuestion.answer,
+                  })
+                }
                 disabled={hasSubmission}
                 className={`w-full p-4 text-left rounded-lg border-2 transition-all duration-200 ${
-                  selectedAnswer === option
+                  selectedAnswer?.answer === option
                     ? 'border-blue-500 bg-blue-50 text-blue-800'
                     : hasSubmission && option === currentQuestion.answer
                       ? 'border-green-500 bg-green-50 text-green-800'
                       : hasSubmission &&
-                          option === selectedAnswer &&
+                          option === selectedAnswer?.answer &&
                           option !== currentQuestion.answer
                         ? 'border-red-500 bg-red-50 text-red-800'
                         : 'border-border hover:border-blue-300 hover:bg-accent/50'
@@ -182,18 +187,18 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
                 <div className="flex items-center gap-3">
                   <div
                     className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
-                      selectedAnswer === option
+                      selectedAnswer?.answer === option
                         ? 'border-blue-500 bg-blue-500 text-white'
                         : hasSubmission && option === currentQuestion.answer
                           ? 'border-green-500 bg-green-500 text-white'
                           : hasSubmission &&
-                              option === selectedAnswer &&
+                              option === selectedAnswer?.answer &&
                               option !== currentQuestion.answer
                             ? 'border-red-500 bg-red-500 text-white'
                             : 'border-border bg-background'
                     }`}
                   >
-                    {selectedAnswer === option && (
+                    {selectedAnswer?.answer === option && (
                       <svg
                         className="w-4 h-4"
                         fill="none"
@@ -224,7 +229,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
                       </svg>
                     )}
                     {hasSubmission &&
-                      option === selectedAnswer &&
+                      option === selectedAnswer?.answer &&
                       option !== currentQuestion.answer && (
                         <svg
                           className="w-4 h-4"

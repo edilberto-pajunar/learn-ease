@@ -6,7 +6,7 @@ import { Material } from '@/interface/material'
 import { readingService } from '@/services/readingService'
 import { collection, onSnapshot, Timestamp } from 'firebase/firestore'
 import { create } from 'zustand'
-import { Submission } from '@/interface/submission'
+import { Answer, Submission } from '@/interface/submission'
 
 // enum ComprehensionStatus {
 //   NOT_STARTED = 'NOT_STARTED',
@@ -25,7 +25,7 @@ interface ReadStore {
   materials: Material[]
   indexMaterial: number
   indexQuestion: number
-  currentAnswers: string[]
+  currentAnswers: Answer[]
   duration: number | null
   miscues: string[]
   comprehensionScore: number
@@ -36,7 +36,7 @@ interface ReadStore {
   fetchMaterials: (quarter: string) => void
   setIndexMaterial: (indexMaterial: number) => void
   setIndexQuestion: (indexQuestion: number) => void
-  setCurrentAnswers: (word: string) => void
+  setCurrentAnswers: (answer: Answer) => void
   setDuration: (time: number | null) => void
   setMiscues: (word: string) => void
   clearMiscues: () => void
@@ -88,9 +88,9 @@ export const useReadStore = create<ReadStore>((set, get) => ({
       set({ indexQuestion: 0 })
     }
   },
-  setCurrentAnswers: (word: string) => {
+  setCurrentAnswers: (answer: Answer) => {
     set((state) => ({
-      currentAnswers: [...state.currentAnswers, word],
+      currentAnswers: [...state.currentAnswers, answer],
     }))
   },
   submitAnswer: async (studentId, testType) => {

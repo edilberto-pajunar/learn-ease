@@ -106,6 +106,10 @@ const TimeCard: React.FC<TimeCardProps> = ({ material }) => {
               Read the passage at your own pace. Tap any words you mispronounce
               or struggle with.
             </p>
+            <p className="text-muted-foreground">
+              Once finished, it will hide the reading material so make sure to
+              read and analyze it carefully.
+            </p>
           </div>
 
           {/* Reading Controls */}

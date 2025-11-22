@@ -19,6 +19,9 @@ import { useAuthStore } from '@/hooks/useAuthStore'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Toaster, toast } from 'sonner'
+import { TestTypeTab, useDashboardStore } from '@/hooks/useDashboardStore'
+import ScoreCard from '../ScoreCard'
+import { useRouter } from 'next/navigation'
 
 const chartConfig = {
   desktop: {
@@ -33,10 +36,24 @@ const chartConfig = {
 
 function StudentProgressChart() {
   const { fetchSubmissions, submissions } = useSubmissionStore()
+  const router = useRouter()
+  const {
+    preTestComprehensionScore,
+    preTestVocabularyScore,
+    preTestAccuracy,
+    preTestWPM,
+    preTestAverageScore,
+    postTestComprehensionScore,
+    postTestVocabularyScore,
+    postTestAccuracy,
+    postTestWPM,
+    postTestAverageScore,
+    testTypeTab,
+    setPreTestScore,
+    setPostTestScore,
+    setTestTypeTab,
+  } = useDashboardStore()
   const { user } = useAuthStore()
-  const [activeTab, setActiveTab] = useState<'pre_test' | 'post_test'>(
-    'pre_test',
-  )
 
   useEffect(() => {
     if (user?.id) {
@@ -44,51 +61,19 @@ function StudentProgressChart() {
     }
   }, [user?.id, fetchSubmissions])
 
+  useEffect(() => {
+    const filteredSubmissions = submissions.filter(
+      (sub) => sub.testType === testTypeTab,
+    )
+    setPreTestScore(filteredSubmissions)
+    setPostTestScore(filteredSubmissions)
+  }, [submissions, testTypeTab, setPreTestScore, setPostTestScore])
+
   // Filter submissions by active tab
+  // if [pre_test] or [post_test]
   const filteredSubmissions = submissions.filter(
-    (sub) => sub.testType === activeTab,
+    (sub) => sub.testType === testTypeTab,
   )
-
-  // Calculate statistics for the active tab
-  const stats = filteredSubmissions.reduce(
-    (acc, submission) => {
-      acc.totalScore +=
-        submission.comprehensionScore + submission.vocabularyScore || 0
-      acc.totalQuestions += submission.answers.length || 0
-      acc.totalWords += submission.numberOfWords || 0
-      acc.totalDuration += submission.duration || 0
-      acc.totalMiscues += Array.isArray(submission.miscues)
-        ? submission.miscues.length
-        : 0
-      return acc
-    },
-    {
-      totalScore: 0,
-      totalQuestions: 0,
-      totalWords: 0,
-      totalDuration: 0,
-      totalMiscues: 0,
-    },
-  )
-
-  // Calculate averages
-  const averageScore =
-    filteredSubmissions.length > 0
-      ? Math.round((stats.totalScore / stats.totalQuestions) * 100)
-      : 0
-  const averageWordsPerMinute =
-    filteredSubmissions.length > 0
-      ? Math.round((stats.totalWords / stats.totalDuration) * 60)
-      : 0
-  const averageAccuracy =
-    filteredSubmissions.length > 0
-      ? Math.round(
-          ((stats.totalQuestions - stats.totalMiscues) / stats.totalQuestions) *
-            100,
-        )
-      : 0
-
-  // Group submissions by materialId and prepare comparison data
   const materialGroups = filteredSubmissions.reduce(
     (acc, submission) => {
       const materialId = submission.materialId
@@ -146,154 +131,6 @@ function StudentProgressChart() {
     wordsRead: submission.numberOfWords || 0,
   }))
 
-  // Overall progress comparison (pre-test vs post-test)
-  const overallProgress = submissions.reduce(
-    (acc, submission) => {
-      if (submission.testType === 'pre_test') {
-        acc.preTestScore +=
-          submission.comprehensionScore + submission.vocabularyScore || 0
-        acc.preTestComprehensionScore += submission.comprehensionScore || 0
-        acc.preTestVocabularyScore += submission.vocabularyScore || 0
-        acc.preTestQuestions += submission.answers.length || 0
-        acc.preTestDuration += submission.duration || 0
-        acc.preTestWords += submission.numberOfWords || 0
-        acc.preTestMiscues += Array.isArray(submission.miscues)
-          ? submission.miscues.length
-          : 0
-        acc.preTestCount += 1
-      } else if (submission.testType === 'post_test') {
-        acc.postTestScore +=
-          submission.comprehensionScore + submission.vocabularyScore || 0
-        acc.postTestComprehensionScore += submission.comprehensionScore || 0
-        acc.postTestVocabularyScore += submission.vocabularyScore || 0
-        acc.postTestQuestions += submission.answers.length || 0
-        acc.postTestDuration += submission.duration || 0
-        acc.postTestWords += submission.numberOfWords || 0
-        acc.postTestMiscues += Array.isArray(submission.miscues)
-          ? submission.miscues.length
-          : 0
-        acc.postTestCount += 1
-      }
-      return acc
-    },
-    {
-      preTestScore: 0,
-      preTestComprehensionScore: 0,
-      preTestVocabularyScore: 0,
-      preTestQuestions: 0,
-      preTestDuration: 0,
-      preTestWords: 0,
-      preTestMiscues: 0,
-      preTestCount: 0,
-      postTestScore: 0,
-      postTestComprehensionScore: 0,
-      postTestVocabularyScore: 0,
-      postTestQuestions: 0,
-      postTestDuration: 0,
-      postTestWords: 0,
-      postTestMiscues: 0,
-      postTestCount: 0,
-    },
-  )
-
-  const preTestAverage =
-    overallProgress.preTestQuestions > 0
-      ? Math.round(
-          (overallProgress.preTestScore / overallProgress.preTestQuestions) *
-            100,
-        )
-      : 0
-  const postTestAverage =
-    overallProgress.postTestQuestions > 0
-      ? Math.round(
-          (overallProgress.postTestScore / overallProgress.postTestQuestions) *
-            100,
-        )
-      : 0
-  const improvement =
-    overallProgress.postTestQuestions > 0
-      ? postTestAverage - preTestAverage
-      : null
-
-  // Speed calculations
-  const preTestWPM =
-    overallProgress.preTestDuration > 0
-      ? Math.round(
-          (overallProgress.preTestWords / overallProgress.preTestDuration) * 60,
-        )
-      : 0
-  const postTestWPM =
-    overallProgress.postTestDuration > 0
-      ? Math.round(
-          (overallProgress.postTestWords / overallProgress.postTestDuration) *
-            60,
-        )
-      : 0
-  const speedImprovement =
-    overallProgress.postTestDuration > 0 ? postTestWPM - preTestWPM : null
-
-  // Accuracy calculations
-  const preTestAccuracy =
-    overallProgress.preTestQuestions > 0
-      ? Math.round(
-          ((overallProgress.preTestQuestions - overallProgress.preTestMiscues) /
-            overallProgress.preTestQuestions) *
-            100,
-        )
-      : 0
-  const postTestAccuracy =
-    overallProgress.postTestQuestions > 0
-      ? Math.round(
-          ((overallProgress.postTestQuestions -
-            overallProgress.postTestMiscues) /
-            overallProgress.postTestQuestions) *
-            100,
-        )
-      : 0
-  const accuracyImprovement =
-    overallProgress.postTestQuestions > 0
-      ? postTestAccuracy - preTestAccuracy
-      : null
-
-  // Comprehension score calculations
-  const preTestComprehensionAverage =
-    overallProgress.preTestCount > 0
-      ? Math.round(
-          overallProgress.preTestComprehensionScore /
-            overallProgress.preTestCount,
-        )
-      : 0
-  const postTestComprehensionAverage =
-    overallProgress.postTestCount > 0
-      ? Math.round(
-          overallProgress.postTestComprehensionScore /
-            overallProgress.postTestCount,
-        )
-      : 0
-  const comprehensionImprovement =
-    overallProgress.postTestCount > 0
-      ? postTestComprehensionAverage - preTestComprehensionAverage
-      : null
-
-  // Vocabulary score calculations
-  const preTestVocabularyAverage =
-    overallProgress.preTestCount > 0
-      ? Math.round(
-          overallProgress.preTestVocabularyScore / overallProgress.preTestCount,
-        )
-      : 0
-  const postTestVocabularyAverage =
-    overallProgress.postTestCount > 0
-      ? Math.round(
-          overallProgress.postTestVocabularyScore /
-            overallProgress.postTestCount,
-        )
-      : 0
-  const vocabularyImprovement =
-    overallProgress.postTestCount > 0
-      ? postTestVocabularyAverage - preTestVocabularyAverage
-      : null
-
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -325,10 +162,10 @@ function StudentProgressChart() {
       <div className="flex justify-center mb-8">
         <div className="bg-white/80 backdrop-blur-sm rounded-xl p-1 shadow-lg border border-gray-200">
           <Button
-            variant={activeTab === 'pre_test' ? 'default' : 'ghost'}
-            onClick={() => setActiveTab('pre_test')}
+            variant={testTypeTab === 'pre_test' ? 'default' : 'ghost'}
+            onClick={() => setTestTypeTab(TestTypeTab.PRE_TEST)}
             className={`px-6 py-2 rounded-lg transition-all duration-200 ${
-              activeTab === 'pre_test'
+              testTypeTab === 'pre_test'
                 ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg'
                 : 'text-gray-600 hover:text-gray-800'
             }`}
@@ -336,18 +173,18 @@ function StudentProgressChart() {
             📝 Pre-Test Results
           </Button>
           <Button
-            variant={activeTab === 'post_test' ? 'default' : 'ghost'}
+            variant={testTypeTab === 'post_test' ? 'default' : 'ghost'}
             onClick={
               filteredSubmissions.some(
                 (submission) => submission.testType === 'post_test',
               )
-                ? () => setActiveTab('post_test')
+                ? () => setTestTypeTab(TestTypeTab.POST_TEST)
                 : () => {
                     toast.error('No post-test results found')
                   }
             }
             className={`px-6 py-2 rounded-lg transition-all duration-200 ${
-              activeTab === 'post_test'
+              testTypeTab === 'post_test'
                 ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg'
                 : 'text-gray-600 hover:text-gray-800'
             }`}
@@ -377,7 +214,10 @@ function StudentProgressChart() {
               </svg>
             </div>
             <div className="text-2xl font-bold text-blue-600 mb-2">
-              {averageScore}%
+              {testTypeTab === TestTypeTab.PRE_TEST
+                ? preTestAverageScore
+                : postTestAverageScore}
+              %
             </div>
             <div className="text-sm text-blue-600 font-medium">
               Average Score
@@ -403,7 +243,7 @@ function StudentProgressChart() {
               </svg>
             </div>
             <div className="text-2xl font-bold text-green-600 mb-2">
-              {averageWordsPerMinute}
+              {testTypeTab === TestTypeTab.PRE_TEST ? preTestWPM : postTestWPM}
             </div>
             <div className="text-sm text-green-600 font-medium">
               Words per Minute
@@ -429,7 +269,10 @@ function StudentProgressChart() {
               </svg>
             </div>
             <div className="text-2xl font-bold text-purple-600 mb-2">
-              {averageAccuracy}%
+              {testTypeTab === TestTypeTab.PRE_TEST
+                ? preTestAccuracy
+                : postTestAccuracy}
+              %
             </div>
             <div className="text-sm text-purple-600 font-medium">
               Reading Accuracy
@@ -674,24 +517,18 @@ function StudentProgressChart() {
               </svg>
               Reading Speed (Words Per Minute)
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="text-center p-6 bg-blue-50 rounded-xl border border-blue-200">
-                <div className="text-3xl font-bold text-blue-600 mb-2">
-                  {preTestWPM}
-                </div>
-                <div className="text-sm text-blue-600 font-medium">
-                  Pre-test WPM
-                </div>
-              </div>
-              <div className="text-center p-6 bg-green-50 rounded-xl border border-green-200">
-                <div className="text-3xl font-bold text-green-600 mb-2">
-                  {postTestWPM}
-                </div>
-                <div className="text-sm text-green-600 font-medium">
-                  Post-test WPM
-                </div>
-              </div>
-              <div className="text-center p-6 bg-purple-50 rounded-xl border border-purple-200">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <ScoreCard
+                score={preTestWPM}
+                testTypeTab={TestTypeTab.PRE_TEST}
+                label="Reading Speed (Words Per Minute)"
+              />
+              <ScoreCard
+                score={postTestWPM}
+                testTypeTab={TestTypeTab.POST_TEST}
+                label="Reading Speed (Words Per Minute)"
+              />
+              {/* <div className="text-center p-6 bg-purple-50 rounded-xl border border-purple-200">
                 <div
                   className={`text-3xl font-bold mb-2 ${
                     speedImprovement === null
@@ -712,67 +549,7 @@ function StudentProgressChart() {
                       ? 'Speed Up ↑'
                       : 'Speed Change ↓'}
                 </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Reading Accuracy */}
-          <div className="mb-8">
-            <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-              <svg
-                className="w-5 h-5 text-orange-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-              Reading Accuracy (Fewer Miscues)
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="text-center p-6 bg-blue-50 rounded-xl border border-blue-200">
-                <div className="text-3xl font-bold text-blue-600 mb-2">
-                  {preTestAccuracy}%
-                </div>
-                <div className="text-sm text-blue-600 font-medium">
-                  Pre-test Accuracy
-                </div>
-              </div>
-              <div className="text-center p-6 bg-green-50 rounded-xl border border-green-200">
-                <div className="text-3xl font-bold text-green-600 mb-2">
-                  {postTestAccuracy}%
-                </div>
-                <div className="text-sm text-green-600 font-medium">
-                  Post-test Accuracy
-                </div>
-              </div>
-              <div className="text-center p-6 bg-purple-50 rounded-xl border border-purple-200">
-                <div
-                  className={`text-3xl font-bold mb-2 ${
-                    accuracyImprovement === null
-                      ? 'text-gray-500'
-                      : accuracyImprovement > 0
-                        ? 'text-green-600'
-                        : 'text-red-600'
-                  }`}
-                >
-                  {accuracyImprovement === null
-                    ? 'N/A'
-                    : `${accuracyImprovement > 0 ? '+' : ''}${accuracyImprovement}%`}
-                </div>
-                <div className="text-sm text-purple-600 font-medium">
-                  {accuracyImprovement === null
-                    ? 'No Post-test Data'
-                    : accuracyImprovement > 0
-                      ? 'More Accurate ↑'
-                      : 'Accuracy Change ↓'}
-                </div>
-              </div>
+              </div> */}
             </div>
           </div>
 
@@ -794,24 +571,18 @@ function StudentProgressChart() {
               </svg>
               Comprehension Scores
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="text-center p-6 bg-blue-50 rounded-xl border border-blue-200">
-                <div className="text-3xl font-bold text-blue-600 mb-2">
-                  {preTestComprehensionAverage}
-                </div>
-                <div className="text-sm text-blue-600 font-medium">
-                  Pre-test Average
-                </div>
-              </div>
-              <div className="text-center p-6 bg-green-50 rounded-xl border border-green-200">
-                <div className="text-3xl font-bold text-green-600 mb-2">
-                  {postTestComprehensionAverage}
-                </div>
-                <div className="text-sm text-green-600 font-medium">
-                  Post-test Average
-                </div>
-              </div>
-              <div className="text-center p-6 bg-purple-50 rounded-xl border border-purple-200">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <ScoreCard
+                score={preTestComprehensionScore}
+                testTypeTab={TestTypeTab.PRE_TEST}
+                label="Comprehension Average"
+              />
+              <ScoreCard
+                score={postTestComprehensionScore}
+                testTypeTab={TestTypeTab.POST_TEST}
+                label="Comprehension Average"
+              />
+              {/* <div className="text-center p-6 bg-purple-50 rounded-xl border border-purple-200">
                 <div
                   className={`text-3xl font-bold mb-2 ${
                     comprehensionImprovement === null
@@ -832,7 +603,7 @@ function StudentProgressChart() {
                       ? 'Improvement ↑'
                       : 'Change ↓'}
                 </div>
-              </div>
+              </div> */}
             </div>
           </div>
 
@@ -854,24 +625,18 @@ function StudentProgressChart() {
               </svg>
               Vocabulary Scores
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="text-center p-6 bg-blue-50 rounded-xl border border-blue-200">
-                <div className="text-3xl font-bold text-blue-600 mb-2">
-                  {preTestVocabularyAverage}
-                </div>
-                <div className="text-sm text-blue-600 font-medium">
-                  Pre-test Average
-                </div>
-              </div>
-              <div className="text-center p-6 bg-green-50 rounded-xl border border-green-200">
-                <div className="text-3xl font-bold text-green-600 mb-2">
-                  {postTestVocabularyAverage}
-                </div>
-                <div className="text-sm text-green-600 font-medium">
-                  Post-test Average
-                </div>
-              </div>
-              <div className="text-center p-6 bg-purple-50 rounded-xl border border-purple-200">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <ScoreCard
+                score={preTestVocabularyScore}
+                testTypeTab={TestTypeTab.PRE_TEST}
+                label="Vocabulary Average"
+              />
+              <ScoreCard
+                score={postTestVocabularyScore}
+                testTypeTab={TestTypeTab.POST_TEST}
+                label="Vocabulary Average"
+              />
+              {/* <div className="text-center p-6 bg-purple-50 rounded-xl border border-purple-200">
                 <div
                   className={`text-3xl font-bold mb-2 ${
                     vocabularyImprovement === null
@@ -892,7 +657,7 @@ function StudentProgressChart() {
                       ? 'Improvement ↑'
                       : 'Change ↓'}
                 </div>
-              </div>
+              </div> */}
             </div>
           </div>
         </CardContent>
@@ -918,14 +683,19 @@ function StudentProgressChart() {
               </svg>
             </div>
             <h3 className="text-xl font-semibold text-foreground mb-2">
-              No {activeTab === 'pre_test' ? 'Pre-test' : 'Post-test'} Data Yet
+              No{' '}
+              {testTypeTab === TestTypeTab.PRE_TEST ? 'Pre-test' : 'Post-test'}{' '}
+              Data Yet
             </h3>
             <p className="text-muted-foreground mb-6">
               Complete some{' '}
-              {activeTab === 'pre_test' ? 'pre-test' : 'post-test'} assessments
-              to see your progress here.
+              {testTypeTab === TestTypeTab.PRE_TEST ? 'pre-test' : 'post-test'}{' '}
+              assessments to see your progress here.
             </p>
-            <Button className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700">
+            <Button
+              onClick={() => router.push('/student/mode')}
+              className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700"
+            >
               Start Assessment
             </Button>
           </CardContent>

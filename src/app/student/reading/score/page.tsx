@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import SubmissionCard from './component/SubmissionCard'
 import { useAdminStore } from '@/hooks/useAdminStore'
 import { Material } from '@/interface/material'
+import { useRouter } from 'next/navigation'
 
 // 📊 Score Page for Multiple Materials
 const ScorePage = () => {
@@ -17,6 +18,7 @@ const ScorePage = () => {
   const { submissions, fetchSubmissions } = useSubmissionStore()
   const { materials, fetchMaterials } = useReadStore()
   const { quarter } = useAdminStore()
+  const router = useRouter()
 
   // State for toggling between pre-test and post-test views
   const [selectedTestType, setSelectedTestType] = useState<
@@ -181,7 +183,10 @@ const ScorePage = () => {
                 <p className="text-muted-foreground mb-6">
                   Complete some reading assessments to see your results here.
                 </p>
-                <Button className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700">
+                <Button
+                  onClick={() => router.push('/student/mode')}
+                  className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700"
+                >
                   Start Reading
                 </Button>
               </CardContent>
