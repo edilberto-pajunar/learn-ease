@@ -75,7 +75,7 @@ export const useAdminStore = create<AdminState>((set) => ({
   getSkills: async () => {
     try {
       const skills = await adminService.getSkills()
-      set({ skills })
+      set({ skills: skills as Skill[] })
     } catch (error) {
       console.error('Error fetching skills:', error)
     }
