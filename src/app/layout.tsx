@@ -19,6 +19,13 @@ export const metadata: Metadata = {
   title: 'T-BRITE',
   description:
     'Technology-Based Reading for Innovative Teaching and Engagement',
+  manifest: '/manifest.json',
+  themeColor: '#000000',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'T-BRITE',
+  },
 }
 
 export default function RootLayout({
