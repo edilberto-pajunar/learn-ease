@@ -28,6 +28,7 @@ export const useSubmissionStore = create<SubmissionStore>((set) => ({
   fetchSubmissions: async (studentId) => {
     const submissionsRef = collection(db, 'submissions')
     const q = query(submissionsRef, where('studentId', '==', studentId))
+    console.log(studentId)
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const submissions: Submission[] = snapshot.docs.map(

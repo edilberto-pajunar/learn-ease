@@ -5,6 +5,9 @@ import { collection, getDocs, query, where } from 'firebase/firestore'
 import { Material } from '@/interface/material'
 import { adminService } from '@/services/adminService'
 import { Skill } from '@/interface/skill'
+import { submissionService } from '@/services/submissionService'
+import { pdfService } from '@/services/pdfService'
+import { doc, getDoc } from 'firebase/firestore'
 
 interface AdminState {
   students: AppUser[]
@@ -12,6 +15,7 @@ interface AdminState {
   quarter: string
   loading: boolean
   skills: Skill[]
+  allMaterials: Material[]
   setStudents: () => void
   setMaterials: () => () => void
   toggleQuarter: (quarter: string) => void
@@ -20,6 +24,8 @@ interface AdminState {
   deleteMaterial: (id: string) => Promise<void>
   getQuarter: () => Promise<void>
   getSkills: () => Promise<void>
+  fetchAllMaterials: () => Promise<void>
+  exportAllSubmissions: (studentId: string) => Promise<void>
 }
 
 export const useAdminStore = create<AdminState>((set) => ({
@@ -28,6 +34,7 @@ export const useAdminStore = create<AdminState>((set) => ({
   loading: false,
   quarter: 'Q1',
   skills: [],
+  allMaterials: [],
   setStudents: async () => {
     try {
       const studentsRef = collection(db, 'users')
@@ -79,5 +86,44 @@ export const useAdminStore = create<AdminState>((set) => ({
     } catch (error) {
       console.error('Error fetching skills:', error)
     }
+  },
+  fetchAllMaterials: async () => {
+    const materialsRef = collection(db, 'materials')
+    const q = query(materialsRef)
+    const querySnapshot = await getDocs(q)
+    const materials = querySnapshot.docs.map((doc) => doc.data() as Material)
+    set({ allMaterials: materials })
+  },
+  exportAllSubmissions: async (studentId: string) => {
+    const submissions = await submissionService.getSubmissions(studentId)
+
+    let studentName = 'Unknown Student'
+    try {
+      const studentDoc = await getDoc(doc(db, 'users', studentId))
+      if (studentDoc.exists()) {
+        const studentData = studentDoc.data() as AppUser
+        studentName = studentData.name || studentName
+      } else {
+        const student = useAdminStore
+          .getState()
+          .students.find((s) => s.id === studentId)
+        if (student) {
+          studentName = student.name
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching student name:', error)
+      const student = useAdminStore
+        .getState()
+        .students.find((s) => s.id === studentId)
+      if (student) {
+        studentName = student.name
+      }
+    }
+
+    await pdfService.generatePdf({
+      studentName,
+      submissions: submissions || [],
+    })
   },
 }))
