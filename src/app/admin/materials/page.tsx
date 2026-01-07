@@ -230,11 +230,7 @@ export default function MaterialsPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-gray-600 mb-4">
-                {material.text.length > 200
-                  ? `${material.text.substring(0, 200)}...`
-                  : material.text}
-              </p>
+              <p className="text-sm text-gray-600 mb-4">{material.text}</p>
               <div className="text-sm text-gray-500">
                 {material.questions.length} question
                 {material.questions.length !== 1 ? 's' : ''}

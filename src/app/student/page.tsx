@@ -75,9 +75,18 @@ const HomePage: React.FC = () => {
               </div>
             </div>
             <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-foreground via-blue-600 to-indigo-600 bg-clip-text text-transparent mb-6 leading-tight">
-              Welcome to LearnEase!
+              Welcome to T-BRITE!
             </h1>
             <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+              <span className="font-bold text-blue-600">T</span>echnology -{' '}
+              <span className="font-bold text-blue-600">B</span>ased{' '}
+              <span className="font-bold text-blue-600">R</span>eading{' '}
+              <span className="font-bold text-blue-600">I</span>nteractive{' '}
+              <span className="font-bold text-blue-600">T</span>eaching{' '}
+              <span className="font-bold text-blue-600">a</span>nd{' '}
+              <span className="font-bold text-blue-600">E</span>ngagement.
+            </p>
+            <p className="text-muted-foreground max-w-3xl mx-auto leading-relaxed">
               Your personalized platform to track progress and enhance your
               learning journey with engaging, interactive experiences.
             </p>

@@ -4,6 +4,7 @@ import './globals.css'
 import Navbar from '@/components/Navbar'
 import Wrapper from '@/components/Wrapper'
 import { Toaster } from 'sonner'
+import Sidebar from '@/components/Sidebar'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -41,8 +42,9 @@ export default function RootLayout({
         <Toaster visibleToasts={1} />
 
         <Wrapper>
-          <Navbar />
-          {children}
+          {/* <Navbar /> */}
+          {/* <Sidebar /> */}
+          <main className="transition-all duration-300">{children}</main>
         </Wrapper>
       </body>
     </html>

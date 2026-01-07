@@ -1,0 +1,49 @@
+---
+name: design
+description: Design system rules for LearnEase learning platform
+---
+
+# Design System Rules
+
+## Core Principles
+
+This is a learning-focused web application that prioritizes clarity, accessibility, and simplicity.
+
+## Color Palette
+
+- **Use only TWO primary colors throughout the application**
+- Choose colors that support learning and readability
+- Maintain consistent color usage across all components
+- Use shades/tints of the primary colors for variations when needed
+
+## Styling Guidelines
+
+- **NO linear gradients** - use solid colors only
+- **Use className only** for styling - leverage Tailwind CSS utility classes
+- **NO inline styles or style objects** unless absolutely necessary
+- Keep designs clean and uncluttered to support focus on learning content
+
+## Icons
+
+- **Use icon packages only** (e.g., lucide-react, react-icons, heroicons)
+- **DO NOT create custom SVG icons**
+- Import icons from established packages
+- Maintain consistent icon sizing and styling
+
+## Responsive Design
+
+- **Mobile-first approach** required
+- Ensure full responsiveness across:
+  - **Mobile**: 320px - 767px
+  - **Tablet**: 768px - 1023px
+  - **Desktop**: 1024px and above
+- Use Tailwind responsive prefixes: `sm:`, `md:`, `lg:`, `xl:`, `2xl:`
+- Test layouts at all breakpoints
+- Ensure touch-friendly interactions on mobile/tablet
+
+## Component Structure
+
+- Use semantic HTML elements
+- Maintain clear hierarchy for learning materials
+- Prioritize readability with appropriate spacing and typography
+- Ensure consistent padding and margins across breakpoints
