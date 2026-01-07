@@ -155,7 +155,9 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
             <h3 className="text-xl font-semibold text-foreground mb-4 leading-relaxed">
               {currentQuestion.title}
             </h3>
-            <p className="text-sm text-muted-foreground">{currentQuestion.type}</p>
+            <p className="text-sm text-muted-foreground">
+              {currentQuestion.type}
+            </p>
           </div>
 
           {/* Answer Options */}

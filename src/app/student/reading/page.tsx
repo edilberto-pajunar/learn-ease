@@ -301,8 +301,7 @@ const ReadingPage: FC = () => {
               </h2>
               <p className="text-muted-foreground">
                 Answer the following questions to test your understanding of the
-                reading passage. This will test your comprehension and
-                vocabulary of the reading passage
+                reading passage. This will test your comprehension and vocabulary of the reading passage
               </p>
             </div>
 
@@ -342,6 +341,8 @@ const ReadingPage: FC = () => {
 
         {/* Fun Facts Section */}
         <FunFact />
+
+     
       </div>
     </div>
   )
