@@ -44,7 +44,7 @@ export const useAdminStore = create<AdminState>((set) => ({
   materials: [],
   loading: false,
   quarter: null,
-  testType: 'pre_test',
+  testType: 'preTest',
   skills: [],
   allMaterials: [],
   quarterUnsubscribe: null,
@@ -109,7 +109,7 @@ export const useAdminStore = create<AdminState>((set) => ({
   },
   getTestType: async () => {
     const testType = await adminService.getTestType()
-    set({ testType: testType?.testType || 'pre_test' })
+    set({ testType: testType?.testType || 'preTest' })
   },
   getSkills: async () => {
     try {

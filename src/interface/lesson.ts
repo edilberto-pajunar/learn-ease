@@ -19,4 +19,5 @@ export interface Lesson {
   overview?: string
   contents?: Content[]
   materials: LessonMaterial[]
+  lesson?: number
 }

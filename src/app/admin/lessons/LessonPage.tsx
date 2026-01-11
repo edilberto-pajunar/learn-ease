@@ -95,6 +95,7 @@ export default function LessonPage() {
       overview: lesson.overview || '',
       contents: lesson.contents || [],
       materials: lesson.materials || [],
+      lesson: lesson.lesson,
     })
     setIsEditDialogOpen(true)
   }

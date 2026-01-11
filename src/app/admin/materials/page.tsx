@@ -11,19 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog'
-import { Skill } from '@/interface/skill'
-import { ChevronDown } from 'lucide-react'
 import CreateMaterial from './component/CreateMaterial'
 import EditMaterial from './component/EditMaterial'
 import MaterialHeader from './component/MaterialHeader'
@@ -32,7 +20,6 @@ export default function MaterialsPage() {
   const {
     quarter,
     testType,
-    toggleQuarter,
     getQuarter,
     materials,
     setMaterials,
@@ -41,20 +28,19 @@ export default function MaterialsPage() {
     deleteMaterial,
     skills,
     getSkills,
-    toggleTestType,
   } = useAdminStore()
 
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [editingMaterial, setEditingMaterial] = useState<Material | null>(null)
-  const [isQuarterLoading, setIsQuarterLoading] = useState(false)
   const [selectedTestTypes, setSelectedTestTypes] = useState<{
-    pre_test: boolean
-    post_test: boolean
+    preTest: boolean
+    postTest: boolean
   }>({
-    pre_test: true,
-    post_test: false,
+    preTest: true,
+    postTest: true,
   })
+  const [selectedChapter, setSelectedChapter] = useState<string>('all')
   const [formData, setFormData] = useState({
     title: '',
     text: '',
@@ -69,7 +55,7 @@ export default function MaterialsPage() {
     getSkills()
     const unsubscribe = setMaterials()
     return () => unsubscribe()
-  }, [])
+  }, [getQuarter, getSkills, setMaterials])
 
   const handleCreateMaterial = async () => {
     const newMaterial: Material = {
@@ -160,13 +146,29 @@ export default function MaterialsPage() {
     }))
   }
 
+  const handleToggleMaterialTestType = async (
+    materialId: string,
+    currentTestType: string | undefined,
+  ) => {
+    const newTestType = currentTestType === 'preTest' ? 'postTest' : 'preTest'
+    await updateMaterial(materialId, { testType: newTestType })
+  }
+
+  const handleUpdateMaterialChapter = async (
+    materialId: string,
+    newChapter: string,
+  ) => {
+    await updateMaterial(materialId, { quarter: newChapter })
+  }
+
   const filteredMaterials = materials.filter((material) => {
-    const matchesQuarter = material.quarter === quarter?.quarter
+    const matchesChapter =
+      selectedChapter === 'all' || material.quarter === selectedChapter
     const matchesTestType =
       !material.testType ||
-      (selectedTestTypes.pre_test && material.testType === 'pre_test') ||
-      (selectedTestTypes.post_test && material.testType === 'post_test')
-    return matchesQuarter && matchesTestType
+      (selectedTestTypes.preTest && material.testType === 'preTest') ||
+      (selectedTestTypes.postTest && material.testType === 'postTest')
+    return matchesChapter && matchesTestType
   })
 
   console.log(skills)
@@ -175,18 +177,74 @@ export default function MaterialsPage() {
     <div className="container mx-auto p-6">
       <MaterialHeader />
 
+      <div className="mb-6 space-y-4">
+        <div className="flex flex-wrap gap-4 items-center">
+          <div className="flex items-center gap-2">
+            <Label htmlFor="chapter-filter">Chapter:</Label>
+            <select
+              id="chapter-filter"
+              value={selectedChapter}
+              onChange={(e) => setSelectedChapter(e.target.value)}
+              className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 min-w-[150px]"
+            >
+              <option value="all">All Chapters</option>
+              <option value="Q1">Chapter 1</option>
+              <option value="Q2">Chapter 2</option>
+            </select>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="filter-pretest"
+                checked={selectedTestTypes.preTest}
+                onChange={(e) =>
+                  setSelectedTestTypes((prev) => ({
+                    ...prev,
+                    preTest: e.target.checked,
+                  }))
+                }
+                className="h-4 w-4 rounded border-gray-300"
+              />
+              <Label htmlFor="filter-pretest" className="cursor-pointer">
+                Pre Test
+              </Label>
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="filter-posttest"
+                checked={selectedTestTypes.postTest}
+                onChange={(e) =>
+                  setSelectedTestTypes((prev) => ({
+                    ...prev,
+                    postTest: e.target.checked,
+                  }))
+                }
+                className="h-4 w-4 rounded border-gray-300"
+              />
+              <Label htmlFor="filter-posttest" className="cursor-pointer">
+                Post Test
+              </Label>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div className="grid gap-4">
         {filteredMaterials.map((material) => (
           <Card key={material.id}>
             <CardHeader>
               <div className="flex justify-between items-start">
-                <div>
+                <div className="flex-1">
                   <CardTitle>{material.title || 'Untitled Material'}</CardTitle>
                   <CardDescription>
                     {material.author && `By ${material.author}`} •{' '}
-                    {material.skill} • {material.quarter}
+                    {material.skill} •{' '}
+                    {material.quarter === 'Q1' ? 'Chapter 1' : 'Chapter 2'}
                     {material.testType &&
-                      ` • ${material.testType === 'pre_test' ? 'Pre-test' : 'Post-test'}`}
+                      ` • ${material.testType === 'preTest' ? 'Pre Test' : 'Post Test'}`}
                   </CardDescription>
                 </div>
                 <div className="flex gap-2">
@@ -208,10 +266,78 @@ export default function MaterialsPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-gray-600 mb-4">{material.text}</p>
-              <div className="text-sm text-gray-500">
-                {material.questions.length} question
-                {material.questions.length !== 1 ? 's' : ''}
+              <div className="mb-4">
+                <p className="text-sm text-gray-600 mb-4">{material.text}</p>
+                <div className="text-sm text-gray-500 mb-4">
+                  {material.questions.length} question
+                  {material.questions.length !== 1 ? 's' : ''}
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-4 items-center pt-4 border-t">
+                <div className="flex items-center gap-2">
+                  <Label htmlFor={`chapter-${material.id}`} className="text-sm">
+                    Chapter:
+                  </Label>
+                  <select
+                    id={`chapter-${material.id}`}
+                    value={material.quarter}
+                    onChange={(e) =>
+                      handleUpdateMaterialChapter(material.id, e.target.value)
+                    }
+                    className="flex h-9 items-center justify-between rounded-md border border-input bg-background px-2 py-1 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                  >
+                    <option value="Q1">Chapter 1</option>
+                    <option value="Q2">Chapter 2</option>
+                  </select>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Label
+                    htmlFor={`test-type-${material.id}`}
+                    className="text-sm"
+                  >
+                    Test Type:
+                  </Label>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      handleToggleMaterialTestType(
+                        material.id,
+                        material.testType,
+                      )
+                    }
+                    role="switch"
+                    aria-checked={material.testType === 'preTest'}
+                    className={`
+                      relative inline-flex h-6 w-11 items-center rounded-full transition-colors
+                      focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
+                      ${
+                        material.testType === 'preTest'
+                          ? 'bg-blue-600'
+                          : material.testType === 'postTest'
+                            ? 'bg-amber-600'
+                            : 'bg-gray-300 dark:bg-gray-700'
+                      }
+                    `}
+                  >
+                    <span
+                      className={`
+                        inline-block h-4 w-4 transform rounded-full bg-white transition-transform
+                        ${
+                          material.testType === 'preTest'
+                            ? 'translate-x-6'
+                            : 'translate-x-1'
+                        }
+                      `}
+                    />
+                  </button>
+                  <span className="text-sm text-gray-600">
+                    {material.testType === 'preTest'
+                      ? 'Pre Test'
+                      : material.testType === 'postTest'
+                        ? 'Post Test'
+                        : 'Not Set'}
+                  </span>
+                </div>
               </div>
             </CardContent>
           </Card>

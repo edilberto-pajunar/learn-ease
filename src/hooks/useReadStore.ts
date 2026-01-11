@@ -4,7 +4,12 @@ import { wordCount } from '@/app/utils/wordCount'
 import { db } from '@/firebase/client_app'
 import { Material } from '@/interface/material'
 import { readingService } from '@/services/readingService'
-import { collection, onSnapshot, Timestamp } from 'firebase/firestore'
+import {
+  collection,
+  onSnapshot,
+  Timestamp,
+  Unsubscribe,
+} from 'firebase/firestore'
 import { create } from 'zustand'
 import { Answer, Submission } from '@/interface/submission'
 
@@ -32,8 +37,9 @@ interface ReadStore {
   vocabularyScore: number
   difficulty: string
   materialBatch: string | null
+  materialsUnsubscribe: Unsubscribe | null
   setLoading: (value: boolean) => void
-  fetchMaterials: (quarter: string) => void
+  fetchMaterials: (quarter: string, testType?: string) => void
   setIndexMaterial: (indexMaterial: number) => void
   setIndexQuestion: (indexQuestion: number) => void
   setCurrentAnswers: (answer: Answer) => void
@@ -44,6 +50,8 @@ interface ReadStore {
     studentId: string,
     testType: string,
     totalQuestions: number,
+    quarter: string,
+    lastMaterial: boolean,
   ) => Promise<void>
   setComprehensionScore: () => void
   setVocabularyScore: () => void
@@ -51,6 +59,11 @@ interface ReadStore {
   resetAll: () => void
   setDifficulty: (difficulty: string) => void
   setMaterialBatch: (materialBatch: string) => void
+  finishAssessment: (
+    userId: string,
+    quarter: string,
+    testType: string,
+  ) => Promise<void>
 }
 
 export const useReadStore = create<ReadStore>((set, get) => ({
@@ -58,7 +71,7 @@ export const useReadStore = create<ReadStore>((set, get) => ({
   indexMaterial: 0,
   indexQuestion: 0,
   materials: [],
-  unsubscribe: null,
+  materialsUnsubscribe: null,
   currentAnswers: [],
   duration: 0,
   miscues: [],
@@ -67,14 +80,31 @@ export const useReadStore = create<ReadStore>((set, get) => ({
   difficulty: '',
   materialBatch: null,
   setLoading: (value) => set({ isLoading: value }),
-  fetchMaterials: (quarter: string) => {
-    onSnapshot(collection(db, 'materials'), (snapshot) => {
+  fetchMaterials: (quarter: string, testType?: string) => {
+    const { materialsUnsubscribe } = get()
+
+    if (materialsUnsubscribe) {
+      materialsUnsubscribe()
+    }
+
+    if (!quarter) {
+      set({ materials: [], indexMaterial: 0, materialsUnsubscribe: null })
+      return
+    }
+
+    const unsubscribe = onSnapshot(collection(db, 'materials'), (snapshot) => {
       const materials: Material[] = snapshot.docs
         .map((doc) => doc.data() as Material)
-        .filter((material) => material.quarter === quarter)
+        .filter((material) => {
+          const matchesQuarter = material.quarter === quarter
+          const matchesTestType = !testType || material.testType === testType
+          return matchesQuarter && matchesTestType
+        })
 
-      set({ materials })
+      set({ materials, indexMaterial: 0, materialsUnsubscribe: unsubscribe })
     })
+
+    set({ materialsUnsubscribe: unsubscribe })
   },
   setIndexMaterial: (indexMaterial) => set({ indexMaterial }),
   setIndexQuestion: (indexQuestion) => {
@@ -93,7 +123,7 @@ export const useReadStore = create<ReadStore>((set, get) => ({
       currentAnswers: [...state.currentAnswers, answer],
     }))
   },
-  submitAnswer: async (studentId, testType) => {
+  submitAnswer: async (studentId, testType, totalQuestions, quarter) => {
     const {
       indexMaterial,
       materials,
@@ -125,10 +155,11 @@ export const useReadStore = create<ReadStore>((set, get) => ({
         mode: material.mode,
         testType: testType,
         materialBatch: materialBatch,
+        quarter: quarter,
       }
       console.log(`Submission: ${JSON.stringify(submission)}`)
 
-      await readingService.submitAnswer(submission)
+      await readingService.submitAnswer(submission, studentId)
       set({
         currentAnswers: [],
         comprehensionScore: 0,
@@ -169,4 +200,7 @@ export const useReadStore = create<ReadStore>((set, get) => ({
     }),
   setDifficulty: (difficulty) => set({ difficulty }),
   setMaterialBatch: (materialBatch) => set({ materialBatch }),
+  finishAssessment: async (userId, quarter, testType) => {
+    await readingService.finishUserAssessment(userId, quarter, testType)
+  },
 }))

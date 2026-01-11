@@ -4,8 +4,8 @@ import React, { useState, useEffect } from 'react'
 import { useReadStore } from '@/hooks/useReadStore'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-
 import { Material } from '@/interface/material'
+import { BookOpen, Play, Square, CheckCircle2 } from 'lucide-react'
 
 interface TimeCardProps {
   material: Material
@@ -80,31 +80,27 @@ const TimeCard: React.FC<TimeCardProps> = ({ material }) => {
     return 'text-foreground px-1 py-1 cursor-pointer hover:bg-blue-50 hover:border hover:border-blue-200 rounded transition-all duration-200'
   }
 
+  const formatTime = (seconds: number): string => {
+    if (seconds < 60) {
+      return `${seconds} second${seconds !== 1 ? 's' : ''}`
+    }
+    const minutes = Math.floor(seconds / 60)
+    const remainingSeconds = seconds % 60
+    if (remainingSeconds === 0) {
+      return `${minutes} minute${minutes !== 1 ? 's' : ''}`
+    }
+    return `${minutes} minute${minutes !== 1 ? 's' : ''} ${remainingSeconds} second${remainingSeconds !== 1 ? 's' : ''}`
+  }
+
   return (
     <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm mb-8">
       <CardContent className="p-6">
         {/* Header */}
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
           <div>
-            <h2 className="text-2xl font-bold text-foreground mb-2 flex items-center gap-3">
-              <svg
-                className="w-6 h-6 text-blue-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
-                />
-              </svg>
-              {material.title || `Reading Material ${material.id}`}
-            </h2>
             <p className="text-muted-foreground">
-              Read the passage at your own pace. Tap any words you mispronounce
-              or struggle with.
+              Instruction: Read the passage at your own pace. Tap any words you
+              mispronounce or struggle with.
             </p>
             <p className="text-muted-foreground">
               Once finished, it will hide the reading material so make sure to
@@ -117,21 +113,9 @@ const TimeCard: React.FC<TimeCardProps> = ({ material }) => {
             {!isReading && !startTime && (
               <Button
                 onClick={handleStartReading}
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+                className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
               >
-                <svg
-                  className="w-4 h-4 mr-2"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
+                <Play className="w-4 h-4 mr-2" />
                 Start Reading
               </Button>
             )}
@@ -142,19 +126,7 @@ const TimeCard: React.FC<TimeCardProps> = ({ material }) => {
                 variant="outline"
                 className="border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300"
               >
-                <svg
-                  className="w-4 h-4 mr-2"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
+                <Square className="w-4 h-4 mr-2" />
                 Finish Reading
               </Button>
             )}
@@ -163,7 +135,7 @@ const TimeCard: React.FC<TimeCardProps> = ({ material }) => {
 
         {/* Reading Progress */}
         {isReading && (
-          <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200">
+          <div className="mb-6 p-4 bg-blue-50 rounded-xl border border-blue-200">
             <div className="flex items-center justify-between mb-3">
               <span className="text-sm font-medium text-blue-700">
                 Reading in Progress
@@ -174,7 +146,7 @@ const TimeCard: React.FC<TimeCardProps> = ({ material }) => {
             </div>
             <div className="w-full bg-blue-200 rounded-full h-2">
               <div
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 h-2 rounded-full transition-all duration-300"
+                className="bg-blue-600 h-2 rounded-full transition-all duration-300"
                 style={{
                   width: `${(miscues.length / Math.max(lines.reduce((total, line) => total + line.split(' ').length, 0) * 0.1, 1)) * 100}%`,
                 }}
@@ -201,6 +173,13 @@ const TimeCard: React.FC<TimeCardProps> = ({ material }) => {
             {/* Text Display */}
             <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
               <div className="text-lg leading-relaxed text-foreground">
+                <h2 className="text-2xl font-bold text-foreground mb-2 flex items-center">
+                  {material.title && `Title: ${material.title}`}
+                </h2>
+                <p className="text-sm text-muted-foreground mb-4">
+                  {' '}
+                  {material.author && `Author: ${material.author}`}
+                </p>
                 {lines.map((line, lineIndex) => {
                   const words = line.split(' ')
                   return (
@@ -230,19 +209,7 @@ const TimeCard: React.FC<TimeCardProps> = ({ material }) => {
                 variant="outline"
                 className="mt-4 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300"
               >
-                <svg
-                  className="w-4 h-4 mr-2"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
+                <Square className="w-4 h-4 mr-2" />
                 Finish Reading
               </Button>
             )}
@@ -260,22 +227,9 @@ const TimeCard: React.FC<TimeCardProps> = ({ material }) => {
         {!showText && (
           <div className="text-center py-8">
             {!startTime ? (
-              // Not started yet
               <>
                 <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg
-                    className="w-8 h-8 text-blue-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
-                    />
-                  </svg>
+                  <BookOpen className="w-8 h-8 text-blue-600" />
                 </div>
                 <h3 className="text-lg font-semibold text-foreground mb-2">
                   Ready to Start Reading?
@@ -287,22 +241,9 @@ const TimeCard: React.FC<TimeCardProps> = ({ material }) => {
                 </p>
               </>
             ) : (
-              // Reading finished
               <>
                 <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg
-                    className="w-8 h-8 text-green-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
+                  <CheckCircle2 className="w-8 h-8 text-green-600" />
                 </div>
                 <h3 className="text-lg font-semibold text-foreground mb-2">
                   Reading Completed!
@@ -316,9 +257,8 @@ const TimeCard: React.FC<TimeCardProps> = ({ material }) => {
                   and took{' '}
                   <span className="font-semibold text-foreground">
                     {startTime && endTime
-                      ? Math.round((endTime - startTime) / 1000)
-                      : '--'}{' '}
-                    seconds
+                      ? formatTime(Math.round((endTime - startTime) / 1000))
+                      : '--'}
                   </span>{' '}
                   to complete.
                 </p>
@@ -372,10 +312,10 @@ const TimeCard: React.FC<TimeCardProps> = ({ material }) => {
               <div>
                 <div className="text-2xl font-bold text-foreground">
                   {startTime && endTime
-                    ? Math.round((endTime - startTime) / 1000)
+                    ? formatTime(Math.round((endTime - startTime) / 1000))
                     : '--'}
                 </div>
-                <div className="text-sm text-muted-foreground">Seconds</div>
+                <div className="text-sm text-muted-foreground">Time</div>
               </div>
             </div>
           </div>

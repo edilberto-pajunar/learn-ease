@@ -45,20 +45,20 @@ function StudentProgressChart() {
 
   useEffect(() => {
     const preTestSubmissions = submissions.filter(
-      (sub) => sub.testType === 'pre_test',
+      (sub) => sub.testType === 'preTest',
     )
     const postTestSubmissions = submissions.filter(
-      (sub) => sub.testType === 'post_test',
+      (sub) => sub.testType === 'postTest',
     )
     setPreTestScore(preTestSubmissions)
     setPostTestScore(postTestSubmissions)
   }, [submissions, setPreTestScore, setPostTestScore])
 
   const preTestSubmissions = submissions.filter(
-    (sub) => sub.testType === 'pre_test',
+    (sub) => sub.testType === 'preTest',
   )
   const postTestSubmissions = submissions.filter(
-    (sub) => sub.testType === 'post_test',
+    (sub) => sub.testType === 'postTest',
   )
 
   const hasPreTest = preTestSubmissions.length > 0
@@ -118,7 +118,7 @@ function StudentProgressChart() {
                     {preTestSubmissions.length}
                   </div>
                   <div className="text-sm sm:text-base font-semibold text-gray-700">
-                    Pre-test Books Read
+                    Pre Test Books Read
                   </div>
                   <div className="text-xs sm:text-sm text-gray-500 mt-1">
                     Your starting point
@@ -140,7 +140,7 @@ function StudentProgressChart() {
                     {postTestSubmissions.length}
                   </div>
                   <div className="text-sm sm:text-base font-semibold text-gray-700">
-                    Post-test Books Read
+                    Post Test Books Read
                   </div>
                   <div className="text-xs sm:text-sm text-gray-500 mt-1">
                     Your achievement
@@ -237,7 +237,7 @@ function StudentProgressChart() {
                   </div>
                   <div className="text-xs sm:text-sm text-gray-600">
                     {wpmImprovement === null
-                      ? 'Complete post-test'
+                      ? 'Complete postTest'
                       : wpmImprovement > 0
                         ? 'Faster!'
                         : wpmImprovement < 0
@@ -334,7 +334,7 @@ function StudentProgressChart() {
                   </div>
                   <div className="text-xs sm:text-sm text-gray-600">
                     {comprehensionImprovement === null
-                      ? 'Complete post-test'
+                      ? 'Complete postTest'
                       : comprehensionImprovement > 0
                         ? 'Improved!'
                         : comprehensionImprovement < 0
@@ -432,7 +432,7 @@ function StudentProgressChart() {
                   </div>
                   <div className="text-xs sm:text-sm text-gray-600">
                     {vocabularyImprovement === null
-                      ? 'Complete post-test'
+                      ? 'Complete postTest'
                       : vocabularyImprovement > 0
                         ? 'Improved!'
                         : vocabularyImprovement < 0
@@ -534,7 +534,7 @@ function StudentProgressChart() {
                   </div>
                   <div className="text-xs sm:text-sm text-gray-600">
                     {accuracyImprovement === null
-                      ? 'Complete post-test'
+                      ? 'Complete postTest'
                       : accuracyImprovement > 0
                         ? 'More Accurate!'
                         : accuracyImprovement < 0

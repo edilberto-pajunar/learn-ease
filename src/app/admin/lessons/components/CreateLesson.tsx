@@ -40,6 +40,7 @@ export default function CreateLesson({
     overview: '',
     contents: [],
     materials: [],
+    lesson: undefined,
   })
 
   const resetForm = () => {
@@ -50,6 +51,7 @@ export default function CreateLesson({
       overview: '',
       contents: [],
       materials: [],
+      lesson: undefined,
     })
   }
 
@@ -205,7 +207,7 @@ export default function CreateLesson({
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-4">
             <div>
               <Label htmlFor="chapter">Chapter</Label>
               <Input
@@ -215,6 +217,24 @@ export default function CreateLesson({
                   setFormData((prev) => ({ ...prev, chapter: e.target.value }))
                 }
                 placeholder="e.g., Q1, Q2"
+              />
+            </div>
+            <div>
+              <Label htmlFor="lesson">Lesson Number</Label>
+              <Input
+                id="lesson"
+                type="number"
+                value={formData.lesson || ''}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    lesson: e.target.value
+                      ? parseInt(e.target.value, 10)
+                      : undefined,
+                  }))
+                }
+                placeholder="e.g., 1, 2, 3"
+                min="1"
               />
             </div>
             <div>

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useReadStore } from '@/hooks/useReadStore'
 import { useAdminStore } from '@/hooks/useAdminStore'
@@ -14,19 +14,46 @@ import {
   Info,
   ClipboardList,
   Target,
+  BookOpen,
+  CheckCircle2,
 } from 'lucide-react'
+import { useSubmissionStore } from '@/hooks/useSubmissionStore'
+import { useAuthStore } from '@/hooks/useAuthStore'
+import { Material } from '@/interface/material'
+import { collection, onSnapshot } from 'firebase/firestore'
+import { db } from '@/firebase/client_app'
 
 function ModePage() {
   const router = useRouter()
   const { materials, resetAll } = useReadStore()
   const { getQuarter, quarter } = useAdminStore()
+  const { user } = useAuthStore()
+  const { fetchSubmissions, submissions } = useSubmissionStore()
+  const [allMaterials, setAllMaterials] = useState<Material[]>([])
+
+  useEffect(() => {
+    if (user?.id) {
+      fetchSubmissions(user.id)
+    }
+  }, [user?.id, fetchSubmissions])
 
   useEffect(() => {
     getQuarter()
   }, [getQuarter])
 
+  useEffect(() => {
+    const unsubscribe = onSnapshot(collection(db, 'materials'), (snapshot) => {
+      const materials: Material[] = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as Material[]
+      setAllMaterials(materials)
+    })
+
+    return () => unsubscribe()
+  }, [])
+
   const handleTestType = async (testType: string) => {
-    // Reset all reading progress when starting a new test
     if (materials.length !== 0) {
       resetAll()
     }
@@ -36,15 +63,39 @@ function ModePage() {
     )
   }
 
+  const handleGoToLessons = () => {
+    router.push('/student/lessons')
+  }
+
+  const checkIfTestCompleted = (testType: string): boolean => {
+    if (!quarter?.quarter || !user?.id) return false
+
+    const materialsForTest = allMaterials.filter(
+      (material) =>
+        material.quarter === quarter.quarter && material.testType === testType,
+    )
+
+    if (materialsForTest.length === 0) return false
+
+    const materialIds = materialsForTest.map((m) => m.id)
+    const hasSubmission = submissions.some(
+      (submission) =>
+        submission.testType === testType &&
+        materialIds.includes(submission.materialId),
+    )
+
+    return hasSubmission
+  }
+
   const allTestOptions = [
     {
-      type: 'pre_test',
+      type: 'preTest',
       title: 'Pre Test',
       description: 'Take this before starting your learning journey',
       icon: ClipboardList,
     },
     {
-      type: 'post_test',
+      type: 'postTest',
       title: 'Post Test',
       description: 'Assess your progress after completing the course',
       icon: Target,
@@ -54,8 +105,8 @@ function ModePage() {
   // Filter test options based on quarter availability
   const availableTestOptions = allTestOptions.filter((option) => {
     if (!quarter) return false
-    if (option.type === 'pre_test') return quarter.pre_test
-    if (option.type === 'post_test') return quarter.post_test
+    if (option.type === 'preTest') return quarter.preTest
+    if (option.type === 'postTest') return quarter.postTest
     return false
   })
 
@@ -63,8 +114,8 @@ function ModePage() {
   const getHeaderContent = () => {
     if (!quarter) return null
 
-    const hasPreTest = quarter.pre_test
-    const hasPostTest = quarter.post_test
+    const hasPreTest = quarter.preTest
+    const hasPostTest = quarter.postTest
 
     if (hasPreTest && hasPostTest) {
       return {
@@ -167,12 +218,17 @@ function ModePage() {
           }`}
         >
           {availableTestOptions.map((option) => {
-            const isPreTest = option.type === 'pre_test'
+            const isPreTest = option.type === 'preTest'
+            const isCompleted = checkIfTestCompleted(option.type)
 
             return (
               <Card
                 key={option.type}
-                className="group border-2 border-slate-200 shadow-lg bg-white cursor-pointer hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 transform overflow-hidden"
+                className={`group border-2 shadow-lg bg-white transition-all duration-300 transform overflow-hidden ${
+                  isCompleted
+                    ? 'border-slate-300 opacity-90'
+                    : 'border-slate-200 cursor-pointer hover:shadow-2xl hover:-translate-y-2'
+                }`}
               >
                 <div
                   className={`h-2 ${
@@ -183,17 +239,27 @@ function ModePage() {
                   <div className="text-center">
                     {/* Icon */}
                     <div
-                      className={`inline-flex items-center justify-center w-20 h-20 border-2 rounded-2xl mb-6 transition-transform duration-300 group-hover:scale-110 ${
+                      className={`inline-flex items-center justify-center w-20 h-20 border-2 rounded-2xl mb-6 transition-transform duration-300 ${
+                        isCompleted ? '' : 'group-hover:scale-110'
+                      } ${
                         isPreTest
                           ? 'bg-emerald-100 border-emerald-200'
                           : 'bg-amber-100 border-amber-200'
                       }`}
                     >
-                      <option.icon
-                        className={`w-10 h-10 ${
-                          isPreTest ? 'text-emerald-600' : 'text-amber-600'
-                        }`}
-                      />
+                      {isCompleted ? (
+                        <CheckCircle2
+                          className={`w-10 h-10 ${
+                            isPreTest ? 'text-emerald-600' : 'text-amber-600'
+                          }`}
+                        />
+                      ) : (
+                        <option.icon
+                          className={`w-10 h-10 ${
+                            isPreTest ? 'text-emerald-600' : 'text-amber-600'
+                          }`}
+                        />
+                      )}
                     </div>
 
                     {/* Title */}
@@ -206,19 +272,46 @@ function ModePage() {
                       {option.description}
                     </p>
 
-                    {/* Action Button */}
-                    <Button
-                      onClick={() => handleTestType(option.type)}
-                      size="lg"
-                      className={`w-full font-semibold py-3 px-6 shadow-lg transition-all duration-300 hover:shadow-xl transform group-hover:scale-105 ${
-                        isPreTest
-                          ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
-                          : 'bg-amber-600 hover:bg-amber-700 text-white'
-                      }`}
-                    >
-                      Start {option.title}
-                      <ArrowRight className="w-5 h-5 ml-2" />
-                    </Button>
+                    {/* Completed Status */}
+                    {isCompleted && (
+                      <div className="mb-4 inline-flex items-center gap-2 px-4 py-2 bg-green-50 rounded-full border border-green-200">
+                        <CheckCircle2 className="w-4 h-4 text-green-600" />
+                        <span className="text-sm font-medium text-green-700">
+                          Test Completed
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Action Buttons */}
+                    {isCompleted ? (
+                      <div className="space-y-3">
+                        <Button
+                          onClick={handleGoToLessons}
+                          size="lg"
+                          className="w-full font-semibold py-3 px-6 shadow-lg transition-all duration-300 hover:shadow-xl bg-blue-600 hover:bg-blue-700 text-white"
+                        >
+                          Go to Lessons
+                          <BookOpen className="w-5 h-5 ml-2" />
+                        </Button>
+                        <p className="text-xs text-slate-500">
+                          You have already completed this test. Continue with
+                          your lessons.
+                        </p>
+                      </div>
+                    ) : (
+                      <Button
+                        onClick={() => handleTestType(option.type)}
+                        size="lg"
+                        className={`w-full font-semibold py-3 px-6 shadow-lg transition-all duration-300 hover:shadow-xl transform group-hover:scale-105 ${
+                          isPreTest
+                            ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                            : 'bg-amber-600 hover:bg-amber-700 text-white'
+                        }`}
+                      >
+                        Start {option.title}
+                        <ArrowRight className="w-5 h-5 ml-2" />
+                      </Button>
+                    )}
                   </div>
                 </CardContent>
               </Card>

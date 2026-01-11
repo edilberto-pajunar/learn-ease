@@ -6,8 +6,8 @@ import { useState } from 'react'
 export default function MaterialHeader() {
   const { quarter, toggleQuarter, loading, toggleTestType } = useAdminStore()
 
-  const preTestValue = quarter?.pre_test || false
-  const postTestValue = quarter?.post_test || false
+  const preTestValue = quarter?.preTest || false
+  const postTestValue = quarter?.postTest || false
 
   return (
     <div>
@@ -43,7 +43,7 @@ export default function MaterialHeader() {
               <button
                 type="button"
                 onClick={() => {
-                  toggleTestType('pre_test')
+                  toggleTestType('preTest')
                 }}
                 role="switch"
                 aria-checked={preTestValue}
@@ -68,7 +68,7 @@ export default function MaterialHeader() {
               <button
                 type="button"
                 onClick={() => {
-                  toggleTestType('post_test')
+                  toggleTestType('postTest')
                 }}
                 role="switch"
                 aria-checked={postTestValue}

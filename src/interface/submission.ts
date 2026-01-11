@@ -19,8 +19,9 @@ interface Submission {
   numberOfWords: number
   duration: number
   mode: string
-  testType: string // pre_test or post_test,
+  testType: string // preTest or postTest,
   materialBatch: string | null
+  quarter: string // Q1 or Q2
 }
 
 interface RecordTime {

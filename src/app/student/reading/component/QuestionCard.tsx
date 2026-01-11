@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Question } from '@/interface/material'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Answer } from '@/interface/submission'
+import ReadingCompletedDialog from './ReadingCompletedDialog'
 
 interface QuestionCardProps {
   questions: Question[]
@@ -17,8 +18,8 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
   questions,
   studentId,
 }) => {
-  const searchParams = useSearchParams()
-  const testType = searchParams.get('testType') || 'pre_test'
+  const searchParams = useSearchParams();
+  const testType = searchParams.get('testType') || 'preTest'
 
   const {
     submitAnswer,
@@ -34,14 +35,17 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
     materialBatch,
     setComprehensionScore,
     setVocabularyScore,
+    finishAssessment,
   } = useReadStore()
   const [selectedAnswer, setSelectedAnswer] = useState<Answer | null>(null)
   const [showFeedback, setShowFeedback] = useState(false)
   const [isCorrect, setIsCorrect] = useState(false)
   const router = useRouter()
-
+  const quarter = searchParams.get('quarter') || 'Q1'
   const currentQuestion = questions[indexQuestion]
   const hasSubmission = currentAnswers.length > indexQuestion
+  const [finishingAssessment, setFinishingAssessment] = useState(false)
+  const [showCompletionDialog, setShowCompletionDialog] = useState(false)
 
   const totalQuestions = questions.length
 
@@ -67,7 +71,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
       // This is the last question - submit answers and move to next material
       setTimeout(async () => {
         try {
-          await submitAnswer(studentId, testType, totalQuestions)
+          await submitAnswer(studentId, testType, totalQuestions, quarter, true)
 
           // Check if there are more materials
           if (indexMaterial < materials.length - 1) {
@@ -78,9 +82,17 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
             setDuration(null)
             clearMiscues()
           } else {
+            setFinishingAssessment(true)
+            await finishAssessment(studentId, quarter, testType)
+            setFinishingAssessment(false)
+            setShowCompletionDialog(true)
             console.log('All materials completed! Redirecting to scores...')
             console.log('Material Batch: ', materialBatch)
-            router.push(`/student/reading/score/${materialBatch}`)
+
+            setTimeout(() => {
+              setShowCompletionDialog(false)
+              router.push(`/student/reading/score/${materialBatch}`)
+            }, 3000)
           }
         } catch (error) {
           console.error('Error submitting answers:', error)
@@ -121,118 +133,96 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
   }
 
   return (
-    <div className="space-y-6">
-      {/* Question Progress */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <span className="text-sm font-medium text-muted-foreground">
-            Question
-          </span>
-          <span className="text-2xl font-bold text-foreground">
-            {indexQuestion + 1}
-          </span>
-          <span className="text-muted-foreground">of {totalQuestions}</span>
-        </div>
+    <>
+      {showCompletionDialog && (
+        <ReadingCompletedDialog
+          isOpen={showCompletionDialog}
+          materialBatch={materialBatch || ''}
+          totalMaterials={materials.length}
+          onClose={() => setShowCompletionDialog(false)}
+        />
+      )}
 
-        {/* Progress Bar */}
-        <div className="flex-1 max-w-md mx-4">
-          <div className="w-full bg-gray-200 rounded-full h-2">
-            <div
-              className="bg-gradient-to-r from-blue-500 to-indigo-600 h-2 rounded-full transition-all duration-300"
-              style={{
-                width: `${((indexQuestion + 1) / totalQuestions) * 100}%`,
-              }}
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Question Card */}
-      <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
-        <CardContent className="p-6">
-          {/* Question Text */}
-          <div className="mb-6">
-            <h3 className="text-xl font-semibold text-foreground mb-4 leading-relaxed">
-              {currentQuestion.title}
-            </h3>
-            <p className="text-sm text-muted-foreground">
-              {currentQuestion.type}
-            </p>
+      <div className="space-y-6">
+        {/* Question Progress */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-medium text-muted-foreground">
+              Question
+            </span>
+            <span className="text-2xl font-bold text-foreground">
+              {indexQuestion + 1}
+            </span>
+            <span className="text-muted-foreground">of {totalQuestions}</span>
           </div>
 
-          {/* Answer Options */}
-          <div className="space-y-3 mb-6">
-            {currentQuestion.options.map((option, index) => (
-              <button
-                key={index}
-                onClick={() =>
-                  !hasSubmission &&
-                  setSelectedAnswer({
-                    answer: option,
-                    type: currentQuestion.type,
-                    isCorrect: option === currentQuestion.answer,
-                  })
-                }
-                disabled={hasSubmission}
-                className={`w-full p-4 text-left rounded-lg border-2 transition-all duration-200 ${
-                  selectedAnswer?.answer === option
-                    ? 'border-blue-500 bg-blue-50 text-blue-800'
-                    : hasSubmission && option === currentQuestion.answer
-                      ? 'border-green-500 bg-green-50 text-green-800'
-                      : hasSubmission &&
-                          option === selectedAnswer?.answer &&
-                          option !== currentQuestion.answer
-                        ? 'border-red-500 bg-red-50 text-red-800'
-                        : 'border-border hover:border-blue-300 hover:bg-accent/50'
-                } ${hasSubmission ? 'cursor-default' : 'cursor-pointer hover:shadow-md'}`}
-              >
-                <div className="flex items-center gap-3">
-                  <div
-                    className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
-                      selectedAnswer?.answer === option
-                        ? 'border-blue-500 bg-blue-500 text-white'
-                        : hasSubmission && option === currentQuestion.answer
-                          ? 'border-green-500 bg-green-500 text-white'
-                          : hasSubmission &&
-                              option === selectedAnswer?.answer &&
-                              option !== currentQuestion.answer
-                            ? 'border-red-500 bg-red-500 text-white'
-                            : 'border-border bg-background'
-                    }`}
-                  >
-                    {selectedAnswer?.answer === option && (
-                      <svg
-                        className="w-4 h-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M5 13l4 4L19 7"
-                        />
-                      </svg>
-                    )}
-                    {hasSubmission && option === currentQuestion.answer && (
-                      <svg
-                        className="w-4 h-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M5 13l4 4L19 7"
-                        />
-                      </svg>
-                    )}
-                    {hasSubmission &&
-                      option === selectedAnswer?.answer &&
-                      option !== currentQuestion.answer && (
+          {/* Progress Bar */}
+          <div className="flex-1 max-w-md mx-4">
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div
+                className="bg-gradient-to-r from-blue-500 to-indigo-600 h-2 rounded-full transition-all duration-300"
+                style={{
+                  width: `${((indexQuestion + 1) / totalQuestions) * 100}%`,
+                }}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Question Card */}
+        <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
+          <CardContent className="p-6">
+            {/* Question Text */}
+            <div className="mb-6">
+              <h3 className="text-xl font-semibold text-foreground mb-4 leading-relaxed">
+                {currentQuestion.title}
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                {currentQuestion.type}
+              </p>
+            </div>
+
+            {/* Answer Options */}
+            <div className="space-y-3 mb-6">
+              {currentQuestion.options.map((option, index) => (
+                <button
+                  key={index}
+                  onClick={() =>
+                    !hasSubmission &&
+                    setSelectedAnswer({
+                      answer: option,
+                      type: currentQuestion.type,
+                      isCorrect: option === currentQuestion.answer,
+                    })
+                  }
+                  disabled={hasSubmission}
+                  className={`w-full p-4 text-left rounded-lg border-2 transition-all duration-200 ${
+                    selectedAnswer?.answer === option
+                      ? 'border-blue-500 bg-blue-50 text-blue-800'
+                      : hasSubmission && option === currentQuestion.answer
+                        ? 'border-green-500 bg-green-50 text-green-800'
+                        : hasSubmission &&
+                            option === selectedAnswer?.answer &&
+                            option !== currentQuestion.answer
+                          ? 'border-red-500 bg-red-50 text-red-800'
+                          : 'border-border hover:border-blue-300 hover:bg-accent/50'
+                  } ${hasSubmission ? 'cursor-default' : 'cursor-pointer hover:shadow-md'}`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
+                        selectedAnswer?.answer === option
+                          ? 'border-blue-500 bg-blue-500 text-white'
+                          : hasSubmission && option === currentQuestion.answer
+                            ? 'border-green-500 bg-green-500 text-white'
+                            : hasSubmission &&
+                                option === selectedAnswer?.answer &&
+                                option !== currentQuestion.answer
+                              ? 'border-red-500 bg-red-500 text-white'
+                              : 'border-border bg-background'
+                      }`}
+                    >
+                      {selectedAnswer?.answer === option && (
                         <svg
                           className="w-4 h-4"
                           fill="none"
@@ -243,107 +233,140 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
                             strokeLinecap="round"
                             strokeLinejoin="round"
                             strokeWidth={2}
-                            d="M6 18L18 6M6 6l12 12"
+                            d="M5 13l4 4L19 7"
                           />
                         </svg>
                       )}
+                      {hasSubmission && option === currentQuestion.answer && (
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M5 13l4 4L19 7"
+                          />
+                        </svg>
+                      )}
+                      {hasSubmission &&
+                        option === selectedAnswer?.answer &&
+                        option !== currentQuestion.answer && (
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M6 18L18 6M6 6l12 12"
+                            />
+                          </svg>
+                        )}
+                    </div>
+                    <span className="font-medium">{option}</span>
                   </div>
-                  <span className="font-medium">{option}</span>
-                </div>
-              </button>
-            ))}
-          </div>
-
-          {/* Submit Button */}
-          {!hasSubmission && (
-            <div className="flex justify-center">
-              <Button
-                onClick={handleAnswerSubmit}
-                disabled={!selectedAnswer}
-                className="px-8 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Submit Answer
-              </Button>
+                </button>
+              ))}
             </div>
-          )}
 
-          {/* Feedback */}
-          {showFeedback && (
-            <div
-              className={`mt-6 p-4 rounded-lg border-2 ${
-                isCorrect
-                  ? 'border-green-200 bg-green-50 text-green-800'
-                  : 'border-red-200 bg-red-50 text-red-800'
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                {isCorrect ? (
-                  <svg
-                    className="w-6 h-6 text-green-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                ) : (
-                  <svg
-                    className="w-6 h-6 text-red-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                )}
-                <div>
-                  <h4 className="font-semibold">
-                    {isCorrect ? 'Correct!' : 'Incorrect'}
-                  </h4>
-                  <p className="text-sm">
-                    {isCorrect
-                      ? 'Great job! You answered correctly.'
-                      : `The correct answer is: ${currentQuestion.answer}`}
-                  </p>
+            {/* Submit Button */}
+            {!hasSubmission && (
+              <div className="flex justify-center">
+                <Button
+                  onClick={handleAnswerSubmit}
+                  disabled={!selectedAnswer}
+                  className="px-8 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Submit Answer
+                </Button>
+              </div>
+            )}
+
+            {/* Feedback */}
+            {showFeedback && (
+              <div
+                className={`mt-6 p-4 rounded-lg border-2 ${
+                  isCorrect
+                    ? 'border-green-200 bg-green-50 text-green-800'
+                    : 'border-red-200 bg-red-50 text-red-800'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  {isCorrect ? (
+                    <svg
+                      className="w-6 h-6 text-green-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                  ) : (
+                    <svg
+                      className="w-6 h-6 text-red-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                  )}
+                  <div>
+                    <h4 className="font-semibold">
+                      {isCorrect ? 'Correct!' : 'Incorrect'}
+                    </h4>
+                    <p className="text-sm">
+                      {isCorrect
+                        ? 'Great job! You answered correctly.'
+                        : `The correct answer is: ${currentQuestion.answer}`}
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+            )}
+          </CardContent>
+        </Card>
 
-      {/* Question Navigation Dots */}
-      <div className="flex justify-center">
-        <div className="flex space-x-2">
-          {questions.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => setIndexQuestion(index)}
-              className={`w-3 h-3 rounded-full transition-all duration-200 ${
-                index === indexQuestion
-                  ? 'bg-blue-600 scale-125'
-                  : getQuestionStatus(index) === 'correct'
-                    ? 'bg-green-500'
-                    : getQuestionStatus(index) === 'incorrect'
-                      ? 'bg-red-500'
-                      : 'bg-gray-300 hover:bg-gray-400'
-              }`}
-              aria-label={`Go to question ${index + 1}`}
-            />
-          ))}
+        {/* Question Navigation Dots */}
+        <div className="flex justify-center">
+          <div className="flex space-x-2">
+            {questions.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setIndexQuestion(index)}
+                className={`w-3 h-3 rounded-full transition-all duration-200 ${
+                  index === indexQuestion
+                    ? 'bg-blue-600 scale-125'
+                    : getQuestionStatus(index) === 'correct'
+                      ? 'bg-green-500'
+                      : getQuestionStatus(index) === 'incorrect'
+                        ? 'bg-red-500'
+                        : 'bg-gray-300 hover:bg-gray-400'
+                }`}
+                aria-label={`Go to question ${index + 1}`}
+              />
+            ))}
+          </div>
         </div>
       </div>
-    </div>
+    </>
   )
 }
 

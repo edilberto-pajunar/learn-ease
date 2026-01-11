@@ -22,8 +22,8 @@ const ScorePage = () => {
 
   // State for toggling between pre-test and post-test views
   const [selectedTestType, setSelectedTestType] = useState<
-    'pre_test' | 'post_test'
-  >('pre_test')
+    'preTest' | 'postTest'
+  >('preTest')
 
   const studentId = user?.id
 
@@ -34,15 +34,15 @@ const ScorePage = () => {
   }, [studentId, fetchSubmissions])
 
   useEffect(() => {
-    fetchMaterials(quarter)
+    fetchMaterials(quarter?.quarter || '')
   })
 
   // Separate submissions by test type
   const preTestSubmissions = submissions.filter(
-    (sub) => sub.testType === 'pre_test',
+    (sub) => sub.testType === 'preTest',
   )
   const postTestSubmissions = submissions.filter(
-    (sub) => sub.testType === 'post_test',
+    (sub) => sub.testType === 'postTest',
   )
 
   // Group submissions by materialBatch
@@ -138,24 +138,24 @@ const ScorePage = () => {
             <div className="flex justify-center">
               <div className="inline-flex bg-white rounded-lg p-1 shadow-sm border">
                 <Button
-                  onClick={() => setSelectedTestType('pre_test')}
+                  onClick={() => setSelectedTestType('preTest')}
                   className={`px-6 py-2 rounded-md font-medium transition-all ${
-                    selectedTestType === 'pre_test'
+                    selectedTestType === 'preTest'
                       ? 'bg-gray-900 text-white'
                       : 'bg-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                   }`}
                 >
-                  Pre-test
+                  Pre Test
                 </Button>
                 <Button
-                  onClick={() => setSelectedTestType('post_test')}
+                  onClick={() => setSelectedTestType('postTest')}
                   className={`px-6 py-2 rounded-md font-medium transition-all ${
-                    selectedTestType === 'post_test'
+                    selectedTestType === 'postTest'
                       ? 'bg-gray-900 text-white'
                       : 'bg-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                   }`}
                 >
-                  Post-test
+                  Post Test
                 </Button>
               </div>
             </div>
@@ -163,18 +163,18 @@ const ScorePage = () => {
             <div>
               <div className="mb-6">
                 <h2 className="text-xl font-semibold text-gray-900">
-                  {selectedTestType === 'pre_test'
-                    ? 'Pre-test Results'
-                    : 'Post-test Results'}
+                  {selectedTestType === 'preTest'
+                    ? 'Pre Test Results'
+                    : 'Post Test Results'}
                 </h2>
               </div>
 
-              {selectedTestType === 'pre_test' ? (
+                {selectedTestType === 'preTest' ? (
                 preTestBatches.length === 0 ? (
                   <Card className="border shadow-sm bg-white">
                     <CardContent className="p-8 text-center">
                       <p className="text-gray-600">
-                        No pre-test submissions found.
+                        No preTest submissions found.
                       </p>
                     </CardContent>
                   </Card>
@@ -207,7 +207,7 @@ const ScorePage = () => {
                 <Card className="border shadow-sm bg-white">
                   <CardContent className="p-8 text-center">
                     <p className="text-gray-600">
-                      No post-test submissions found.
+                      No postTest submissions found.
                     </p>
                   </CardContent>
                 </Card>

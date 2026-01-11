@@ -15,10 +15,6 @@ import {
   ArrowRight,
   Sparkles,
   Star,
-  Trophy,
-  Zap,
-  Target,
-  TrendingUp,
   Loader2,
 } from 'lucide-react'
 
@@ -29,7 +25,7 @@ const HomePage: React.FC = () => {
 
   useEffect(() => {
     getQuarter()
-  })
+  }, [])
 
   const { materials, setIndexMaterial, setIndexQuestion, resetScore } =
     useReadStore()

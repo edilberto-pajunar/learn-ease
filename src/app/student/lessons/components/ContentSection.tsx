@@ -1,24 +1,15 @@
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Content } from '@/interface/lesson'
-import {
-  Bookmark,
-  BookmarkCheck,
-  CheckCircle2,
-  ChevronDown,
-  ChevronUp,
-  Circle,
-  Lightbulb,
-  Sparkles,
-} from 'lucide-react'
+import { Bookmark, BookmarkCheck, CheckCircle2, Circle } from 'lucide-react'
 
 interface ContentSectionProps {
   content: Content
   contentId: string
-  expandedExamples: Set<string>
-  highlightedText: string | null
-  onToggleExample: (contentId: string, exampleIndex: number) => void
-  onTextHighlight: (text: string) => void
+  expandedExamples?: Set<string>
+  highlightedText?: string | null
+  onToggleExample?: (contentId: string, exampleIndex: number) => void
+  onTextHighlight?: (text: string) => void
   onToggleBookmark: (sectionId: string) => void
   onMarkComplete: (sectionId: string) => void
   isBookmarked: boolean
@@ -28,10 +19,6 @@ interface ContentSectionProps {
 export default function ContentSection({
   content,
   contentId,
-  expandedExamples,
-  highlightedText,
-  onToggleExample,
-  onTextHighlight,
   onToggleBookmark,
   onMarkComplete,
   isBookmarked,

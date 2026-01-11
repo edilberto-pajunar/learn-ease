@@ -27,8 +27,8 @@ export default function SummaryPage() {
   const { allSubmissions, fetchAllSubmissions } = useSubmissionStore()
   const { skills, getSkills, materials, setMaterials } = useAdminStore()
   const [selectedTestType, setSelectedTestType] = useState<
-    'pre_test' | 'post_test'
-  >('pre_test')
+      'preTest' | 'postTest'
+  >('preTest')
   const [selectedSkill, setSelectedSkill] = useState<string>('all')
 
   useEffect(() => {
@@ -67,10 +67,10 @@ export default function SummaryPage() {
   const skillRankings = useMemo(() => {
     return skills
       .map((skill) => {
-        const preTestScore = getTotalScorePerSkill(skill.id, 'pre_test')
-        const postTestScore = getTotalScorePerSkill(skill.id, 'post_test')
+        const preTestScore = getTotalScorePerSkill(skill.id, 'preTest')
+        const postTestScore = getTotalScorePerSkill(skill.id, 'postTest')
         const totalScore = preTestScore + postTestScore
-        const hps = 5 * getUniqueStudentsCount('pre_test')
+        const hps = 5 * getUniqueStudentsCount('preTest')
         const percentage = parseFloat(getPercentage(totalScore, hps))
 
         return {
@@ -89,8 +89,8 @@ export default function SummaryPage() {
   const skillChartData = useMemo(() => {
     return skills.map((skill) => ({
       name: skill.title,
-      'Pre-test': getTotalScorePerSkill(skill.id, 'pre_test'),
-      'Post-test': getTotalScorePerSkill(skill.id, 'post_test'),
+      'Pre-test': getTotalScorePerSkill(skill.id, 'preTest'),
+      'Post-test': getTotalScorePerSkill(skill.id, 'postTest'),
     }))
   }, [skills, allSubmissions])
 
@@ -104,10 +104,10 @@ export default function SummaryPage() {
           (s) => s.studentId === studentId,
         )
         const preTestSubmissions = studentSubmissions.filter(
-          (s) => s.testType === 'pre_test',
+          (s) => s.testType === 'preTest',
         )
         const postTestSubmissions = studentSubmissions.filter(
-          (s) => s.testType === 'post_test',
+          (s) => s.testType === 'postTest',
         )
 
         const avgPreTest =
@@ -174,17 +174,17 @@ export default function SummaryPage() {
           <span className="text-sm font-medium text-gray-700">Test Type:</span>
           <div className="flex bg-gray-100 rounded-lg p-1">
             <Button
-              variant={selectedTestType === 'pre_test' ? 'default' : 'ghost'}
+              variant={selectedTestType === 'preTest' ? 'default' : 'ghost'}
               size="sm"
-              onClick={() => setSelectedTestType('pre_test')}
+              onClick={() => setSelectedTestType('preTest')}
               className="text-xs"
             >
               Pre-test
             </Button>
             <Button
-              variant={selectedTestType === 'post_test' ? 'default' : 'ghost'}
+              variant={selectedTestType === 'postTest' ? 'default' : 'ghost'}
               size="sm"
-              onClick={() => setSelectedTestType('post_test')}
+              onClick={() => setSelectedTestType('postTest')}
               className="text-xs"
             >
               Post-test
@@ -219,7 +219,7 @@ export default function SummaryPage() {
               {getUniqueStudentsCount(selectedTestType)}
             </div>
             <p className="text-xs text-muted-foreground">
-              Active in {selectedTestType.replace('_', ' ')}
+              Active in {selectedTestType.replace('Test', ' ')}
             </p>
           </CardContent>
         </Card>
@@ -273,7 +273,7 @@ export default function SummaryPage() {
                     skillRankings.reduce(
                       (acc, skill) =>
                         acc +
-                        (selectedTestType === 'pre_test'
+                        (selectedTestType === 'preTest'
                           ? skill.preTestScore
                           : skill.postTestScore),
                       0,
@@ -282,7 +282,7 @@ export default function SummaryPage() {
                 : 0}
             </div>
             <p className="text-xs text-muted-foreground">
-              {selectedTestType.replace('_', ' ')} average
+              {selectedTestType.replace('Test', ' ')} average
             </p>
           </CardContent>
         </Card>
@@ -332,7 +332,7 @@ export default function SummaryPage() {
             {/* Skill Performance Comparison */}
             <Card>
               <CardHeader>
-                <CardTitle>Pre-test vs Post-test Performance</CardTitle>
+                <CardTitle>Pre Test vs Post Test Performance</CardTitle>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
@@ -342,8 +342,8 @@ export default function SummaryPage() {
                     <YAxis />
                     <Tooltip />
                     <Legend />
-                    <Bar dataKey="Pre-test" fill="#8884d8" />
-                    <Bar dataKey="Post-test" fill="#82ca9d" />
+                    <Bar dataKey="Pre Test" fill="#8884d8" />
+                    <Bar dataKey="Post Test" fill="#82ca9d" />
                   </BarChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -398,10 +398,10 @@ export default function SummaryPage() {
                       <th className="text-left py-3 px-4 font-medium">Rank</th>
                       <th className="text-left py-3 px-4 font-medium">Skill</th>
                       <th className="text-left py-3 px-4 font-medium">
-                        Pre-test Score
+                        Pre Test Score
                       </th>
                       <th className="text-left py-3 px-4 font-medium">
-                        Post-test Score
+                        Post Test Score
                       </th>
                       <th className="text-left py-3 px-4 font-medium">
                         Improvement
@@ -464,13 +464,13 @@ export default function SummaryPage() {
                   <Legend />
                   <Line
                     type="monotone"
-                    dataKey="Pre-test Average"
+                    dataKey="Pre Test Average"
                     stroke="#8884d8"
                     strokeWidth={2}
                   />
                   <Line
                     type="monotone"
-                    dataKey="Post-test Average"
+                    dataKey="Post Test Average"
                     stroke="#82ca9d"
                     strokeWidth={2}
                   />
@@ -494,10 +494,10 @@ export default function SummaryPage() {
                         Student ID
                       </th>
                       <th className="text-left py-3 px-4 font-medium">
-                        Pre-test Avg
+                        Pre Test Avg
                       </th>
                       <th className="text-left py-3 px-4 font-medium">
-                        Post-test Avg
+                        Post Test Avg
                       </th>
                       <th className="text-left py-3 px-4 font-medium">
                         Improvement
@@ -518,12 +518,12 @@ export default function SummaryPage() {
                         <td className="py-3 px-4 font-medium">
                           {student.studentId}
                         </td>
-                        <td className="py-3 px-4">
+                        {/* <td className="py-3 px-4">
                           {student['Pre-test Average']}
                         </td>
                         <td className="py-3 px-4">
-                          {student['Post-test Average']}
-                        </td>
+                          {student['Post Test Average']}
+                        </td> */}
                         <td className="py-3 px-4">
                           <span
                             className={`font-medium ${

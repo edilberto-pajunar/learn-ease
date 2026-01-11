@@ -19,6 +19,12 @@ export const lessonService = {
           ...doc.data(),
         })) as Lesson[]
 
+        data.sort((a, b) => {
+          if (a.lesson && b.lesson && a.lesson < b.lesson) return -1
+          if (a.lesson && b.lesson && a.lesson > b.lesson) return 1
+          return 0
+        })
+
         return callback(data)
       },
       (error) => {

@@ -1,12 +1,12 @@
 export enum UserRole {
-  ADMIN = "admin",
-  STUDENT = "student",
+  ADMIN = 'admin',
+  STUDENT = 'student',
 }
 
 export interface AppUser {
-  id: string;
-  email: string;
-  name: string;
-  createdAt: Date;
-  role: UserRole;
+  id: string
+  email: string
+  name: string
+  createdAt: Date
+  role: UserRole
 }

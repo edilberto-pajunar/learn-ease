@@ -2,8 +2,8 @@ import { Answer, Submission } from '@/interface/submission'
 import { create } from 'zustand'
 
 export enum TestTypeTab {
-  PRE_TEST = 'pre_test',
-  POST_TEST = 'post_test',
+  PRE_TEST = 'preTest',
+  POST_TEST = 'postTest',
   ALL = 'all',
 }
 

@@ -1,6 +1,7 @@
 import { db } from '@/firebase/client_app'
 import { Submission } from '@/interface/submission'
-import { doc, setDoc, collection } from 'firebase/firestore'
+import { AppUser } from '@/interface/user'
+import { doc, setDoc, collection, updateDoc } from 'firebase/firestore'
 
 export const readingService = {
   async endTime(
@@ -27,7 +28,10 @@ export const readingService = {
     }
   },
 
-  async submitAnswer(submission: Submission) {
+  async submitAnswer(
+    submission: Submission,
+    userId: string,
+  ) {
     try {
       const submissionsRef = collection(db, 'submissions')
       const studentId = submission.studentId
@@ -53,10 +57,42 @@ export const readingService = {
         },
         { merge: true },
       )
+
       console.log(`StudentID: ${studentId}: Answer submitted: ${materialId}`)
+     
       return true
     } catch (error) {
       console.log('Error submitting answer: ', error)
+      return false
+    }
+  },
+
+  async finishUserAssessment(
+    userId: string,
+    quarter: string,
+    testType: string,
+  ) {
+    try {
+      const userAssessmentRef = collection(db, 'userAssessments')
+      const docRef = doc(userAssessmentRef)
+      const preTestCompleted = testType === 'preTest'
+      const postTestCompleted = testType === 'postTest'
+      await setDoc(
+        docRef,
+        {
+          id: docRef.id,
+          userId: userId,
+          quarter: quarter,
+          preTestCompleted: preTestCompleted,
+          postTestCompleted: postTestCompleted,
+          updatedAt: new Date(),
+        },
+        { merge: true },
+      )
+      console.log('User assessment finished: ', docRef.id)
+      return true
+    } catch (e) {
+      console.log('Error finishing user assessment: ', e)
       return false
     }
   },

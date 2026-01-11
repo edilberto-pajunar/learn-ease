@@ -1,14 +1,20 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Lesson } from '@/interface/lesson'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { BookOpen, Target, CheckCircle2, Circle } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { BookOpen, CheckCircle2, Circle } from 'lucide-react'
 import ContentSection from './ContentSection'
 import MaterialSection from './MaterialSection'
+import { useLessonStore } from '@/hooks/useLessonStore'
+import { useRouter } from 'next/navigation'
 
 export default function LessonPage({ lesson }: { lesson: Lesson }) {
+  const { lessons, setLessons } = useLessonStore()
+  const router = useRouter()
+
   const [expandedExamples, setExpandedExamples] = useState<Set<string>>(
     new Set(),
   )
@@ -19,6 +25,10 @@ export default function LessonPage({ lesson }: { lesson: Lesson }) {
   const [bookmarkedSections, setBookmarkedSections] = useState<Set<string>>(
     new Set(),
   )
+
+  useEffect(() => {
+    setLessons()
+  }, [setLessons])
 
   const toggleExample = (contentId: string, exampleIndex: number) => {
     const key = `${contentId}-${exampleIndex}`
@@ -77,6 +87,34 @@ export default function LessonPage({ lesson }: { lesson: Lesson }) {
                     {lesson.chapter === 'Q1' ? 'Chapter 1' : 'Chapter 2'}
                   </div>
                 )}
+                {lessons.length > 1 && (
+                  <div className="mb-4">
+                    <div className="flex flex-wrap gap-2">
+                      {lessons.map((l) => {
+                        const isActive = l.id === lesson.id
+                        return (
+                          <Button
+                            key={l.id}
+                            variant={isActive ? 'default' : 'outline'}
+                            size="sm"
+                            onClick={() => {
+                              if (l.id && l.id !== lesson.id) {
+                                router.push(`/student/lessons/${l.id}`)
+                              }
+                            }}
+                            className={
+                              isActive
+                                ? 'bg-blue-600 hover:bg-blue-700'
+                                : 'hover:bg-blue-50'
+                            }
+                          >
+                            {l.title || 'Untitled Lesson'}
+                          </Button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
                 <CardTitle className="text-3xl font-bold text-foreground mb-2">
                   {lesson.title || 'Untitled Lesson'}
                 </CardTitle>
@@ -124,7 +162,7 @@ export default function LessonPage({ lesson }: { lesson: Lesson }) {
             </CardContent>
           </Card>
         )}
-        
+
         {lesson.contents && lesson.contents.length > 0 ? (
           <Tabs
             defaultValue={lesson.contents[0]?.title || '0'}
