@@ -1,13 +1,14 @@
-export interface Example {
-  title?: string
-  author?: string
-  body?: string
-}
-
 export interface Content {
   title: string
-  content?: Example[]
+  examples?: string[]
   description?: string
+}
+
+export interface LessonMaterial {
+  title?: string
+  content?: string
+  type?: string // poem | prose
+  author?: string
 }
 
 export interface Lesson {
@@ -16,5 +17,6 @@ export interface Lesson {
   title?: string
   skill?: string
   overview?: string
-  content?: Content[]
+  contents?: Content[]
+  materials: LessonMaterial[]
 }

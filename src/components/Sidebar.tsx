@@ -36,6 +36,7 @@ const Sidebar: React.FC = () => {
     { href: '/admin/students', label: 'Students', icon: Users },
     { href: '/admin/materials', label: 'Materials', icon: BookOpenText },
     { href: '/admin/summary', label: 'Summary', icon: BarChart3 },
+    { href: '/admin/lessons', label: 'Lessons', icon: BookCheck },
     { href: '/admin/skills', label: 'Skills', icon: Target },
   ]
 
