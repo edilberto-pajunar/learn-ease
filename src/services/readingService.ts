@@ -30,7 +30,6 @@ export const readingService = {
 
   async submitAnswer(
     submission: Submission,
-    userId: string,
   ) {
     try {
       const submissionsRef = collection(db, 'submissions')
@@ -54,6 +53,7 @@ export const readingService = {
           testType: submission.testType,
           materialBatch: submission.materialBatch,
           miscues: submission.miscues,
+          quarter: submission.quarter,
         },
         { merge: true },
       )

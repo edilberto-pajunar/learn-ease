@@ -159,7 +159,7 @@ export const useReadStore = create<ReadStore>((set, get) => ({
       }
       console.log(`Submission: ${JSON.stringify(submission)}`)
 
-      await readingService.submitAnswer(submission, studentId)
+      await readingService.submitAnswer(submission)
       set({
         currentAnswers: [],
         comprehensionScore: 0,

@@ -12,13 +12,15 @@ import ReadingCompletedDialog from './ReadingCompletedDialog'
 interface QuestionCardProps {
   questions: Question[]
   studentId: string
+  setShowCompletionDialog: (show: boolean) => void
 }
 
 const QuestionCard: React.FC<QuestionCardProps> = ({
   questions,
   studentId,
+  setShowCompletionDialog,
 }) => {
-  const searchParams = useSearchParams();
+  const searchParams = useSearchParams()
   const testType = searchParams.get('testType') || 'preTest'
 
   const {
@@ -45,7 +47,6 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
   const currentQuestion = questions[indexQuestion]
   const hasSubmission = currentAnswers.length > indexQuestion
   const [finishingAssessment, setFinishingAssessment] = useState(false)
-  const [showCompletionDialog, setShowCompletionDialog] = useState(false)
 
   const totalQuestions = questions.length
 
@@ -88,11 +89,6 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
             setShowCompletionDialog(true)
             console.log('All materials completed! Redirecting to scores...')
             console.log('Material Batch: ', materialBatch)
-
-            setTimeout(() => {
-              setShowCompletionDialog(false)
-              router.push(`/student/reading/score/${materialBatch}`)
-            }, 3000)
           }
         } catch (error) {
           console.error('Error submitting answers:', error)
@@ -134,15 +130,6 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
 
   return (
     <>
-      {showCompletionDialog && (
-        <ReadingCompletedDialog
-          isOpen={showCompletionDialog}
-          materialBatch={materialBatch || ''}
-          totalMaterials={materials.length}
-          onClose={() => setShowCompletionDialog(false)}
-        />
-      )}
-
       <div className="space-y-6">
         {/* Question Progress */}
         <div className="flex items-center justify-between mb-6">

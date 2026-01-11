@@ -1,78 +1,79 @@
 'use client'
 
 import { useEffect, useState, use } from 'react'
-import { useAuthStore } from '@/hooks/useAuthStore'
-import { useReadStore } from '@/hooks/useReadStore'
-import { Submission } from '@/interface/submission'
-import { Card, CardContent } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import SubmissionCard from '../component/SubmissionCard'
+import { Submission, Answer } from '@/interface/submission'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useAdminStore } from '@/hooks/useAdminStore'
-import { Material } from '@/interface/material'
-import { db } from '@/firebase/client_app'
-import { collection, query, where, onSnapshot } from 'firebase/firestore'
+import { Material, Question } from '@/interface/material'
+import { useSubmissionStore } from '@/hooks/useSubmissionStore'
+import {
+  CheckCircle2,
+  XCircle,
+  ChevronDown,
+  ChevronUp,
+  BookOpen,
+  Clock,
+  AlertTriangle,
+} from 'lucide-react'
+import { Button } from '@/components/ui/button'
+
+const calculateReadingSpeed = (words: number, duration: number): number => {
+  if (duration === 0) return 0
+  const minutes = duration / 60
+  return Math.round(words / minutes)
+}
+
+const calculateTotalScore = (submission: Submission): number => {
+  const totalQuestions = submission.answers.length
+  const correctAnswers =
+    submission.comprehensionScore + submission.vocabularyScore
+  return totalQuestions > 0
+    ? Math.round((correctAnswers / totalQuestions) * 100)
+    : 0
+}
+
+const formatDuration = (seconds: number): string => {
+  if (seconds < 60) {
+    return `${Math.round(seconds)}s`
+  }
+  const minutes = Math.floor(seconds / 60)
+  const remainingSeconds = Math.round(seconds % 60)
+  return remainingSeconds > 0
+    ? `${minutes}m ${remainingSeconds}s`
+    : `${minutes}m`
+}
 
 export default function ScorePage({
   params,
 }: {
   params: Promise<{ materialBatch: string }>
 }) {
-  const { user } = useAuthStore()
-  const { materials, fetchMaterials } = useReadStore()
-  const { quarter } = useAdminStore()
-  const [batchSubmissions, setBatchSubmissions] = useState<Submission[]>([])
+  const { fetchAllMaterials, allMaterials } = useAdminStore()
+  const { batchSubmissions, setBatchSubmissions } = useSubmissionStore()
   const [loading, setLoading] = useState(true)
 
   const resolvedParams = use(params)
-  const studentId = user?.id
   const materialBatch = resolvedParams.materialBatch
 
-  // Fetch materials
+  // Fetch materials - only once on mount
   useEffect(() => {
-    fetchMaterials(quarter)
-  }, [fetchMaterials, quarter])
+    fetchAllMaterials()
+  }, [fetchAllMaterials])
 
-  // Fetch submissions for this specific batch
+  // Load batch submissions when materialBatch changes
   useEffect(() => {
-    if (!studentId || !materialBatch) return
+    const loadData = async () => {
+      if (materialBatch) {
+        setLoading(true)
+        await setBatchSubmissions(materialBatch)
+        setLoading(false)
+      }
+    }
+    loadData()
+  }, [materialBatch, setBatchSubmissions])
 
-    setLoading(true)
-    const submissionsRef = collection(db, 'submissions')
-    const q = query(
-      submissionsRef,
-      where('studentId', '==', studentId),
-      where('materialBatch', '==', materialBatch),
-    )
-
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const submissions: Submission[] = snapshot.docs.map(
-        (doc) => ({ id: doc.id, ...doc.data() }) as Submission,
-      )
-      setBatchSubmissions(submissions)
-      setLoading(false)
-    })
-
-    return () => unsubscribe()
-  }, [studentId, materialBatch])
-
-  // Get material details by ID
   const getMaterialDetails = (materialId: string): Material | undefined => {
-    return materials.find((material) => material.id === materialId)
-  }
-
-  const renderSubmissionCard = (submission: Submission) => {
-    const material: Material | undefined = getMaterialDetails(
-      submission.materialId,
-    )
-    if (!material) return null
-
-    return (
-      <SubmissionCard
-        key={submission.id}
-        submission={submission}
-        material={material}
-      />
-    )
+    return allMaterials.find((material) => material.id === materialId)
   }
 
   if (loading) {
@@ -165,17 +166,370 @@ export default function ScorePage({
               </CardContent>
             </Card>
           ) : (
-            <div className="space-y-8">
-              {/* Individual Submissions */}
-              <div>
-                <div className="grid gap-6">
-                  {batchSubmissions.map(renderSubmissionCard)}
-                </div>
-              </div>
+            <div className="space-y-6">
+              {batchSubmissions.map((submission) => {
+                const material = getMaterialDetails(submission.materialId)
+                if (!material) return null
+
+                return (
+                  <SubmissionScoreCard
+                    key={submission.id}
+                    submission={submission}
+                    material={material}
+                  />
+                )
+              })}
             </div>
           )}
         </div>
       </div>
     </div>
+  )
+}
+
+interface SubmissionScoreCardProps {
+  submission: Submission
+  material: Material
+}
+
+function SubmissionScoreCard({
+  submission,
+  material,
+}: SubmissionScoreCardProps) {
+  const [expandedQuestions, setExpandedQuestions] = useState<Set<number>>(
+    new Set(),
+  )
+  const [showAllQuestions, setShowAllQuestions] = useState(false)
+
+  const comprehensionQuestions = material.questions.filter(
+    (q) => q.type === 'COMPREHENSION',
+  )
+  const vocabularyQuestions = material.questions.filter(
+    (q) => q.type === 'VOCABULARY',
+  )
+
+  useEffect(() => {
+    if (showAllQuestions) {
+      const allIndices = new Set<number>()
+      comprehensionQuestions.forEach((_, index) => allIndices.add(index))
+      vocabularyQuestions.forEach((_, index) =>
+        allIndices.add(index + comprehensionQuestions.length),
+      )
+      setExpandedQuestions(allIndices)
+    } else {
+      setExpandedQuestions(new Set())
+    }
+  }, [showAllQuestions, comprehensionQuestions, vocabularyQuestions])
+
+  const totalScore = calculateTotalScore(submission)
+  const readingSpeed = calculateReadingSpeed(
+    submission.numberOfWords,
+    submission.duration,
+  )
+  const miscuesCount = submission.miscues?.length || 0
+
+  const toggleQuestion = (index: number) => {
+    const newExpanded = new Set(expandedQuestions)
+    if (newExpanded.has(index)) {
+      newExpanded.delete(index)
+    } else {
+      newExpanded.add(index)
+    }
+    setExpandedQuestions(newExpanded)
+  }
+
+  const getAnswerForQuestion = (
+    questionIndex: number,
+    questionType: string,
+  ): Answer | undefined => {
+    if (questionType === 'COMPREHENSION') {
+      return submission.answers.find(
+        (a) =>
+          a.type === 'COMPREHENSION' &&
+          submission.answers
+            .filter((ans) => ans.type === 'COMPREHENSION')
+            .indexOf(a) === questionIndex,
+      )
+    } else {
+      const vocabAnswers = submission.answers.filter(
+        (a) => a.type === 'VOCABULARY',
+      )
+      return vocabAnswers[questionIndex]
+    }
+  }
+
+  const renderQuestion = (
+    question: Question,
+    index: number,
+    type: string,
+    forceExpanded?: boolean,
+  ) => {
+    const answer = getAnswerForQuestion(index, type)
+    const isCorrect = answer?.isCorrect || false
+    const isExpanded =
+      forceExpanded !== undefined ? forceExpanded : expandedQuestions.has(index)
+
+    return (
+      <Card
+        key={`${type}-${index}`}
+        className={`border-l-4 transition-all duration-200 hover:shadow-md ${
+          isCorrect
+            ? 'border-l-green-500 bg-green-50/30'
+            : 'border-l-red-500 bg-red-50/30'
+        }`}
+      >
+        <CardContent className="p-4">
+          <div className="flex items-start gap-3">
+            <div
+              className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
+                isCorrect ? 'bg-green-500' : 'bg-red-500'
+              }`}
+            >
+              {isCorrect ? (
+                <CheckCircle2 className="w-5 h-5 text-white" />
+              ) : (
+                <XCircle className="w-5 h-5 text-white" />
+              )}
+            </div>
+            <div className="flex-1">
+              <div className="flex items-start justify-between gap-2 mb-2">
+                <p className="text-sm font-semibold text-gray-900 flex-1">
+                  {question.title}
+                </p>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => toggleQuestion(index)}
+                  className="h-6 w-6 p-0"
+                >
+                  {isExpanded ? (
+                    <ChevronUp className="w-4 h-4" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4" />
+                  )}
+                </Button>
+              </div>
+
+              {isExpanded && (
+                <div className="mt-3 space-y-3 pl-11">
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-medium text-gray-600">
+                        Your Answer:
+                      </span>
+                      <span
+                        className={`px-2 py-1 rounded text-xs font-medium ${
+                          isCorrect
+                            ? 'bg-green-100 text-green-700 border border-green-300'
+                            : 'bg-red-100 text-red-700 border border-red-300'
+                        }`}
+                      >
+                        {answer?.answer || 'No answer provided'}
+                      </span>
+                    </div>
+                    {!isCorrect && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-medium text-gray-600">
+                          Correct Answer:
+                        </span>
+                        <span className="px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-700 border border-green-300">
+                          {question.answer}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="mt-3 pt-3 border-t border-gray-200">
+                    <p className="text-xs font-medium text-gray-700 mb-2">
+                      Options:
+                    </p>
+                    <div className="grid grid-cols-2 gap-2">
+                      {question.options.map((option, optIdx) => {
+                        const isSelected = answer?.answer === option
+                        const isCorrectOption = option === question.answer
+                        return (
+                          <div
+                            key={optIdx}
+                            className={`p-2 rounded text-xs border ${
+                              isCorrectOption
+                                ? 'bg-green-50 border-green-300 text-green-700 font-medium'
+                                : isSelected && !isCorrect
+                                  ? 'bg-red-50 border-red-300 text-red-700'
+                                  : 'bg-gray-50 border-gray-200 text-gray-600'
+                            }`}
+                          >
+                            {option}
+                            {isCorrectOption && (
+                              <CheckCircle2 className="w-3 h-3 inline ml-1" />
+                            )}
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  return (
+    <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm overflow-hidden">
+      <div className="h-2 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
+      <CardHeader className="pb-4">
+        <div className="flex items-start justify-between">
+          <div>
+            <CardTitle className="text-2xl font-bold mb-1">
+              {material.title || 'Reading Assessment'}
+            </CardTitle>
+            <p className="text-sm text-muted-foreground">
+              {submission.submittedAt?.toDate?.().toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+              }) || 'Date not available'}
+            </p>
+          </div>
+          <div className="text-right">
+            <div className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              {totalScore}%
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {submission.comprehensionScore + submission.vocabularyScore} /{' '}
+              {submission.answers.length} correct
+            </p>
+          </div>
+        </div>
+      </CardHeader>
+
+      <CardContent className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl border border-blue-200">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 bg-blue-500 rounded-lg">
+                <BookOpen className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-blue-700">
+                  {totalScore}%
+                </p>
+                <p className="text-xs text-blue-600 font-medium">
+                  Overall Score
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-4 bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl border border-emerald-200">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 bg-emerald-500 rounded-lg">
+                <Clock className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-emerald-700">
+                  {readingSpeed}
+                </p>
+                <p className="text-xs text-emerald-600 font-medium">
+                  Words/Min
+                </p>
+                <p className="text-xs text-emerald-500 mt-1">
+                  {formatDuration(submission.duration)}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-4 bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl border border-amber-200">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 bg-amber-500 rounded-lg">
+                <AlertTriangle className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-amber-700">
+                  {miscuesCount}
+                </p>
+                <p className="text-xs text-amber-600 font-medium">Miscues</p>
+                {miscuesCount > 0 && (
+                  <p className="text-xs text-amber-500 mt-1">
+                    {Math.round(
+                      (miscuesCount / submission.numberOfWords) * 100,
+                    )}
+                    % error rate
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="pt-4 border-t">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-gray-900">
+              Question Details
+            </h3>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowAllQuestions(!showAllQuestions)}
+            >
+              {showAllQuestions ? 'Collapse All' : 'Expand All'}
+            </Button>
+          </div>
+
+          {comprehensionQuestions.length > 0 && (
+            <div className="mb-6">
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="text-sm font-semibold text-purple-700 flex items-center gap-2">
+                  <div className="w-1 h-5 bg-purple-500 rounded-full" />
+                  Comprehension Questions ({submission.comprehensionScore}/
+                  {comprehensionQuestions.length})
+                </h4>
+              </div>
+              <div className="space-y-3">
+                {comprehensionQuestions.map((question, index) => {
+                  const isExpanded =
+                    showAllQuestions || expandedQuestions.has(index)
+                  return renderQuestion(
+                    question,
+                    index,
+                    'COMPREHENSION',
+                    isExpanded,
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
+          {vocabularyQuestions.length > 0 && (
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="text-sm font-semibold text-indigo-700 flex items-center gap-2">
+                  <div className="w-1 h-5 bg-indigo-500 rounded-full" />
+                  Vocabulary Questions ({submission.vocabularyScore}/
+                  {vocabularyQuestions.length})
+                </h4>
+              </div>
+              <div className="space-y-3">
+                {vocabularyQuestions.map((question, index) => {
+                  const isExpanded =
+                    showAllQuestions || expandedQuestions.has(index)
+                  return renderQuestion(
+                    question,
+                    index,
+                    'VOCABULARY',
+                    isExpanded,
+                  )
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
   )
 }
