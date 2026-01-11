@@ -1,5 +1,6 @@
 import { db } from '@/firebase/client_app'
 import { Material } from '@/interface/material'
+import { Quarter } from '@/interface/quarter'
 import {
   addDoc,
   collection,
@@ -91,7 +92,45 @@ export const adminService = {
   async toggleQuarter(quarter: string) {
     try {
       const ref = doc(db, 'admin', 'quarters')
-      await setDoc(ref, { quarter })
+      const docSnap = await getDoc(ref)
+      if (docSnap.exists()) {
+        const data = docSnap.data()
+        data.quarter = quarter
+        await updateDoc(ref, data)
+      } else {
+        console.log('No such document!')
+      }
+    } catch (e) {
+      console.log(e)
+    }
+  },
+  async getTestType() {
+    try {
+      const docRef = doc(db, 'admin', 'testType')
+      const docSnap = await getDoc(docRef)
+
+      if (docSnap.exists()) {
+        return docSnap.data()
+      } else {
+        console.log('No such document!')
+        return null
+      }
+    } catch (error) {
+      console.error('Error getting document:', error)
+      throw error
+    }
+  },
+  async toggleTestType(testType: string) {
+    try {
+      const ref = doc(db, 'admin', 'quarters')
+      const docSnap = await getDoc(ref)
+      if (docSnap.exists()) {
+        const data = docSnap.data()
+        data[testType] = !data[testType]
+        await updateDoc(ref, data)
+      } else {
+        console.log('No such document!')
+      }
     } catch (e) {
       console.log(e)
     }
@@ -146,5 +185,18 @@ export const adminService = {
       console.log(e)
       throw e
     }
+  },
+
+  listenToQuarter(callback: (data: Quarter | null) => void) {
+    const docRef = doc(db, 'admin', 'quarters')
+
+    const unsubscribe = onSnapshot(docRef, (docSnap) => {
+      if (docSnap.exists()) {
+        callback(docSnap.data() as Quarter)
+      } else {
+        callback(null)
+      }
+    })
+    return unsubscribe
   },
 }

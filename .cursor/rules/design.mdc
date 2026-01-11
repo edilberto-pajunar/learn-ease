@@ -7,21 +7,79 @@ description: Design system rules for LearnEase learning platform
 
 ## Core Principles
 
-This is a learning-focused web application that prioritizes clarity, accessibility, and simplicity.
+This is a learning-focused web application that combines book-style aesthetics with interactive, creative design elements to create an engaging reading and learning experience.
+
+## Book-Style Design
+
+- **Page-like layouts** - Create content areas that resemble book pages with:
+  - Subtle paper texture backgrounds (use `bg-stone-50`, `bg-amber-50`, or `bg-cream` tones)
+  - Page margins and gutters that mimic book pages
+  - Typography that evokes reading a physical book (serif fonts for body text, appropriate line-height)
+  - Page turn animations and transitions where appropriate
+- **Reading experience** - Design content areas with:
+  - Comfortable reading width (max-width: ~65-75ch for optimal readability)
+  - Generous line spacing (line-height: 1.6-1.8)
+  - Soft shadows and depth to create layered page effects
+  - Bookmark-style navigation elements
+- **Book aesthetics** - Incorporate visual elements like:
+  - Decorative borders or dividers that resemble book edges
+  - Chapter/section headers styled like book chapters
+  - Page numbers or progress indicators styled as book pages
+
+## Interactive Design
+
+- **Smooth animations and transitions** - Use Tailwind's transition utilities:
+  - `transition-all duration-300 ease-in-out` for interactive elements
+  - Hover effects: `hover:scale-105`, `hover:shadow-lg`, `hover:bg-opacity-80`
+  - Focus states: `focus:ring-2 focus:ring-offset-2` for accessibility
+- **Interactive feedback** - All clickable elements must provide visual feedback:
+  - Buttons: scale, shadow, or color changes on hover/active
+  - Cards: lift effect on hover (`hover:-translate-y-1 hover:shadow-xl`)
+  - Links: underline animations or color transitions
+- **Micro-interactions** - Add delightful details:
+  - Loading states with smooth animations
+  - Success/error states with animated icons
+  - Progress indicators with smooth transitions
+  - Page transitions that feel natural
+- **Engagement elements**:
+  - Interactive tooltips and popovers
+  - Expandable sections with smooth accordion animations
+  - Drag-and-drop interactions where appropriate
+  - Scroll-triggered animations for content reveal
+
+## Creative Design Elements
+
+- **Visual interest** - Balance creativity with readability:
+  - Use creative layouts that break traditional grid patterns when appropriate
+  - Incorporate decorative elements (borders, dividers, icons) that enhance the book theme
+  - Add subtle patterns or textures that complement the book aesthetic
+  - Use creative typography hierarchy (mixing font weights, sizes, styles)
+- **Depth and dimension**:
+  - Layered shadows to create depth (`shadow-sm`, `shadow-md`, `shadow-lg`)
+  - Subtle borders and outlines for definition
+  - Background variations to create visual separation
+- **Creative components**:
+  - Bookmark-style tabs or navigation
+  - Page curl effects on cards or content sections
+  - Animated book covers or illustrations
+  - Creative progress indicators (e.g., reading progress bars styled as bookmarks)
 
 ## Color Palette
 
 - **Use only TWO primary colors throughout the application**
-- Choose colors that support learning and readability
+- Choose colors that support learning and readability while maintaining book aesthetics
+- Consider warm, paper-like tones for backgrounds (cream, beige, soft browns)
 - Maintain consistent color usage across all components
 - Use shades/tints of the primary colors for variations when needed
+- Add subtle accent colors for interactive elements and highlights
 
 ## Styling Guidelines
 
 - **NO linear gradients** - use solid colors only
 - **Use className only** for styling - leverage Tailwind CSS utility classes
 - **NO inline styles or style objects** unless absolutely necessary
-- Keep designs clean and uncluttered to support focus on learning content
+- Keep designs clean and uncluttered while maintaining creative, engaging elements
+- Balance book-style aesthetics with modern interactive design
 
 ## Icons
 
@@ -29,6 +87,7 @@ This is a learning-focused web application that prioritizes clarity, accessibili
 - **DO NOT create custom SVG icons**
 - Import icons from established packages
 - Maintain consistent icon sizing and styling
+- Add subtle animations to icons on hover/interaction
 
 ## Responsive Design
 
@@ -40,6 +99,7 @@ This is a learning-focused web application that prioritizes clarity, accessibili
 - Use Tailwind responsive prefixes: `sm:`, `md:`, `lg:`, `xl:`, `2xl:`
 - Test layouts at all breakpoints
 - Ensure touch-friendly interactions on mobile/tablet
+- Adapt book-style elements for smaller screens (simplified page layouts on mobile)
 
 ## Component Structure
 
@@ -47,3 +107,4 @@ This is a learning-focused web application that prioritizes clarity, accessibili
 - Maintain clear hierarchy for learning materials
 - Prioritize readability with appropriate spacing and typography
 - Ensure consistent padding and margins across breakpoints
+- Incorporate interactive and creative elements that enhance the learning experience

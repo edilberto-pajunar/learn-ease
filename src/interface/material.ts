@@ -4,6 +4,7 @@ interface Material {
   questions: Question[]
   mode: string
   quarter: string
+  testType?: string
   skill: string
   title?: string
   author?: string

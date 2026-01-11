@@ -1,28 +1,39 @@
 import { AppUser, UserRole } from '@/interface/user'
 import { create } from 'zustand'
 import { db } from '@/firebase/client_app'
-import { collection, getDocs, query, where } from 'firebase/firestore'
+import {
+  collection,
+  getDocs,
+  query,
+  Unsubscribe,
+  where,
+} from 'firebase/firestore'
 import { Material } from '@/interface/material'
 import { adminService } from '@/services/adminService'
 import { Skill } from '@/interface/skill'
 import { submissionService } from '@/services/submissionService'
 import { pdfService } from '@/services/pdfService'
 import { doc, getDoc } from 'firebase/firestore'
+import { Quarter } from '@/interface/quarter'
 
 interface AdminState {
   students: AppUser[]
   materials: Material[]
-  quarter: string
+  quarter: Quarter | null
+  testType: string
   loading: boolean
   skills: Skill[]
   allMaterials: Material[]
+  quarterUnsubscribe: Unsubscribe | null
   setStudents: () => void
   setMaterials: () => () => void
-  toggleQuarter: (quarter: string) => void
+  toggleQuarter: (quarter: string) => Promise<void>
+  toggleTestType: (testType: string) => void
   addMaterial: (material: Material) => Promise<void>
   updateMaterial: (id: string, material: Partial<Material>) => Promise<void>
   deleteMaterial: (id: string) => Promise<void>
   getQuarter: () => Promise<void>
+  getTestType: () => Promise<void>
   getSkills: () => Promise<void>
   fetchAllMaterials: () => Promise<void>
   exportAllSubmissions: (studentId: string) => Promise<void>
@@ -32,9 +43,11 @@ export const useAdminStore = create<AdminState>((set) => ({
   students: [],
   materials: [],
   loading: false,
-  quarter: 'Q1',
+  quarter: null,
+  testType: 'pre_test',
   skills: [],
   allMaterials: [],
+  quarterUnsubscribe: null,
   setStudents: async () => {
     try {
       const studentsRef = collection(db, 'users')
@@ -72,12 +85,31 @@ export const useAdminStore = create<AdminState>((set) => ({
     await adminService.deleteMaterial(id)
   },
   toggleQuarter: async (quarter: string) => {
+    set({ loading: true })
     await adminService.toggleQuarter(quarter)
-    await useAdminStore.getState().getQuarter()
+    set({ loading: false })
   },
   getQuarter: async () => {
-    const quarter = await adminService.getQuarter()
-    set({ quarter: quarter?.quarter })
+    const { quarterUnsubscribe } = useAdminStore.getState()
+    if (quarterUnsubscribe) {
+      quarterUnsubscribe()
+      set({ quarterUnsubscribe: null })
+    }
+
+    const quarterListener = adminService.listenToQuarter((data) => {
+      set({ quarter: data })
+    })
+
+    set({ quarterUnsubscribe: quarterListener })
+    // const quarter = await adminService.getQuarter()
+    // set({ quarter: quarter?.quarter })
+  },
+  toggleTestType: async (testType: string) => {
+    await adminService.toggleTestType(testType)
+  },
+  getTestType: async () => {
+    const testType = await adminService.getTestType()
+    set({ testType: testType?.testType || 'pre_test' })
   },
   getSkills: async () => {
     try {

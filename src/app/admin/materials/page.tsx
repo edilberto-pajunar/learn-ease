@@ -23,12 +23,15 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { Skill } from '@/interface/skill'
-import CreateMaterial from './component/create_material'
-import EditMaterial from './component/edit_material'
+import { ChevronDown } from 'lucide-react'
+import CreateMaterial from './component/CreateMaterial'
+import EditMaterial from './component/EditMaterial'
+import MaterialHeader from './component/MaterialHeader'
 
 export default function MaterialsPage() {
   const {
     quarter,
+    testType,
     toggleQuarter,
     getQuarter,
     materials,
@@ -38,12 +41,20 @@ export default function MaterialsPage() {
     deleteMaterial,
     skills,
     getSkills,
+    toggleTestType,
   } = useAdminStore()
 
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [editingMaterial, setEditingMaterial] = useState<Material | null>(null)
   const [isQuarterLoading, setIsQuarterLoading] = useState(false)
+  const [selectedTestTypes, setSelectedTestTypes] = useState<{
+    pre_test: boolean
+    post_test: boolean
+  }>({
+    pre_test: true,
+    post_test: false,
+  })
   const [formData, setFormData] = useState({
     title: '',
     text: '',
@@ -64,7 +75,8 @@ export default function MaterialsPage() {
     const newMaterial: Material = {
       id: '',
       ...formData,
-      quarter,
+      quarter: quarter?.quarter || '',
+      testType,
       questions: formData.questions,
     }
     await addMaterial(newMaterial)
@@ -113,17 +125,6 @@ export default function MaterialsPage() {
     })
   }
 
-  const handleQuarterToggle = async () => {
-    setIsQuarterLoading(true)
-    try {
-      await toggleQuarter(quarter === 'Q1' ? 'Q2' : 'Q1')
-    } catch (error) {
-      console.error('Error toggling quarter:', error)
-    } finally {
-      setIsQuarterLoading(false)
-    }
-  }
-
   const addQuestion = () => {
     setFormData((prev) => ({
       ...prev,
@@ -159,45 +160,20 @@ export default function MaterialsPage() {
     }))
   }
 
-  const filteredMaterials = materials.filter(
-    (material) => material.quarter === quarter,
-  )
+  const filteredMaterials = materials.filter((material) => {
+    const matchesQuarter = material.quarter === quarter?.quarter
+    const matchesTestType =
+      !material.testType ||
+      (selectedTestTypes.pre_test && material.testType === 'pre_test') ||
+      (selectedTestTypes.post_test && material.testType === 'post_test')
+    return matchesQuarter && matchesTestType
+  })
 
   console.log(skills)
 
   return (
     <div className="container mx-auto p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Materials Management</h1>
-        <div className="flex gap-4">
-          <Button
-            variant="outline"
-            onClick={handleQuarterToggle}
-            disabled={isQuarterLoading}
-          >
-            {isQuarterLoading ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2"></div>
-                Loading...
-              </>
-            ) : (
-              `Current Quarter: ${quarter}`
-            )}
-          </Button>
-          <CreateMaterial
-            isCreateDialogOpen={isCreateDialogOpen}
-            setIsCreateDialogOpen={setIsCreateDialogOpen}
-            quarter={quarter}
-            formData={formData}
-            setFormData={setFormData}
-            skills={skills}
-            addQuestion={addQuestion}
-            updateQuestion={updateQuestion}
-            removeQuestion={removeQuestion}
-            handleCreateMaterial={handleCreateMaterial}
-          />
-        </div>
-      </div>
+      <MaterialHeader />
 
       <div className="grid gap-4">
         {filteredMaterials.map((material) => (
@@ -209,6 +185,8 @@ export default function MaterialsPage() {
                   <CardDescription>
                     {material.author && `By ${material.author}`} •{' '}
                     {material.skill} • {material.quarter}
+                    {material.testType &&
+                      ` • ${material.testType === 'pre_test' ? 'Pre-test' : 'Post-test'}`}
                   </CardDescription>
                 </div>
                 <div className="flex gap-2">
@@ -239,6 +217,19 @@ export default function MaterialsPage() {
           </Card>
         ))}
       </div>
+
+      <CreateMaterial
+        isCreateDialogOpen={isCreateDialogOpen}
+        setIsCreateDialogOpen={setIsCreateDialogOpen}
+        quarter={quarter?.quarter || ''}
+        formData={formData}
+        setFormData={setFormData}
+        skills={skills}
+        addQuestion={addQuestion}
+        updateQuestion={updateQuestion}
+        removeQuestion={removeQuestion}
+        handleCreateMaterial={handleCreateMaterial}
+      />
 
       <EditMaterial
         isEditDialogOpen={isEditDialogOpen}
