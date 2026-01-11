@@ -22,10 +22,10 @@ const ReadingPage: FC = () => {
   const [speechRate, setSpeechRate] = useState(1)
 
   useEffect(() => {
-    fetchMaterials(quarter)
+    fetchMaterials(quarter?.quarter || '')
 
     return () => {}
-  }, [fetchMaterials])
+  }, [fetchMaterials, quarter])
 
   if (materials.length === 0) {
     return (
@@ -93,7 +93,9 @@ const ReadingPage: FC = () => {
               </h1>
               <p className="text-lg text-muted-foreground">
                 Quarter:{' '}
-                <span className="font-semibold text-foreground">{quarter}</span>
+                <span className="font-semibold text-foreground">
+                  {quarter?.quarter}
+                </span>
               </p>
               <p className="text-base text-muted-foreground mt-2">
                 Read at your own pace and identify words you struggle with
@@ -301,7 +303,8 @@ const ReadingPage: FC = () => {
               </h2>
               <p className="text-muted-foreground">
                 Answer the following questions to test your understanding of the
-                reading passage. This will test your comprehension and vocabulary of the reading passage
+                reading passage. This will test your comprehension and
+                vocabulary of the reading passage
               </p>
             </div>
 
@@ -341,8 +344,6 @@ const ReadingPage: FC = () => {
 
         {/* Fun Facts Section */}
         <FunFact />
-
-     
       </div>
     </div>
   )

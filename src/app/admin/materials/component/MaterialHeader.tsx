@@ -38,7 +38,7 @@ export default function MaterialHeader() {
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                Post-test
+                Pre Test
               </span>
               <button
                 type="button"
@@ -63,7 +63,7 @@ export default function MaterialHeader() {
             </div>
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                Post-test
+                Post Test
               </span>
               <button
                 type="button"

@@ -7,7 +7,6 @@ import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import {
   Users,
-  BookOpen,
   BarChart3,
   Target,
   Home,
@@ -18,6 +17,8 @@ import {
   ChevronLeft,
   ChevronRight,
   LogOut,
+  BookOpenText,
+  BookCheck,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
@@ -33,15 +34,16 @@ const Sidebar: React.FC = () => {
 
   const adminLinks = [
     { href: '/admin/students', label: 'Students', icon: Users },
-    { href: '/admin/materials', label: 'Materials', icon: BookOpen },
+    { href: '/admin/materials', label: 'Materials', icon: BookOpenText },
     { href: '/admin/summary', label: 'Summary', icon: BarChart3 },
     { href: '/admin/skills', label: 'Skills', icon: Target },
   ]
 
   const studentLinks = [
     { href: '/student', label: 'Home', icon: Home },
-    { href: '/student/mode', label: 'Reading Test', icon: BookOpen },
+    { href: '/student/mode', label: 'Reading Test', icon: BookOpenText },
     { href: '/student/reading/score', label: 'Score', icon: Trophy },
+    { href: '/student/lessons', label: 'Lessons', icon: BookCheck },
     { href: '/student/dashboard', label: 'Progress', icon: TrendingUp },
   ]
 

@@ -1,159 +1,236 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useReadStore } from '@/hooks/useReadStore'
 import { useAdminStore } from '@/hooks/useAdminStore'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import {
+  Loader2,
+  AlertTriangle,
+  FileText,
+  ArrowRight,
+  Info,
+  ClipboardList,
+  Target,
+} from 'lucide-react'
 
 function ModePage() {
   const router = useRouter()
   const { materials, resetAll } = useReadStore()
   const { getQuarter, quarter } = useAdminStore()
 
-  const handleTestType = async (testType: string) => {
-    await getQuarter()
+  useEffect(() => {
+    getQuarter()
+  }, [getQuarter])
 
+  const handleTestType = async (testType: string) => {
     // Reset all reading progress when starting a new test
     if (materials.length !== 0) {
       resetAll()
     }
 
-    router.push(`/student/reading?testType=${testType}&quarter=${quarter}`)
+    router.push(
+      `/student/reading?testType=${testType}&quarter=${quarter?.quarter}`,
+    )
   }
 
-  const testOptions = [
+  const allTestOptions = [
     {
       type: 'pre_test',
       title: 'Pre Test',
       description: 'Take this before starting your learning journey',
-      icon: '📝',
-      color: 'from-emerald-500 to-green-600',
-      bgColor: 'from-emerald-50 to-green-100',
-      borderColor: 'border-emerald-200',
-      shadowColor: 'shadow-emerald-500/25',
-      hoverColor: 'hover:from-emerald-600 hover:to-green-700',
+      icon: ClipboardList,
     },
     {
       type: 'post_test',
       title: 'Post Test',
       description: 'Assess your progress after completing the course',
-      icon: '🎯',
-      color: 'from-amber-500 to-orange-600',
-      bgColor: 'from-amber-50 to-orange-100',
-      borderColor: 'border-amber-200',
-      shadowColor: 'shadow-amber-500/25',
-      hoverColor: 'hover:from-amber-600 hover:to-orange-700',
+      icon: Target,
     },
   ]
 
+  // Filter test options based on quarter availability
+  const availableTestOptions = allTestOptions.filter((option) => {
+    if (!quarter) return false
+    if (option.type === 'pre_test') return quarter.pre_test
+    if (option.type === 'post_test') return quarter.post_test
+    return false
+  })
+
+  // Determine header content based on available test types
+  const getHeaderContent = () => {
+    if (!quarter) return null
+
+    const hasPreTest = quarter.pre_test
+    const hasPostTest = quarter.post_test
+
+    if (hasPreTest && hasPostTest) {
+      return {
+        title: 'Choose Your Test Type',
+        description:
+          'Select whether you are taking a pre-test to assess your current knowledge or a post-test to measure your progress after completing the course.',
+      }
+    } else if (hasPreTest && !hasPostTest) {
+      return {
+        title: 'Start Your Pre-Test',
+        description:
+          'Take this assessment to evaluate your current reading skills and comprehension level. This will help establish your baseline and guide your learning journey.',
+      }
+    } else if (!hasPreTest && hasPostTest) {
+      return {
+        title: 'Take Your Post-Test',
+        description:
+          'Complete this final assessment to measure your progress and see how much you&apos;ve improved. This test will evaluate your reading comprehension and vocabulary skills.',
+      }
+    }
+
+    return null
+  }
+
+  const headerContent = getHeaderContent()
+
+  // Show loading state if quarter is not loaded yet
+  if (!quarter) {
+    return (
+      <div className="min-h-screen bg-blue-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-2xl shadow-lg mb-6">
+            <Loader2 className="w-8 h-8 text-white animate-spin" />
+          </div>
+          <h2 className="text-2xl font-bold text-slate-900 mb-2">Loading...</h2>
+          <p className="text-slate-600">
+            Please wait while we prepare your test options...
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  // Show message if no tests are available
+  if (availableTestOptions.length === 0) {
+    return (
+      <div className="min-h-screen bg-blue-50 flex items-center justify-center">
+        <div className="text-center max-w-md px-6">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-amber-100 rounded-2xl shadow-lg mb-6">
+            <AlertTriangle className="w-8 h-8 text-amber-600" />
+          </div>
+          <h2 className="text-2xl font-bold text-slate-900 mb-2">
+            No Tests Available
+          </h2>
+          <p className="text-slate-600">
+            There are no tests available for this quarter at the moment. Please
+            check back later or contact your instructor.
+          </p>
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-blue-50/30 to-indigo-50/50">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 bg-grid-pattern opacity-[0.02]" />
+    <div className="min-h-screen bg-blue-50">
+      <div className="absolute inset-0 bg-[url('/images/background.svg')] opacity-5"></div>
 
       {/* Main Content */}
-      <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-6 py-20">
+      <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 sm:px-6 py-12 sm:py-20">
         {/* Header Section */}
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl shadow-xl shadow-blue-500/25 mb-6">
-            <svg
-              className="w-8 h-8 text-white"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-              />
-            </svg>
+        <div className="text-center mb-8 sm:mb-12">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-2xl shadow-lg mb-6 hover:scale-110 transition-transform duration-300">
+            <FileText className="w-8 h-8 text-white" />
           </div>
 
-          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-foreground via-blue-600 to-indigo-600 bg-clip-text text-transparent mb-4">
-            Choose Your Test Type
-          </h1>
+          <div className="flex flex-col items-center gap-3 mb-4">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-slate-900">
+              {headerContent?.title || 'Choose Your Test Type'}
+            </h1>
+            {quarter?.quarter && (
+              <span className="inline-flex items-center px-4 py-1.5 rounded-full text-sm font-semibold bg-blue-100 text-blue-700 border-2 border-blue-200">
+                {quarter.quarter === 'Q1' ? 'Chapter 1' : 'Chapter 2'}
+              </span>
+            )}
+          </div>
 
-          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Select whether you are taking a pre-test to assess your current
-            knowledge or a post-test to measure your progress
-          </p>
+          {headerContent?.description && (
+            <p className="text-base sm:text-lg md:text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed">
+              {headerContent.description}
+            </p>
+          )}
         </div>
 
         {/* Test Options */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl">
-          {testOptions.map((option) => (
-            <Card
-              key={option.type}
-              className="group cursor-pointer border-0 shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 bg-gradient-to-br from-card to-card/50 overflow-hidden"
-            >
-              <div className={`h-2 bg-gradient-to-r ${option.color}`} />
-              <CardContent className="p-8">
-                <div className="text-center">
-                  {/* Icon */}
-                  <div
-                    className={`inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br ${option.bgColor} ${option.borderColor} border-2 rounded-2xl mb-6 group-hover:scale-110 transition-transform duration-300`}
-                  >
-                    <span className="text-3xl">{option.icon}</span>
-                  </div>
+        <div
+          className={`grid gap-6 sm:gap-8 w-full max-w-4xl ${
+            availableTestOptions.length === 1
+              ? 'grid-cols-1 max-w-md'
+              : 'grid-cols-1 md:grid-cols-2'
+          }`}
+        >
+          {availableTestOptions.map((option) => {
+            const isPreTest = option.type === 'pre_test'
 
-                  {/* Title */}
-                  <h3 className="text-2xl font-bold text-foreground mb-3">
-                    {option.title}
-                  </h3>
-
-                  {/* Description */}
-                  <p className="text-muted-foreground mb-8 leading-relaxed">
-                    {option.description}
-                  </p>
-
-                  {/* Action Button */}
-                  <Button
-                    onClick={() => handleTestType(option.type)}
-                    size="lg"
-                    className={`w-full bg-gradient-to-r ${option.color} ${option.hoverColor} text-white font-semibold py-3 px-6 shadow-xl ${option.shadowColor} hover:shadow-2xl transition-all duration-300 transform group-hover:scale-105`}
-                  >
-                    Start {option.title}
-                    <svg
-                      className="w-5 h-5 ml-2"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
+            return (
+              <Card
+                key={option.type}
+                className="group border-2 border-slate-200 shadow-lg bg-white cursor-pointer hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 transform overflow-hidden"
+              >
+                <div
+                  className={`h-2 ${
+                    isPreTest ? 'bg-emerald-600' : 'bg-amber-600'
+                  }`}
+                />
+                <CardContent className="p-6 sm:p-8">
+                  <div className="text-center">
+                    {/* Icon */}
+                    <div
+                      className={`inline-flex items-center justify-center w-20 h-20 border-2 rounded-2xl mb-6 transition-transform duration-300 group-hover:scale-110 ${
+                        isPreTest
+                          ? 'bg-emerald-100 border-emerald-200'
+                          : 'bg-amber-100 border-amber-200'
+                      }`}
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M13 7l5 5m0 0l-5 5m5-5H6"
+                      <option.icon
+                        className={`w-10 h-10 ${
+                          isPreTest ? 'text-emerald-600' : 'text-amber-600'
+                        }`}
                       />
-                    </svg>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                    </div>
+
+                    {/* Title */}
+                    <h3 className="text-2xl font-bold text-slate-900 mb-3">
+                      {option.title}
+                    </h3>
+
+                    {/* Description */}
+                    <p className="text-slate-600 mb-6 sm:mb-8 leading-relaxed">
+                      {option.description}
+                    </p>
+
+                    {/* Action Button */}
+                    <Button
+                      onClick={() => handleTestType(option.type)}
+                      size="lg"
+                      className={`w-full font-semibold py-3 px-6 shadow-lg transition-all duration-300 hover:shadow-xl transform group-hover:scale-105 ${
+                        isPreTest
+                          ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                          : 'bg-amber-600 hover:bg-amber-700 text-white'
+                      }`}
+                    >
+                      Start {option.title}
+                      <ArrowRight className="w-5 h-5 ml-2" />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )
+          })}
         </div>
 
         {/* Additional Info */}
-        <div className="mt-16 text-center">
-          <div className="inline-flex items-center space-x-2 px-6 py-3 bg-accent/50 rounded-full border border-border/50">
-            <svg
-              className="w-5 h-5 text-muted-foreground"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-            <span className="text-sm text-muted-foreground">
+        <div className="mt-12 sm:mt-16 text-center">
+          <div className="inline-flex items-center gap-2 px-4 sm:px-6 py-3 bg-blue-50 rounded-full border-2 border-blue-200">
+            <Info className="w-5 h-5 text-blue-600 flex-shrink-0" />
+            <span className="text-sm text-slate-700 font-medium">
               Your test results will help personalize your learning experience
             </span>
           </div>
