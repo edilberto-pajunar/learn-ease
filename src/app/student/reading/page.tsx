@@ -1,6 +1,6 @@
 'use client'
 
-import { FC, useEffect, useState } from 'react'
+import { FC, useEffect, useState, Suspense } from 'react'
 import { useReadStore } from '@/hooks/useReadStore'
 import { useAuthStore } from '@/hooks/useAuthStore'
 import { wordCount } from '@/app/utils/wordCount'
@@ -22,9 +22,15 @@ import {
 import { useSearchParams } from 'next/navigation'
 import ReadingCompletedDialog from './component/ReadingCompletedDialog'
 
-const ReadingPage: FC = () => {
-  const { materials, indexMaterial, miscues, duration, fetchMaterials, materialBatch } =
-    useReadStore()
+const ReadingPageContent: FC = () => {
+  const {
+    materials,
+    indexMaterial,
+    miscues,
+    duration,
+    fetchMaterials,
+    materialBatch,
+  } = useReadStore()
   const { quarter, getQuarter } = useAdminStore()
   const searchParams = useSearchParams()
 
@@ -284,6 +290,30 @@ const ReadingPage: FC = () => {
         </div>
       </div>
     </>
+  )
+}
+
+const ReadingPage: FC = () => {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gradient-to-br from-background via-blue-50/30 to-indigo-50/50 flex items-center justify-center">
+          <div className="text-center">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-2xl shadow-lg mb-6">
+              <Loader2 className="w-8 h-8 text-white animate-spin" />
+            </div>
+            <h2 className="text-2xl font-bold text-foreground mb-2">
+              Loading Page
+            </h2>
+            <p className="text-muted-foreground">
+              Please wait while we prepare the page...
+            </p>
+          </div>
+        </div>
+      }
+    >
+      <ReadingPageContent />
+    </Suspense>
   )
 }
 
