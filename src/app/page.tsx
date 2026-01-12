@@ -6,17 +6,19 @@ import { Button } from '@/components/ui/button'
 import {
   BookOpen,
   Users,
-  BookMarked,
-  Lightbulb,
   ArrowRight,
   Star,
   Sparkles,
   Trophy,
-  Zap,
   CheckCircle2,
-  Play,
   Target,
   TrendingUp,
+  AlertCircle,
+  FileText,
+  BarChart3,
+  Clock,
+  Globe,
+  Zap,
 } from 'lucide-react'
 
 const HomePage = () => {
@@ -26,59 +28,87 @@ const HomePage = () => {
     router.push('/login')
   }
 
-  const stats = [
-    { label: 'Reading Materials', value: '100+', icon: BookOpen },
-    { label: 'Active Students', value: '5K+', icon: Users },
-    { label: 'Success Rate', value: '95%', icon: Trophy },
-    { label: 'Happy Learners', value: '10K+', icon: Star },
+  // const stats = [
+  //   { label: 'Reading Materials', value: '100+', icon: BookOpen },
+  //   { label: 'Active Students', value: '5K+', icon: Users },
+  //   { label: 'Success Rate', value: '95%', icon: Trophy },
+  //   { label: 'Happy Learners', value: '10K+', icon: Star },
+  // ]
+
+  const problems = [
+    {
+      icon: BookOpen,
+      title: 'Limited Access to Learning Materials',
+      description:
+        'Traditional textbooks are heavy, expensive, and not always accessible. Students struggle to carry books everywhere and access learning content when needed.',
+      color: 'bg-red-100 text-red-600',
+    },
+    {
+      icon: AlertCircle,
+      title: 'Lack of Engagement',
+      description:
+        'Static books fail to capture student attention. Without interactive elements, students lose interest and struggle to stay motivated.',
+      color: 'bg-orange-100 text-orange-600',
+    },
+    {
+      icon: BarChart3,
+      title: 'No Progress Tracking',
+      description:
+        "Traditional learning makes it difficult to track student progress. Teachers and students can't easily see improvement over time or identify areas that need more attention.",
+      color: 'bg-yellow-100 text-yellow-600',
+    },
+    {
+      icon: Clock,
+      title: 'One-Size-Fits-All Approach',
+      description:
+        "Traditional methods don't adapt to individual learning paces. Students who need more time or extra challenges are left behind or unchallenged.",
+      color: 'bg-purple-100 text-purple-600',
+    },
   ]
 
-  const features = [
+  const solutions = [
     {
-      icon: BookMarked,
-      title: 'Fun Reading Adventures',
+      icon: Globe,
+      title: 'Digital Access Anytime, Anywhere',
       description:
-        'Dive into exciting stories and articles that make reading feel like an adventure, not homework!',
+        'Access all learning materials online from any device. No heavy books to carry - your entire curriculum is just a click away, available 24/7.',
       color: 'bg-blue-100 text-blue-600',
     },
     {
-      icon: Target,
-      title: 'Level Up Your Skills',
+      icon: FileText,
+      title: 'Structured Learning Path',
       description:
-        'Master reading like a pro! Track your progress and watch your skills grow with every story you read.',
+        'Follow a proven learning structure: Pre-test to assess your starting point, interactive lessons to build knowledge, and post-test to measure your growth.',
+      color: 'bg-green-100 text-green-600',
     },
     {
       icon: TrendingUp,
-      title: 'See Your Progress',
+      title: 'Real-Time Progress Tracking',
       description:
-        'Watch your reading superpowers grow! Get cool charts and badges that show how awesome you&apos;re becoming.',
+        "Watch your improvement with detailed progress charts and analytics. See exactly how you're advancing through each lesson and skill area.",
+      color: 'bg-indigo-100 text-indigo-600',
     },
     {
       icon: Zap,
-      title: 'Instant Feedback',
+      title: 'Interactive & Engaging Content',
       description:
-        'Get helpful tips right away! Know what you did great and how to become even better at reading.',
+        'Experience traditional book content reimagined as an interactive website. Engaging activities, instant feedback, and gamified elements make learning fun.',
+      color: 'bg-cyan-100 text-cyan-600',
     },
     {
-      icon: Lightbulb,
-      title: 'Learn Your Way',
+      icon: Target,
+      title: 'Personalized Learning Experience',
       description:
-        'Every story adapts to you! Read at your own pace and level - no pressure, just fun learning.',
+        "Learn at your own pace with content that adapts to your needs. Take your time with challenging concepts and move ahead when you're ready.",
+      color: 'bg-teal-100 text-teal-600',
     },
     {
-      icon: Sparkles,
-      title: 'Earn Rewards',
+      icon: CheckCircle2,
+      title: 'Comprehensive Assessment',
       description:
-        'Unlock achievements, collect badges, and celebrate every milestone on your reading journey!',
+        'Pre-tests identify your knowledge gaps, lessons fill them, and post-tests confirm your mastery. Complete learning cycle for better understanding.',
+      color: 'bg-emerald-100 text-emerald-600',
     },
-  ]
-
-  const benefits = [
-    'Read at your own pace',
-    'Get instant feedback',
-    'Track your progress',
-    'Earn cool badges',
-    'Access anytime, anywhere',
   ]
 
   return (
@@ -108,11 +138,13 @@ const HomePage = () => {
             </div>
 
             <p className="text-lg sm:text-xl md:text-2xl text-slate-700 max-w-3xl mx-auto mb-4 sm:mb-6 leading-relaxed px-4 font-medium">
-              Turn reading into an adventure! 🚀
+              Transforming Traditional Learning into Interactive Digital
+              Experiences
             </p>
             <p className="text-base sm:text-lg text-slate-600 max-w-3xl mx-auto mb-8 sm:mb-12 leading-relaxed px-4">
-              Join thousands of students who are leveling up their reading
-              skills with fun, interactive stories and games.
+              Experience the best of both worlds: the reliability of traditional
+              learning methods with the convenience and engagement of modern
+              technology.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
@@ -125,7 +157,7 @@ const HomePage = () => {
               </Button>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 max-w-4xl mx-auto">
+            {/* <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 max-w-4xl mx-auto">
               {stats.map((stat, index) => (
                 <div
                   key={index}
@@ -142,63 +174,141 @@ const HomePage = () => {
                   </div>
                 </div>
               ))}
-            </div>
+            </div> */}
           </div>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20">
         <div className="text-center mb-12 sm:mb-16">
-          <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-600 px-4 py-2 rounded-full text-sm font-semibold mb-4">
-            <Sparkles className="w-4 h-4" />
-            Why Students Love T-BRITE
+          <div className="inline-flex items-center gap-2 bg-red-100 text-red-600 px-4 py-2 rounded-full text-sm font-semibold mb-4">
+            <AlertCircle className="w-4 h-4" />
+            Challenges in Traditional Learning
           </div>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-slate-900 mb-4">
-            Learning Made Fun! 🎉
+            Problems We Solve 🔍
           </h2>
           <p className="text-base sm:text-lg md:text-xl text-slate-600 max-w-3xl mx-auto">
-            Discover why thousands of students choose T-BRITE to become reading
-            champions
+            Traditional learning methods face several challenges that limit
+            student engagement and success
           </p>
         </div>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 mb-16">
-          {features.map((feature, index) => (
+        <div className="grid sm:grid-cols-2 gap-6 sm:gap-8 mb-20">
+          {problems.map((problem, index) => (
             <div
               key={index}
-              className="bg-white rounded-xl border-2 border-slate-200 p-6 sm:p-8 hover:border-blue-400 hover:shadow-xl transition-all duration-300 hover:-translate-y-2 cursor-pointer group"
+              className="bg-white rounded-xl border-2 border-slate-200 p-6 sm:p-8 hover:border-red-300 hover:shadow-xl transition-all duration-300 hover:-translate-y-2 group"
             >
               <div
-                className={`w-14 h-14 ${feature.color || 'bg-blue-100 text-blue-600'} rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}
+                className={`w-14 h-14 ${problem.color} rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}
               >
-                <feature.icon className="w-7 h-7" />
+                <problem.icon className="w-7 h-7" />
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3 group-hover:text-blue-600 transition-colors">
-                {feature.title}
+              <h3 className="text-xl font-bold text-slate-900 mb-3 group-hover:text-red-600 transition-colors">
+                {problem.title}
               </h3>
               <p className="text-slate-600 leading-relaxed">
-                {feature.description}
+                {problem.description}
               </p>
             </div>
           ))}
         </div>
 
-        <div className="bg-white rounded-2xl p-8 sm:p-12 lg:p-16 border-2 border-blue-200 shadow-lg mb-16">
+        <div className="text-center mb-12 sm:mb-16">
+          <div className="inline-flex items-center gap-2 bg-green-100 text-green-600 px-4 py-2 rounded-full text-sm font-semibold mb-4">
+            <Sparkles className="w-4 h-4" />
+            How T-BRITE Helps
+          </div>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-slate-900 mb-4">
+            Our Solutions ✨
+          </h2>
+          <p className="text-base sm:text-lg md:text-xl text-slate-600 max-w-3xl mx-auto">
+            T-BRITE addresses these challenges with innovative features designed
+            to enhance learning and engagement
+          </p>
+        </div>
+
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 mb-16">
+          {solutions.map((solution, index) => (
+            <div
+              key={index}
+              className="bg-white rounded-xl border-2 border-slate-200 p-6 sm:p-8 hover:border-green-400 hover:shadow-xl transition-all duration-300 hover:-translate-y-2 cursor-pointer group"
+            >
+              <div
+                className={`w-14 h-14 ${solution.color} rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}
+              >
+                <solution.icon className="w-7 h-7" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-3 group-hover:text-green-600 transition-colors">
+                {solution.title}
+              </h3>
+              <p className="text-slate-600 leading-relaxed">
+                {solution.description}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-8 sm:p-12 lg:p-16 border-2 border-blue-200 shadow-lg mb-16">
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-8">
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 mb-4">
-                What You&apos;ll Get 🎁
+                Complete Learning Cycle 📚
               </h2>
+              <p className="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto">
+                T-BRITE follows a structured approach that ensures comprehensive
+                learning and measurable progress
+              </p>
             </div>
-            <div className="grid sm:grid-cols-2 gap-4 mb-8">
-              {benefits.map((benefit, index) => (
-                <div key={index} className="flex items-center gap-3">
-                  <CheckCircle2 className="w-6 h-6 text-blue-600 flex-shrink-0" />
-                  <span className="text-lg text-slate-700 font-medium">
-                    {benefit}
-                  </span>
+            <div className="grid sm:grid-cols-3 gap-6 mb-8">
+              <div className="bg-white rounded-xl p-6 border-2 border-blue-200 text-center">
+                <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center mx-auto mb-4">
+                  <FileText className="w-6 h-6" />
                 </div>
-              ))}
+                <h3 className="font-bold text-lg text-slate-900 mb-2">
+                  Pre-Test
+                </h3>
+                <p className="text-sm text-slate-600">
+                  Assess your current knowledge and identify areas for
+                  improvement
+                </p>
+              </div>
+              <div className="bg-white rounded-xl p-6 border-2 border-blue-200 text-center">
+                <div className="w-12 h-12 bg-green-100 text-green-600 rounded-lg flex items-center justify-center mx-auto mb-4">
+                  <BookOpen className="w-6 h-6" />
+                </div>
+                <h3 className="font-bold text-lg text-slate-900 mb-2">
+                  Interactive Lessons
+                </h3>
+                <p className="text-sm text-slate-600">
+                  Engage with structured content that builds your understanding
+                  step by step
+                </p>
+              </div>
+              <div className="bg-white rounded-xl p-6 border-2 border-blue-200 text-center">
+                <div className="w-12 h-12 bg-purple-100 text-purple-600 rounded-lg flex items-center justify-center mx-auto mb-4">
+                  <Target className="w-6 h-6" />
+                </div>
+                <h3 className="font-bold text-lg text-slate-900 mb-2">
+                  Post-Test
+                </h3>
+                <p className="text-sm text-slate-600">
+                  Measure your growth and confirm mastery of the material
+                </p>
+              </div>
+            </div>
+            <div className="bg-white rounded-xl p-6 border-2 border-indigo-200 text-center">
+              <div className="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <BarChart3 className="w-6 h-6" />
+              </div>
+              <h3 className="font-bold text-lg text-slate-900 mb-2">
+                Progress Tracking
+              </h3>
+              <p className="text-sm text-slate-600 max-w-2xl mx-auto">
+                Monitor your learning journey with detailed analytics and visual
+                progress charts that show your improvement over time
+              </p>
             </div>
           </div>
         </div>
@@ -211,17 +321,18 @@ const HomePage = () => {
           </div>
           <div className="relative z-10">
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-4">
-              Ready to Become a Reading Superstar? ⭐
+              Ready to Transform Your Learning Experience? ⭐
             </h2>
             <p className="text-base sm:text-lg md:text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-              Join T-BRITE today and start your epic reading journey! Every
-              story is a new adventure waiting for you.
+              Join T-BRITE today and experience the perfect blend of traditional
+              learning structure with modern interactive technology. Start your
+              journey with pre-tests, master lessons, and track your progress!
             </p>
             <Button
               onClick={handleGetStarted}
               className="px-8 py-6 text-lg font-semibold bg-white text-blue-600 hover:bg-blue-50 transition-all duration-300 hover:scale-105 hover:shadow-xl group"
             >
-              Start Your Adventure Now
+              Get Started Now
               <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Button>
           </div>
