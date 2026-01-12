@@ -12,6 +12,7 @@ interface LessonState {
   addLesson: (data: Omit<Lesson, 'id'>) => Promise<void>
   updateLesson: (id: string, data: Partial<Lesson>) => Promise<void>
   deleteLesson: (id: string) => Promise<void>
+  markLessonComplete: (lessonId: string) => Promise<void>
 }
 
 export const useLessonStore = create<LessonState>((set, get) => ({
@@ -71,6 +72,20 @@ export const useLessonStore = create<LessonState>((set, get) => ({
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : 'Failed to delete lesson'
+      set({ loading: false, error: errorMessage })
+      throw error
+    }
+  },
+  markLessonComplete: async (lessonId: string) => {
+    try {
+      set({ loading: true, error: null })
+      // await lessonService.markLessonComplete(lessonId)
+      set({ loading: false })
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : 'Failed to mark lesson complete'
       set({ loading: false, error: errorMessage })
       throw error
     }

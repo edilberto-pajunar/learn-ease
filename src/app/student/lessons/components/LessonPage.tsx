@@ -9,10 +9,15 @@ import { BookOpen, CheckCircle2, Circle } from 'lucide-react'
 import ContentSection from './ContentSection'
 import MaterialSection from './MaterialSection'
 import { useLessonStore } from '@/hooks/useLessonStore'
+import { useAuthStore } from '@/hooks/useAuthStore'
+import { lessonService } from '@/services/lessonService'
 import { useRouter } from 'next/navigation'
+import { doc, getDoc } from 'firebase/firestore'
+import { db } from '@/firebase/client_app'
 
 export default function LessonPage({ lesson }: { lesson: Lesson }) {
   const { lessons, setLessons } = useLessonStore()
+  const { user } = useAuthStore()
   const router = useRouter()
 
   const [expandedExamples, setExpandedExamples] = useState<Set<string>>(
@@ -29,6 +34,42 @@ export default function LessonPage({ lesson }: { lesson: Lesson }) {
   useEffect(() => {
     setLessons()
   }, [setLessons])
+
+  useEffect(() => {
+    const loadProgress = async () => {
+      if (!user?.id || !lesson.id) return
+
+      try {
+        const progressRef = doc(
+          db,
+          'users',
+          user.id,
+          'lessonProgress',
+          lesson.id,
+        )
+        const progressDoc = await getDoc(progressRef)
+
+        if (progressDoc.exists()) {
+          const progress = progressDoc.data()
+          const completedIds = new Set<string>()
+          if (progress.contents && Array.isArray(progress.contents)) {
+            progress.contents.forEach(
+              (content: { id: string; completed: boolean }) => {
+                if (content.completed && content.id) {
+                  completedIds.add(content.id)
+                }
+              },
+            )
+          }
+          setCompletedSections(completedIds)
+        }
+      } catch (error) {
+        console.error('Error loading progress:', error)
+      }
+    }
+
+    loadProgress()
+  }, [user?.id, lesson.id])
 
   const toggleExample = (contentId: string, exampleIndex: number) => {
     const key = `${contentId}-${exampleIndex}`
@@ -51,14 +92,32 @@ export default function LessonPage({ lesson }: { lesson: Lesson }) {
     setBookmarkedSections(newSet)
   }
 
-  const markSectionComplete = (sectionId: string) => {
-    const newSet = new Set(completedSections)
-    if (newSet.has(sectionId)) {
-      newSet.delete(sectionId)
-    } else {
-      newSet.add(sectionId)
+  const markSectionComplete = async (contentId: string) => {
+    if (!user?.id || !lesson.id) return
+
+    const isCurrentlyComplete = completedSections.has(contentId)
+    const newIsComplete = !isCurrentlyComplete
+
+    try {
+      const totalContents = lesson.contents?.length || 0
+      await lessonService.markContentComplete(
+        lesson.id,
+        user.id,
+        contentId,
+        newIsComplete,
+        totalContents,
+      )
+
+      const newSet = new Set(completedSections)
+      if (newIsComplete) {
+        newSet.add(contentId)
+      } else {
+        newSet.delete(contentId)
+      }
+      setCompletedSections(newSet)
+    } catch (error) {
+      console.error('Error marking content complete:', error)
     }
-    setCompletedSections(newSet)
   }
 
   const handleTextHighlight = (text: string) => {
@@ -165,52 +224,57 @@ export default function LessonPage({ lesson }: { lesson: Lesson }) {
 
         {lesson.contents && lesson.contents.length > 0 ? (
           <Tabs
-            defaultValue={lesson.contents[0]?.title || '0'}
+            defaultValue={
+              lesson.contents[0]?.id || lesson.contents[0]?.title || '0'
+            }
             className="w-full"
           >
             <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 h-auto bg-stone-100 p-2 rounded-lg">
-              {lesson.contents.map((content, index) => (
-                <TabsTrigger
-                  key={index}
-                  value={content.title || String(index)}
-                  className="data-[state=active]:bg-white data-[state=active]:shadow-md transition-all duration-200"
-                >
-                  <div className="flex items-center gap-2">
-                    {completedSections.has(content.title || String(index)) ? (
-                      <CheckCircle2 className="w-4 h-4 text-green-600" />
-                    ) : (
-                      <Circle className="w-4 h-4 text-muted-foreground" />
-                    )}
-                    <span className="truncate">{content.title}</span>
-                  </div>
-                </TabsTrigger>
-              ))}
+              {lesson.contents.map((content, index) => {
+                const contentId = content.id || content.title || String(index)
+                return (
+                  <TabsTrigger
+                    key={index}
+                    value={contentId}
+                    className="data-[state=active]:bg-white data-[state=active]:shadow-md transition-all duration-200"
+                  >
+                    <div className="flex items-center gap-2">
+                      {completedSections.has(contentId) ? (
+                        <CheckCircle2 className="w-4 h-4 text-green-600" />
+                      ) : (
+                        <Circle className="w-4 h-4 text-muted-foreground" />
+                      )}
+                      <span className="truncate">{content.title}</span>
+                    </div>
+                  </TabsTrigger>
+                )
+              })}
             </TabsList>
 
-            {lesson.contents.map((content, contentIndex) => (
-              <TabsContent
-                key={contentIndex}
-                value={content.title || String(contentIndex)}
-                className="mt-6"
-              >
-                <ContentSection
-                  content={content}
-                  contentId={content.title || String(contentIndex)}
-                  expandedExamples={expandedExamples}
-                  highlightedText={highlightedText}
-                  onToggleExample={toggleExample}
-                  onTextHighlight={handleTextHighlight}
-                  onToggleBookmark={toggleBookmark}
-                  onMarkComplete={markSectionComplete}
-                  isBookmarked={bookmarkedSections.has(
-                    content.title || String(contentIndex),
-                  )}
-                  isCompleted={completedSections.has(
-                    content.title || String(contentIndex),
-                  )}
-                />
-              </TabsContent>
-            ))}
+            {lesson.contents.map((content, contentIndex) => {
+              const contentId =
+                content.id || content.title || String(contentIndex)
+              return (
+                <TabsContent
+                  key={contentIndex}
+                  value={contentId}
+                  className="mt-6"
+                >
+                  <ContentSection
+                    content={content}
+                    contentId={contentId}
+                    expandedExamples={expandedExamples}
+                    highlightedText={highlightedText}
+                    onToggleExample={toggleExample}
+                    onTextHighlight={handleTextHighlight}
+                    onToggleBookmark={toggleBookmark}
+                    onMarkComplete={markSectionComplete}
+                    isBookmarked={bookmarkedSections.has(contentId)}
+                    isCompleted={completedSections.has(contentId)}
+                  />
+                </TabsContent>
+              )
+            })}
           </Tabs>
         ) : (
           <Card className="border-0 shadow-md bg-white/80 backdrop-blur-sm">

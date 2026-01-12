@@ -60,6 +60,7 @@ export default function EditLesson({
       contents: [
         ...(prev.contents || []),
         {
+          id: '',
           title: '',
           description: '',
           examples: [],
@@ -172,6 +173,15 @@ export default function EditLesson({
       ...prev,
       materials: prev.materials?.filter((_, i) => i !== index),
     }))
+  }
+
+  const titleToSnakeCase = (title: string): string => {
+    return title
+      .toLowerCase()
+      .trim()
+      .replace(/[^\w\s-]/g, '')
+      .replace(/[\s_-]+/g, '_')
+      .replace(/^-+|-+$/g, '')
   }
 
   if (!lesson) return null
@@ -297,10 +307,27 @@ export default function EditLesson({
                     <Label>Section Title</Label>
                     <Input
                       value={content.title || ''}
-                      onChange={(e) =>
-                        updateContent(contentIndex, 'title', e.target.value)
-                      }
+                      onChange={(e) => {
+                        const newTitle = e.target.value
+                        updateContent(contentIndex, 'title', newTitle)
+                        if (newTitle.trim()) {
+                          const generatedId = titleToSnakeCase(newTitle)
+                          updateContent(contentIndex, 'id', generatedId)
+                        } else {
+                          updateContent(contentIndex, 'id', '')
+                        }
+                      }}
                       placeholder="Section title"
+                    />
+                  </div>
+                  <div>
+                    <Label>ID</Label>
+                    <Input
+                      value={content.id || ''}
+                      onChange={(e) =>
+                        updateContent(contentIndex, 'id', e.target.value)
+                      }
+                      placeholder="Auto-generated from title (snake_case)"
                     />
                   </div>
                   <div>

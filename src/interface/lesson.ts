@@ -1,4 +1,5 @@
 export interface Content {
+  id?: string
   title: string
   examples?: string[]
   description?: string
