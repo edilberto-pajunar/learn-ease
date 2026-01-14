@@ -30,6 +30,9 @@ export default function LessonPage({ lesson }: { lesson: Lesson }) {
   const [bookmarkedSections, setBookmarkedSections] = useState<Set<string>>(
     new Set(),
   )
+  const [additionalExamples, setAdditionalExamples] = useState<
+    Record<string, Array<{ example: string; explanation: string }>>
+  >({})
 
   useEffect(() => {
     setLessons()
@@ -126,6 +129,17 @@ export default function LessonPage({ lesson }: { lesson: Lesson }) {
     } else {
       setHighlightedText(text)
     }
+  }
+
+  const addExample = (
+    contentId: string,
+    example: string,
+    explanation: string,
+  ) => {
+    setAdditionalExamples((prev) => ({
+      ...prev,
+      [contentId]: [...(prev[contentId] || []), { example, explanation }],
+    }))
   }
 
   const totalSections = lesson.contents?.length || 0
@@ -271,6 +285,8 @@ export default function LessonPage({ lesson }: { lesson: Lesson }) {
                     onMarkComplete={markSectionComplete}
                     isBookmarked={bookmarkedSections.has(contentId)}
                     isCompleted={completedSections.has(contentId)}
+                    additionalExamples={additionalExamples[contentId] || []}
+                    onAddExample={addExample}
                   />
                 </TabsContent>
               )

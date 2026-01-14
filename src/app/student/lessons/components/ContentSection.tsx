@@ -1,7 +1,17 @@
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Content } from '@/interface/lesson'
-import { Bookmark, BookmarkCheck, CheckCircle2, Circle } from 'lucide-react'
+import {
+  Bookmark,
+  BookmarkCheck,
+  CheckCircle2,
+  Circle,
+  Plus,
+  Loader2,
+  Info,
+} from 'lucide-react'
+import { useState } from 'react'
+import { generateExample } from '../action'
 
 interface ContentSectionProps {
   content: Content
@@ -14,6 +24,12 @@ interface ContentSectionProps {
   onMarkComplete: (sectionId: string) => void
   isBookmarked: boolean
   isCompleted: boolean
+  additionalExamples?: Array<{ example: string; explanation: string }>
+  onAddExample: (
+    contentId: string,
+    example: string,
+    explanation: string,
+  ) => void
 }
 
 export default function ContentSection({
@@ -23,7 +39,58 @@ export default function ContentSection({
   onMarkComplete,
   isBookmarked,
   isCompleted,
+  additionalExamples = [],
+  onAddExample,
 }: ContentSectionProps) {
+  const [isLoading, setIsLoading] = useState(false)
+  const [expandedExplanations, setExpandedExplanations] = useState<Set<number>>(
+    new Set(),
+  )
+
+  const handleGenerateExample = async () => {
+    setIsLoading(true)
+    try {
+      const message = `Create an example for: ${content.title}${content.description ? `. ${content.description}` : ''}`
+
+      const result = await generateExample(message)
+
+      if (result.success && result.data?.example) {
+        onAddExample(
+          contentId,
+          result.data.example,
+          result.data.explanation || '',
+        )
+      } else {
+        console.error('Failed to generate example:', result.error)
+      }
+    } catch (error) {
+      console.error('Error generating example:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const originalExamples = (content.examples || []).map((ex) => ({
+    example: ex,
+    explanation: null,
+    isAIGenerated: false,
+  }))
+  const aiExamples = (additionalExamples || []).map((ex) => ({
+    example: ex.example,
+    explanation: ex.explanation,
+    isAIGenerated: true,
+  }))
+  const allExamples = [...originalExamples, ...aiExamples]
+
+  const toggleExplanation = (index: number) => {
+    const newSet = new Set(expandedExplanations)
+    if (newSet.has(index)) {
+      newSet.delete(index)
+    } else {
+      newSet.add(index)
+    }
+    setExpandedExplanations(newSet)
+  }
   return (
     <Card className="border-0 shadow-lg bg-white/90 backdrop-blur-sm">
       <CardHeader className="pb-4">
@@ -72,9 +139,11 @@ export default function ContentSection({
       </CardHeader>
 
       <CardContent className="space-y-6">
-        {content.examples && content.examples.length > 0 ? (
+        {allExamples.length > 0 ? (
           <div className="space-y-4">
-            {content.examples.map((example, exampleIndex) => {
+            {allExamples.map((exampleData, exampleIndex) => {
+              const isExplanationExpanded =
+                expandedExplanations.has(exampleIndex)
               return (
                 <Card
                   key={exampleIndex}
@@ -84,15 +153,44 @@ export default function ContentSection({
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex items-center gap-3 flex-1">
                         <div className="flex-1">
-                          <h4 className=" text-sm text-muted-foreground ">
-                            Example {exampleIndex + 1}
-                          </h4>
+                          <div className="flex items-center gap-2">
+                            <h4 className="text-sm text-muted-foreground">
+                              Example {exampleIndex + 1}
+                            </h4>
+                            {exampleData.isAIGenerated &&
+                              exampleData.explanation && (
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-5 w-5 p-0 hover:bg-blue-50"
+                                  onClick={() =>
+                                    toggleExplanation(exampleIndex)
+                                  }
+                                  title="Show explanation"
+                                >
+                                  <Info className="h-4 w-4 text-blue-600" />
+                                </Button>
+                              )}
+                          </div>
                         </div>
                       </div>
                     </div>
 
-                    {example && (
-                      <p className="font-semibold text-foreground">{example}</p>
+                    {exampleData.example && (
+                      <p className="font-semibold text-foreground whitespace-pre-line mt-2">
+                        {exampleData.example}
+                      </p>
+                    )}
+
+                    {isExplanationExpanded && exampleData.explanation && (
+                      <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                        <p className="text-sm font-medium text-blue-900 mb-2">
+                          Explanation:
+                        </p>
+                        <p className="text-sm text-blue-800 whitespace-pre-line">
+                          {exampleData.explanation}
+                        </p>
+                      </div>
                     )}
                   </CardContent>
                 </Card>
@@ -106,6 +204,27 @@ export default function ContentSection({
             </p>
           </div>
         )}
+
+        <div className="flex justify-center pt-2">
+          <Button
+            onClick={handleGenerateExample}
+            disabled={isLoading}
+            variant="outline"
+            className="gap-2"
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Generating...
+              </>
+            ) : (
+              <>
+                <Plus className="w-4 h-4" />
+                Generate More Example
+              </>
+            )}
+          </Button>
+        </div>
       </CardContent>
     </Card>
   )
