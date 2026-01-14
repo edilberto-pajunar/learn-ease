@@ -49,7 +49,7 @@ export default function LessonDetailPage({
             Lesson not found
           </h2>
           <p className="text-gray-600 mb-4">
-            The lesson you&apos;re looking for doesn&apos;t exist or has been
+            The lesson you are looking for does not exist or has been
             removed.
           </p>
           <Button onClick={() => router.push('/student/lessons')}>
