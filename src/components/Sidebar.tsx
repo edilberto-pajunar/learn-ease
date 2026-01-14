@@ -43,7 +43,7 @@ const Sidebar: React.FC = () => {
   const studentLinks = [
     { href: '/student', label: 'Home', icon: Home },
     { href: '/student/mode', label: 'Reading Test', icon: BookOpenText },
-    { href: '/student/reading/score', label: 'Score', icon: Trophy },
+    // { href: '/student/reading/score', label: 'Score', icon: Trophy },
     { href: '/student/lessons', label: 'Lessons', icon: BookCheck },
     // { href: '/student/dashboard', label: 'Progress', icon: TrendingUp },
   ]
