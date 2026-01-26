@@ -15,10 +15,18 @@ import { useRouter } from 'next/navigation'
 import { doc, getDoc } from 'firebase/firestore'
 import { db } from '@/firebase/client_app'
 
-export default function LessonPage({ lesson }: { lesson: Lesson }) {
-  const { lessons, setLessons } = useLessonStore()
+export default function LessonPage({
+  lesson,
+  filteredLessons,
+}: {
+  lesson: Lesson
+  filteredLessons?: Lesson[]
+}) {
+  const { lessons: allLessons, setLessons } = useLessonStore()
   const { user } = useAuthStore()
   const router = useRouter()
+  
+  const lessons = filteredLessons || allLessons
 
   const [expandedExamples, setExpandedExamples] = useState<Set<string>>(
     new Set(),

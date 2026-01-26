@@ -19,6 +19,7 @@ import {
   LogOut,
   BookOpenText,
   BookCheck,
+  BookOpen,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
@@ -38,6 +39,8 @@ const Sidebar: React.FC = () => {
     { href: '/admin/summary', label: 'Summary', icon: BarChart3 },
     { href: '/admin/lessons', label: 'Lessons', icon: BookCheck },
     { href: '/admin/skills', label: 'Skills', icon: Target },
+    { href: '/admin/chapters', label: 'Chapters', icon: BookOpen },
+
   ]
 
   const studentLinks = [
@@ -100,7 +103,7 @@ const Sidebar: React.FC = () => {
           </div>
 
           {/* User Info */}
-          <div className="p-4 border-b border-border">
+          <div className="p-4 mt-4 border-b border-border">
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center flex-shrink-0">
                 <span className="text-white text-sm font-semibold">

@@ -199,4 +199,15 @@ export const adminService = {
     })
     return unsubscribe
   },
+
+  async updateQuarter(data: Quarter) {
+    try {
+      const docRef = doc(db, 'admin', 'quarters')
+      await setDoc(docRef, data, { merge: true })
+      console.log('Quarter updated successfully')
+    } catch (e) {
+      console.log(e)
+      throw e
+    }
+  },
 }

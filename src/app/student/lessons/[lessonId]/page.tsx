@@ -21,6 +21,10 @@ export default function LessonDetailPage({
   }, [setLessons])
 
   const lesson = lessons.find((l) => l.id === lessonId)
+  
+  const sameChapterLessons = lesson
+    ? lessons.filter((l) => l.chapter === lesson.chapter)
+    : []
 
   if (loading && lessons.length === 0) {
     return (
@@ -70,7 +74,7 @@ export default function LessonDetailPage({
         <ArrowLeft className="h-4 w-4 mr-2" />
         Back to Lessons
       </Button>
-      <LessonPage lesson={lesson} />
+      <LessonPage lesson={lesson} filteredLessons={sameChapterLessons} />
     </div>
   )
 }

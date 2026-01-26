@@ -232,7 +232,7 @@ export default function MaterialsPage() {
         </div>
       </div>
 
-      <div className="grid gap-4">
+      <div className="grid gap-4 mb-4">
         {filteredMaterials.map((material) => (
           <Card key={material.id}>
             <CardHeader>

@@ -153,7 +153,6 @@ const HomePage = () => {
                 className="w-full sm:w-auto px-8 py-6 text-lg font-semibold bg-blue-600 hover:bg-blue-700 text-white transition-all duration-300 hover:scale-105 hover:shadow-lg group"
               >
                 Start Reading Now
-                <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Button>
             </div>
 

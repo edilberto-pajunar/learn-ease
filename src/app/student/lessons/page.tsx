@@ -1,6 +1,7 @@
 'use client'
 
 import { useLessonStore } from '@/hooks/useLessonStore'
+import { useAdminStore } from '@/hooks/useAdminStore'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -9,12 +10,21 @@ import { BookOpen, ArrowRight } from 'lucide-react'
 
 export default function LessonsPage() {
   const { setLessons, lessons, loading } = useLessonStore()
+  const { quarter, getQuarter } = useAdminStore()
   const router = useRouter()
   const [chapterFilter, setChapterFilter] = useState<string>('all')
 
   useEffect(() => {
     setLessons()
-  }, [setLessons])
+    getQuarter()
+    
+    return () => {
+      const { quarterUnsubscribe } = useAdminStore.getState()
+      if (quarterUnsubscribe) {
+        quarterUnsubscribe()
+      }
+    }
+  }, [setLessons, getQuarter])
 
   const filteredLessons = lessons.filter((lesson) => {
     if (chapterFilter === 'all') return true
@@ -130,6 +140,13 @@ export default function LessonsPage() {
                   ? 'Chapter 2'
                   : 'Other Lessons'
 
+            const chapterOverview =
+              chapter === 'Q1'
+                ? quarter?.overview1
+                : chapter === 'Q2'
+                  ? quarter?.overview2
+                  : null
+
             return (
               <div key={chapter}>
                 <div className="mb-4">
@@ -141,6 +158,11 @@ export default function LessonsPage() {
                       {chapterLessons.length !== 1 ? 's' : ''})
                     </span>
                   </h2>
+                  {chapterOverview && (
+                    <p className="text-gray-600 mt-2 ml-8 text-sm leading-relaxed">
+                      {chapterOverview}
+                    </p>
+                  )}
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {chapterLessons.map((lesson) => (

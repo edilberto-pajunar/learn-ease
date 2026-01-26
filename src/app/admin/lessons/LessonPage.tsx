@@ -12,6 +12,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Edit, Trash2, BookOpen, AlertCircle } from 'lucide-react'
 import CreateLesson from './components/CreateLesson'
 import EditLesson from './components/EditLesson'
@@ -36,6 +37,13 @@ export default function LessonPage() {
   const [isCreating, setIsCreating] = useState(false)
   const [isUpdating, setIsUpdating] = useState(false)
   const [isDeleting, setIsDeleting] = useState<string | null>(null)
+  const [selectedChapter, setSelectedChapter] = useState<string>('all')
+
+  const chapters = Array.from(new Set(lessons.map(l => l.chapter).filter(Boolean))) as string[]
+  chapters.sort()
+  const filteredLessons = selectedChapter === 'all' 
+    ? lessons 
+    : lessons.filter(l => l.chapter === selectedChapter)
 
   useEffect(() => {
     getSkills()
@@ -175,90 +183,119 @@ export default function LessonPage() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {lessons.map((lesson) => (
-            <Card
-              key={lesson.id}
-              className="hover:shadow-lg transition-shadow duration-200"
-            >
-              <CardHeader>
-                <div className="flex justify-between items-start">
-                  <div className="flex-1">
-                    <CardTitle className="text-lg font-semibold text-gray-900 mb-2">
-                      {lesson.title || 'Untitled Lesson'}
-                    </CardTitle>
-                    <CardDescription className="space-y-1">
-                      {lesson.chapter && (
-                        <div className="text-sm">
-                          <span className="font-medium">Chapter:</span>{' '}
-                          {lesson.chapter}
+        <Tabs value={selectedChapter} onValueChange={setSelectedChapter} className="w-full">
+          <TabsList className="mb-6">
+            <TabsTrigger value="all">
+              All Lessons ({lessons.length})
+            </TabsTrigger>
+            {chapters.map((chapter) => (
+              <TabsTrigger key={chapter} value={chapter}>
+                {chapter === 'Q1' ? 'Chapter 1' : 'Chapter 2'} ({lessons.filter(l => l.chapter === chapter).length})
+              </TabsTrigger>
+            ))}
+          </TabsList>
+
+          <TabsContent value={selectedChapter}>
+            {filteredLessons.length === 0 ? (
+              <Card>
+                <CardContent className="flex flex-col items-center justify-center py-12">
+                  <BookOpen className="h-12 w-12 text-gray-400 mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    No lessons in this chapter
+                  </h3>
+                  <p className="text-gray-600 text-center mb-4">
+                    Create a lesson for this chapter to get started.
+                  </p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {filteredLessons.map((lesson) => (
+                  <Card
+                    key={lesson.id}
+                    className="hover:shadow-lg transition-shadow duration-200"
+                  >
+                    <CardHeader>
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <CardTitle className="text-lg font-semibold text-gray-900 mb-2">
+                            {lesson.title || 'Untitled Lesson'}
+                          </CardTitle>
+                          <CardDescription className="space-y-1">
+                            {lesson.chapter && (
+                              <div className="text-sm">
+                                <span className="font-medium">Chapter:</span>{' '}
+                                {lesson.chapter}
+                              </div>
+                            )}
+                            {lesson.skill && (
+                              <div className="text-sm">
+                                <span className="font-medium">Skill:</span>{' '}
+                                {lesson.skill}
+                              </div>
+                            )}
+                            {lesson.overview && (
+                              <p className="text-sm text-gray-600 mt-2 line-clamp-2">
+                                {lesson.overview}
+                              </p>
+                            )}
+                            <div className="text-sm text-gray-500 mt-2 space-y-1">
+                              {lesson.contents && lesson.contents.length > 0 && (
+                                <div>
+                                  {lesson.contents.length} content section
+                                  {lesson.contents.length !== 1 ? 's' : ''}
+                                </div>
+                              )}
+                              {lesson.materials && lesson.materials.length > 0 && (
+                                <div>
+                                  {lesson.materials.length} material
+                                  {lesson.materials.length !== 1 ? 's' : ''}
+                                </div>
+                              )}
+                            </div>
+                          </CardDescription>
                         </div>
-                      )}
-                      {lesson.skill && (
-                        <div className="text-sm">
-                          <span className="font-medium">Skill:</span>{' '}
-                          {lesson.skill}
-                        </div>
-                      )}
-                      {lesson.overview && (
-                        <p className="text-sm text-gray-600 mt-2 line-clamp-2">
-                          {lesson.overview}
-                        </p>
-                      )}
-                      <div className="text-sm text-gray-500 mt-2 space-y-1">
-                        {lesson.contents && lesson.contents.length > 0 && (
-                          <div>
-                            {lesson.contents.length} content section
-                            {lesson.contents.length !== 1 ? 's' : ''}
-                          </div>
-                        )}
-                        {lesson.materials && lesson.materials.length > 0 && (
-                          <div>
-                            {lesson.materials.length} material
-                            {lesson.materials.length !== 1 ? 's' : ''}
-                          </div>
-                        )}
                       </div>
-                    </CardDescription>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="flex justify-end gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleEdit(lesson)}
-                    disabled={isUpdating || isDeleting === lesson.id}
-                    className="flex items-center gap-1"
-                  >
-                    <Edit className="h-3 w-3" />
-                    Edit
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => lesson.id && handleDeleteLesson(lesson.id)}
-                    disabled={isUpdating || isDeleting === lesson.id}
-                    className="flex items-center gap-1 text-red-600 hover:text-red-700 hover:bg-red-50"
-                  >
-                    {isDeleting === lesson.id ? (
-                      <>
-                        <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-red-600"></div>
-                        Deleting...
-                      </>
-                    ) : (
-                      <>
-                        <Trash2 className="h-3 w-3" />
-                        Delete
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEdit(lesson)}
+                          disabled={isUpdating || isDeleting === lesson.id}
+                          className="flex items-center gap-1"
+                        >
+                          <Edit className="h-3 w-3" />
+                          Edit
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => lesson.id && handleDeleteLesson(lesson.id)}
+                          disabled={isUpdating || isDeleting === lesson.id}
+                          className="flex items-center gap-1 text-red-600 hover:text-red-700 hover:bg-red-50"
+                        >
+                          {isDeleting === lesson.id ? (
+                            <>
+                              <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-red-600"></div>
+                              Deleting...
+                            </>
+                          ) : (
+                            <>
+                              <Trash2 className="h-3 w-3" />
+                              Delete
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
       )}
 
       <EditLesson
