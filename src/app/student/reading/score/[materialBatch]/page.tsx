@@ -49,8 +49,7 @@ export default function ScorePage({
   params: Promise<{ materialBatch: string }>
 }) {
   const { fetchAllMaterials, allMaterials } = useAdminStore()
-  const { batchSubmissions, setBatchSubmissions } = useSubmissionStore()
-  const [loading, setLoading] = useState(true)
+  const { batchSubmissions, setBatchSubmissions, loading } = useSubmissionStore()
 
   const resolvedParams = use(params)
   const materialBatch = resolvedParams.materialBatch
@@ -60,17 +59,34 @@ export default function ScorePage({
     fetchAllMaterials()
   }, [fetchAllMaterials])
 
-  // Load batch submissions when materialBatch changes
   useEffect(() => {
-    const loadData = async () => {
-      if (materialBatch) {
-        setLoading(true)
-        await setBatchSubmissions(materialBatch)
-        setLoading(false)
-      }
+    if (materialBatch) {
+      setBatchSubmissions(materialBatch)
     }
-    loadData()
-  }, [materialBatch, setBatchSubmissions])
+  }, [materialBatch, setBatchSubmissions]);
+
+  // Load batch submissions when materialBatch changes
+  // useEffect(() => {
+
+  //   const loadData = async () => {
+  //     setLoading(true)
+  //     await setBatchSubmissions(materialBatch)
+  //     setLoading(false)
+  //   }
+
+
+  //   loadData()
+  // }, [materialBatch, setBatchSubmissions]);
+  // useEffect(() => {
+  //   const loadData = async () => {
+  //     if (materialBatch) {
+  //       setLoading(true)
+  //       await setBatchSubmissions(materialBatch)
+  //       setLoading(false)
+  //     }
+  //   }
+  //   loadData()
+  // }, [materialBatch, setBatchSubmissions])
 
   const getMaterialDetails = (materialId: string): Material | undefined => {
     return allMaterials.find((material) => material.id === materialId)
@@ -219,7 +235,7 @@ function SubmissionScoreCard({
     } else {
       setExpandedQuestions(new Set())
     }
-  }, [showAllQuestions, comprehensionQuestions, vocabularyQuestions])
+  }, [showAllQuestions])
 
   const totalScore = calculateTotalScore(submission)
   const readingSpeed = calculateReadingSpeed(
@@ -432,13 +448,10 @@ function SubmissionScoreCard({
               </div>
               <div>
                 <p className="text-2xl font-bold text-emerald-700">
-                  {readingSpeed}
+                  {formatDuration(submission.duration ?? 0)}
                 </p>
                 <p className="text-xs text-emerald-600 font-medium">
                   Words/Min
-                </p>
-                <p className="text-xs text-emerald-500 mt-1">
-                  {formatDuration(submission.duration)}
                 </p>
               </div>
             </div>
@@ -467,7 +480,7 @@ function SubmissionScoreCard({
           </div>
         </div>
 
-        <div className="pt-4 border-t">
+        {/* <div className="pt-4 border-t">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-gray-900">
               Question Details
@@ -528,7 +541,7 @@ function SubmissionScoreCard({
               </div>
             </div>
           )}
-        </div>
+        </div> */}
       </CardContent>
     </Card>
   )

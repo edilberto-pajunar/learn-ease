@@ -20,6 +20,7 @@ const SignupPage: React.FC = () => {
     setConfirmPassword,
     setError,
     reset,
+    error,
   } = useSignupStore();
   const router = useRouter();
 
@@ -30,7 +31,6 @@ const SignupPage: React.FC = () => {
     e.preventDefault();
 
     if (password !== confirmPassword) {
-      setError("Passwords do not match!");
       return;
     }
 
@@ -78,7 +78,7 @@ const SignupPage: React.FC = () => {
       setPassword={setPassword}
       setConfirmPassword={setConfirmPassword}
       handleSubmit={handleSubmit}
-      error={authError?.message || null}
+      error={authError?.message || error}
       loading={loading}
     />
   );

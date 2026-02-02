@@ -14,6 +14,7 @@ interface SubmissionStore {
   allSubmissions: Submission[]
   batchId: string | null
   batchSubmissions: Submission[]
+  loading: boolean
   fetchAllSubmissions: () => Promise<void>
   fetchSubmissions: (studentId: string) => Promise<void>
   setBatchId: (batchId: string) => void
@@ -26,6 +27,7 @@ export const useSubmissionStore = create<SubmissionStore>((set) => ({
   allSubmissions: [],
   batchId: null,
   batchSubmissions: [],
+  loading: false,
   fetchAllSubmissions: async () => {
     const submissionsRef = collection(db, 'submissions')
     const q = query(submissionsRef)
@@ -40,6 +42,7 @@ export const useSubmissionStore = create<SubmissionStore>((set) => ({
   setBatchId: (batchId) => set({ batchId }),
   setBatchSubmissions: async (batchId: string) => {
     try {
+      set({ loading: true })
       const submissionsRef = collection(db, 'submissions')
       const q = query(submissionsRef, where('materialBatch', '==', batchId))
       const querySnapshot = await getDocs(q)
@@ -48,10 +51,10 @@ export const useSubmissionStore = create<SubmissionStore>((set) => ({
         (doc) => ({ id: doc.id, ...doc.data() }) as Submission,
       )
 
-      set({ batchSubmissions: submissions })
+      set({ batchSubmissions: submissions, loading: false })
     } catch (error) {
       console.error('Error fetching batch submissions:', error)
-      set({ batchSubmissions: [] })
+      set({ batchSubmissions: [], loading: false })
     }
   },
 

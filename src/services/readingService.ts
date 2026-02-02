@@ -1,7 +1,17 @@
 import { db } from '@/firebase/client_app'
 import { Submission } from '@/interface/submission'
-import { AppUser } from '@/interface/user'
-import { doc, setDoc, collection, updateDoc } from 'firebase/firestore'
+import { doc, setDoc, collection, updateDoc, getDoc, Timestamp } from 'firebase/firestore'
+
+interface MaterialSubmission {
+  materialId: string
+  answers: any[]
+  comprehensionScore: number
+  vocabularyScore: number
+  duration: number
+  miscues: string[]
+  numberOfWords: number
+  mode: string
+}
 
 export const readingService = {
   async endTime(
@@ -93,6 +103,92 @@ export const readingService = {
       return true
     } catch (e) {
       console.log('Error finishing user assessment: ', e)
+      return false
+    }
+  },
+
+  async submitBatchAnswers(
+    studentId: string,
+    materialSubmissions: MaterialSubmission[],
+    quarter: string,
+    testType: string,
+    materialBatch: string | null,
+  ): Promise<string> {
+    try {
+      const batchId = materialBatch || `batch_${Date.now()}`
+      const submissionsRef = collection(db, 'submissions')
+
+      for (const materialSubmission of materialSubmissions) {
+        const docRef = doc(submissionsRef)
+        await setDoc(docRef, {
+          id: docRef.id,
+          answers: materialSubmission.answers,
+          materialId: materialSubmission.materialId,
+          comprehensionScore: materialSubmission.comprehensionScore,
+          vocabularyScore: materialSubmission.vocabularyScore,
+          studentId: studentId,
+          submittedAt: Timestamp.now(),
+          numberOfWords: materialSubmission.numberOfWords,
+          duration: materialSubmission.duration,
+          mode: materialSubmission.mode,
+          testType: testType,
+          materialBatch: batchId,
+          miscues: materialSubmission.miscues,
+          quarter: quarter,
+        })
+      }
+
+      console.log(`Batch submitted with ID: ${batchId}`)
+      return batchId
+    } catch (error) {
+      console.log('Error submitting batch answers: ', error)
+      throw error
+    }
+  },
+
+  async updateUserWithTestMaterial(userId: string, batchId: string, testType: string) {
+    try {
+      const userRef = doc(db, 'users', userId)
+      const updateData: any = {}
+      
+      if (testType === 'preTest') {
+        updateData.preTestMaterialBatch = batchId
+        updateData.preTestCompletedAt = Timestamp.now()
+      } else if (testType === 'postTest') {
+        updateData.postTestMaterialBatch = batchId
+        updateData.postTestCompletedAt = Timestamp.now()
+      }
+      
+      await updateDoc(userRef, updateData)
+      console.log(`User ${userId} updated with ${testType}MaterialBatch: ${batchId}`)
+      return true
+    } catch (error) {
+      console.log(`Error updating user with ${testType}Material: `, error)
+      return false
+    }
+  },
+
+  async checkIfUserTookTest(
+    userId: string,
+    testType: string,
+  ): Promise<boolean> {
+    try {
+      const userRef = doc(db, 'users', userId)
+      const userDoc = await getDoc(userRef)
+      
+      if (userDoc.exists()) {
+        const userData = userDoc.data()
+        
+        if (testType === 'preTest') {
+          return userData.preTestCompletedAt != null
+        } else if (testType === 'postTest') {
+          return userData.postTestCompletedAt != null
+        }
+      }
+      
+      return false
+    } catch (error) {
+      console.log('Error checking if user took test: ', error)
       return false
     }
   },

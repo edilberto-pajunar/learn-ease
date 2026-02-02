@@ -20,12 +20,8 @@ const ScorePage = () => {
   const { quarter } = useAdminStore()
   const router = useRouter()
 
-  // State for toggling between pre-test and post-test views
-  const [selectedTestType, setSelectedTestType] = useState<
-    'preTest' | 'postTest'
-  >('preTest')
-
   const studentId = user?.id
+  const [selectedTestType, setSelectedTestType] = useState<'preTest' | 'postTest'>('preTest')
 
   // Simulate fetching submissions
   useEffect(() => {
@@ -34,18 +30,11 @@ const ScorePage = () => {
   }, [studentId, fetchSubmissions])
 
   useEffect(() => {
-    fetchMaterials(quarter?.quarter || '')
-  })
+    if (quarter?.quarter) {
+      fetchMaterials(quarter.quarter)
+    }
+  }, [quarter?.quarter, fetchMaterials])
 
-  // Separate submissions by test type
-  const preTestSubmissions = submissions.filter(
-    (sub) => sub.testType === 'preTest',
-  )
-  const postTestSubmissions = submissions.filter(
-    (sub) => sub.testType === 'postTest',
-  )
-
-  // Group submissions by materialBatch
   const groupSubmissionsByBatch = (submissions: Submission[]) => {
     const grouped = submissions.reduce(
       (acc, submission) => {
@@ -62,12 +51,14 @@ const ScorePage = () => {
     return Object.entries(grouped).map(([batch, subs]) => ({
       batch,
       submissions: subs,
-      // averageScore: calculateAverageScore(subs),
     }))
   }
 
-  const preTestBatches = groupSubmissionsByBatch(preTestSubmissions)
-  const postTestBatches = groupSubmissionsByBatch(postTestSubmissions)
+  const filteredSubmissions = submissions.filter(
+    (sub) => sub.testType === selectedTestType,
+  )
+
+  const testBatches = groupSubmissionsByBatch(filteredSubmissions)
 
   // Get material details by ID
   const getMaterialDetails = (materialId: string): Material | undefined => {
@@ -94,10 +85,10 @@ const ScorePage = () => {
       <div className="container mx-auto px-6 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Reading Assessment Results
+            Assessment Results
           </h1>
           <p className="text-gray-600">
-            Review your reading performance and track your progress
+            Review your test performance and track your progress
           </p>
         </div>
 
@@ -123,13 +114,13 @@ const ScorePage = () => {
                 No Results Yet
               </h3>
               <p className="text-gray-600 mb-6">
-                Complete some reading assessments to see your results here.
+                Complete an assessment to see your results here.
               </p>
               <Button
                 onClick={() => router.push('/student/mode')}
                 className="bg-gray-900 hover:bg-gray-800"
               >
-                Start Reading
+                Start Assessment
               </Button>
             </CardContent>
           </Card>
@@ -145,7 +136,7 @@ const ScorePage = () => {
                       : 'bg-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                   }`}
                 >
-                  Pre Test
+                  Pre-Test
                 </Button>
                 <Button
                   onClick={() => setSelectedTestType('postTest')}
@@ -155,88 +146,44 @@ const ScorePage = () => {
                       : 'bg-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                   }`}
                 >
-                  Post Test
+                  Post-Test
                 </Button>
               </div>
             </div>
 
-            <div>
-              <div className="mb-6">
-                <h2 className="text-xl font-semibold text-gray-900">
-                  {selectedTestType === 'preTest'
-                    ? 'Pre Test Results'
-                    : 'Post Test Results'}
-                </h2>
-              </div>
-
-                {selectedTestType === 'preTest' ? (
-                preTestBatches.length === 0 ? (
-                  <Card className="border shadow-sm bg-white">
-                    <CardContent className="p-8 text-center">
-                      <p className="text-gray-600">
-                        No preTest submissions found.
-                      </p>
-                    </CardContent>
-                  </Card>
-                ) : (
-                  <div className="space-y-6">
-                    {preTestBatches.map((batchGroup) => (
-                      <div key={batchGroup.batch}>
-                        {batchGroup.batch !== 'no-batch' && (
-                          <div className="flex items-center gap-2 mb-3">
-                            <h3 className="text-sm font-medium text-gray-700">
-                              Batch {batchGroup.batch}
-                            </h3>
-                            <span className="text-xs text-gray-500">
-                              ({batchGroup.submissions.length}{' '}
-                              {batchGroup.submissions.length === 1
-                                ? 'material'
-                                : 'materials'}
-                              )
-                            </span>
-                          </div>
-                        )}
-                        <div className="grid gap-4">
-                          {batchGroup.submissions.map(renderSubmissionCard)}
-                        </div>
+            {filteredSubmissions.length === 0 ? (
+              <Card className="border shadow-sm bg-white">
+                <CardContent className="p-8 text-center">
+                  <p className="text-gray-600">
+                    No {selectedTestType === 'preTest' ? 'pre-test' : 'post-test'} submissions found.
+                  </p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="space-y-6">
+                {testBatches.map((batchGroup) => (
+                  <div key={batchGroup.batch}>
+                    {batchGroup.batch !== 'no-batch' && (
+                      <div className="flex items-center gap-2 mb-3">
+                        <h3 className="text-sm font-medium text-gray-700">
+                          Assessment Batch
+                        </h3>
+                        <span className="text-xs text-gray-500">
+                          ({batchGroup.submissions.length}{' '}
+                          {batchGroup.submissions.length === 1
+                            ? 'material'
+                            : 'materials'}
+                          )
+                        </span>
                       </div>
-                    ))}
-                  </div>
-                )
-              ) : postTestBatches.length === 0 ? (
-                <Card className="border shadow-sm bg-white">
-                  <CardContent className="p-8 text-center">
-                    <p className="text-gray-600">
-                      No postTest submissions found.
-                    </p>
-                  </CardContent>
-                </Card>
-              ) : (
-                <div className="space-y-6">
-                  {postTestBatches.map((batchGroup) => (
-                    <div key={batchGroup.batch}>
-                      {batchGroup.batch !== 'no-batch' && (
-                        <div className="flex items-center gap-2 mb-3">
-                          <h3 className="text-sm font-medium text-gray-700">
-                            Batch {batchGroup.batch}
-                          </h3>
-                          <span className="text-xs text-gray-500">
-                            ({batchGroup.submissions.length}{' '}
-                            {batchGroup.submissions.length === 1
-                              ? 'material'
-                              : 'materials'}
-                            )
-                          </span>
-                        </div>
-                      )}
-                      <div className="grid gap-4">
-                        {batchGroup.submissions.map(renderSubmissionCard)}
-                      </div>
+                    )}
+                    <div className="grid gap-4">
+                      {batchGroup.submissions.map(renderSubmissionCard)}
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>

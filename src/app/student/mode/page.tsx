@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useReadStore } from '@/hooks/useReadStore'
 import { useAdminStore } from '@/hooks/useAdminStore'
+import { useAuthStore } from '@/hooks/useAuthStore'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import {
@@ -14,44 +15,37 @@ import {
   Info,
   ClipboardList,
   Target,
-  BookOpen,
   CheckCircle2,
+  BookOpen,
 } from 'lucide-react'
-import { useSubmissionStore } from '@/hooks/useSubmissionStore'
-import { useAuthStore } from '@/hooks/useAuthStore'
-import { Material } from '@/interface/material'
-import { collection, onSnapshot } from 'firebase/firestore'
-import { db } from '@/firebase/client_app'
+import { readingService } from '@/services/readingService'
 
 function ModePage() {
   const router = useRouter()
   const { materials, resetAll } = useReadStore()
   const { getQuarter, quarter } = useAdminStore()
   const { user } = useAuthStore()
-  const { fetchSubmissions, submissions } = useSubmissionStore()
-  const [allMaterials, setAllMaterials] = useState<Material[]>([])
-
-  useEffect(() => {
-    if (user?.id) {
-      fetchSubmissions(user.id)
-    }
-  }, [user?.id, fetchSubmissions])
+  const [preTestCompleted, setPreTestCompleted] = useState(false)
+  const [postTestCompleted, setPostTestCompleted] = useState(false)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     getQuarter()
   }, [getQuarter])
 
   useEffect(() => {
-    const unsubscribe = onSnapshot(collection(db, 'materials'), (snapshot) => {
-      const materials: Material[] = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as Material[]
-      setAllMaterials(materials)
-    })
-
-    return () => unsubscribe()
-  }, [])
+    const checkTestsCompletion = async () => {
+      if (user?.id) {
+        setLoading(true)
+        const preTestDone = await readingService.checkIfUserTookTest(user.id, 'preTest')
+        const postTestDone = await readingService.checkIfUserTookTest(user.id, 'postTest')
+        setPreTestCompleted(preTestDone)
+        setPostTestCompleted(postTestDone)
+        setLoading(false)
+      }
+    }
+    checkTestsCompletion()
+  }, [user?.id])
 
   const handleTestType = async (testType: string) => {
     if (materials.length !== 0) {
@@ -67,25 +61,10 @@ function ModePage() {
     router.push('/student/lessons')
   }
 
-  const checkIfTestCompleted = (testType: string): boolean => {
-    if (!quarter?.quarter || !user?.id) return false
-
-    const materialsForTest = allMaterials.filter(
-      (material) =>
-        material.quarter === quarter.quarter && material.testType === testType,
-    )
-
-    if (materialsForTest.length === 0) return false
-
-    const materialIds = materialsForTest.map((m) => m.id)
-    const hasSubmission = submissions.some(
-      (submission) =>
-        submission.testType === testType &&
-        materialIds.includes(submission.materialId),
-    )
-
-    return hasSubmission
+  const isTestCompleted = (testType: string) => {
+    return testType === 'preTest' ? preTestCompleted : postTestCompleted
   }
+
 
   const allTestOptions = [
     {
@@ -142,8 +121,7 @@ function ModePage() {
 
   const headerContent = getHeaderContent()
 
-  // Show loading state if quarter is not loaded yet
-  if (!quarter) {
+  if (!quarter || loading) {
     return (
       <div className="min-h-screen bg-blue-50 flex items-center justify-center">
         <div className="text-center">
@@ -195,11 +173,11 @@ function ModePage() {
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-slate-900">
               {headerContent?.title || 'Choose Your Test Type'}
             </h1>
-            {quarter?.quarter && (
+            {/* {quarter?.quarter && (
               <span className="inline-flex items-center px-4 py-1.5 rounded-full text-sm font-semibold bg-blue-100 text-blue-700 border-2 border-blue-200">
                 {quarter.quarter === 'Q1' ? 'Chapter 1' : 'Chapter 2'}
               </span>
-            )}
+            )} */}
           </div>
 
           {headerContent?.description && (
@@ -219,7 +197,7 @@ function ModePage() {
         >
           {availableTestOptions.map((option) => {
             const isPreTest = option.type === 'preTest'
-            const isCompleted = checkIfTestCompleted(option.type)
+            const isCompleted = isTestCompleted(option.type)
 
             return (
               <Card
@@ -237,7 +215,6 @@ function ModePage() {
                 />
                 <CardContent className="p-6 sm:p-8">
                   <div className="text-center">
-                    {/* Icon */}
                     <div
                       className={`inline-flex items-center justify-center w-20 h-20 border-2 rounded-2xl mb-6 transition-transform duration-300 ${
                         isCompleted ? '' : 'group-hover:scale-110'
@@ -262,17 +239,14 @@ function ModePage() {
                       )}
                     </div>
 
-                    {/* Title */}
                     <h3 className="text-2xl font-bold text-slate-900 mb-3">
                       {option.title}
                     </h3>
 
-                    {/* Description */}
                     <p className="text-slate-600 mb-6 sm:mb-8 leading-relaxed">
                       {option.description}
                     </p>
 
-                    {/* Completed Status */}
                     {isCompleted && (
                       <div className="mb-4 inline-flex items-center gap-2 px-4 py-2 bg-green-50 rounded-full border border-green-200">
                         <CheckCircle2 className="w-4 h-4 text-green-600" />
@@ -282,7 +256,6 @@ function ModePage() {
                       </div>
                     )}
 
-                    {/* Action Buttons */}
                     {isCompleted ? (
                       <div className="space-y-3">
                         <Button

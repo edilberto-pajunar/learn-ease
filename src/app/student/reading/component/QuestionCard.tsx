@@ -5,9 +5,8 @@ import { useReadStore } from '@/hooks/useReadStore'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Question } from '@/interface/material'
-import { useRouter, useSearchParams } from 'next/navigation'
 import { Answer } from '@/interface/submission'
-import ReadingCompletedDialog from './ReadingCompletedDialog'
+import { useSearchParams } from 'next/navigation'
 
 interface QuestionCardProps {
   questions: Question[]
@@ -21,10 +20,9 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
   setShowCompletionDialog,
 }) => {
   const searchParams = useSearchParams()
-  const testType = searchParams.get('testType') || 'preTest'
-
+  const testType = (searchParams.get('testType') as 'preTest' | 'postTest') || 'preTest'
+  
   const {
-    submitAnswer,
     currentAnswers,
     setCurrentAnswers,
     setIndexQuestion,
@@ -34,19 +32,15 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
     setIndexMaterial,
     setDuration,
     clearMiscues,
-    materialBatch,
     setComprehensionScore,
     setVocabularyScore,
-    finishAssessment,
+    submitBatchAnswers,
+    addMaterialSubmission,
   } = useReadStore()
   const [selectedAnswer, setSelectedAnswer] = useState<Answer | null>(null)
   const [showFeedback, setShowFeedback] = useState(false)
-  const [isCorrect, setIsCorrect] = useState(false)
-  const router = useRouter()
-  const quarter = searchParams.get('quarter') || 'Q1'
   const currentQuestion = questions[indexQuestion]
   const hasSubmission = currentAnswers.length > indexQuestion
-  const [finishingAssessment, setFinishingAssessment] = useState(false)
 
   const totalQuestions = questions.length
 
@@ -61,20 +55,15 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
         setVocabularyScore()
       }
     }
-    setIsCorrect(correct)
     setShowFeedback(true)
 
     setCurrentAnswers(selectedAnswer)
-    console.log(selectedAnswer)
 
-    // Check if this is the last question
     if (indexQuestion === questions.length - 1) {
-      // This is the last question - submit answers and move to next material
       setTimeout(async () => {
         try {
-          await submitAnswer(studentId, testType, totalQuestions, quarter, true)
+          addMaterialSubmission(studentId)
 
-          // Check if there are more materials
           if (indexMaterial < materials.length - 1) {
             setIndexMaterial(indexMaterial + 1)
             setIndexQuestion(0)
@@ -83,23 +72,19 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
             setDuration(null)
             clearMiscues()
           } else {
-            setFinishingAssessment(true)
-            await finishAssessment(studentId, quarter, testType)
-            setFinishingAssessment(false)
+            await submitBatchAnswers(studentId, 'Q1', testType)
             setShowCompletionDialog(true)
-            console.log('All materials completed! Redirecting to scores...')
-            console.log('Material Batch: ', materialBatch)
           }
         } catch (error) {
-          console.error('Error submitting answers:', error)
+          console.error('Error processing answers:', error)
         }
-      }, 2000)
+      }, 1500)
     } else {
       setTimeout(() => {
         setIndexQuestion(indexQuestion + 1)
         setSelectedAnswer(null)
         setShowFeedback(false)
-      }, 2000)
+      }, 1500)
     }
   }
 
@@ -121,9 +106,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
 
   const getQuestionStatus = (questionIndex: number) => {
     if (questionIndex < currentAnswers.length) {
-      const answer = currentAnswers[questionIndex]
-      const question = questions[questionIndex]
-      return answer.answer === question.answer ? 'correct' : 'incorrect'
+      return 'answered'
     }
     return 'unanswered'
   }
@@ -186,13 +169,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
                   className={`w-full p-4 text-left rounded-lg border-2 transition-all duration-200 ${
                     selectedAnswer?.answer === option
                       ? 'border-blue-500 bg-blue-50 text-blue-800'
-                      : hasSubmission && option === currentQuestion.answer
-                        ? 'border-green-500 bg-green-50 text-green-800'
-                        : hasSubmission &&
-                            option === selectedAnswer?.answer &&
-                            option !== currentQuestion.answer
-                          ? 'border-red-500 bg-red-50 text-red-800'
-                          : 'border-border hover:border-blue-300 hover:bg-accent/50'
+                      : 'border-border hover:border-blue-300 hover:bg-accent/50'
                   } ${hasSubmission ? 'cursor-default' : 'cursor-pointer hover:shadow-md'}`}
                 >
                   <div className="flex items-center gap-3">
@@ -200,13 +177,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
                       className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
                         selectedAnswer?.answer === option
                           ? 'border-blue-500 bg-blue-500 text-white'
-                          : hasSubmission && option === currentQuestion.answer
-                            ? 'border-green-500 bg-green-500 text-white'
-                            : hasSubmission &&
-                                option === selectedAnswer?.answer &&
-                                option !== currentQuestion.answer
-                              ? 'border-red-500 bg-red-500 text-white'
-                              : 'border-border bg-background'
+                          : 'border-border bg-background'
                       }`}
                     >
                       {selectedAnswer?.answer === option && (
@@ -224,38 +195,6 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
                           />
                         </svg>
                       )}
-                      {hasSubmission && option === currentQuestion.answer && (
-                        <svg
-                          className="w-4 h-4"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M5 13l4 4L19 7"
-                          />
-                        </svg>
-                      )}
-                      {hasSubmission &&
-                        option === selectedAnswer?.answer &&
-                        option !== currentQuestion.answer && (
-                          <svg
-                            className="w-4 h-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M6 18L18 6M6 6l12 12"
-                            />
-                          </svg>
-                        )}
                     </div>
                     <span className="font-medium">{option}</span>
                   </div>
@@ -278,51 +217,25 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
 
             {/* Feedback */}
             {showFeedback && (
-              <div
-                className={`mt-6 p-4 rounded-lg border-2 ${
-                  isCorrect
-                    ? 'border-green-200 bg-green-50 text-green-800'
-                    : 'border-red-200 bg-red-50 text-red-800'
-                }`}
-              >
+              <div className="mt-6 p-4 rounded-lg border-2 border-blue-200 bg-blue-50 text-blue-800">
                 <div className="flex items-center gap-3">
-                  {isCorrect ? (
-                    <svg
-                      className="w-6 h-6 text-green-600"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
-                  ) : (
-                    <svg
-                      className="w-6 h-6 text-red-600"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
-                  )}
+                  <svg
+                    className="w-6 h-6 text-blue-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
                   <div>
-                    <h4 className="font-semibold">
-                      {isCorrect ? 'Correct!' : 'Incorrect'}
-                    </h4>
+                    <h4 className="font-semibold">Answer Submitted</h4>
                     <p className="text-sm">
-                      {isCorrect
-                        ? 'Great job! You answered correctly.'
-                        : `The correct answer is: ${currentQuestion.answer}`}
+                      Your answer has been recorded. Moving to the next question...
                     </p>
                   </div>
                 </div>
@@ -341,11 +254,9 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
                 className={`w-3 h-3 rounded-full transition-all duration-200 ${
                   index === indexQuestion
                     ? 'bg-blue-600 scale-125'
-                    : getQuestionStatus(index) === 'correct'
+                    : getQuestionStatus(index) === 'answered'
                       ? 'bg-green-500'
-                      : getQuestionStatus(index) === 'incorrect'
-                        ? 'bg-red-500'
-                        : 'bg-gray-300 hover:bg-gray-400'
+                      : 'bg-gray-300 hover:bg-gray-400'
                 }`}
                 aria-label={`Go to question ${index + 1}`}
               />

@@ -25,6 +25,17 @@ import { Answer, Submission } from '@/interface/submission'
 //   COMPLETED = 'COMPLETED',
 // }
 
+interface MaterialSubmission {
+  materialId: string
+  answers: Answer[]
+  comprehensionScore: number
+  vocabularyScore: number
+  duration: number
+  miscues: string[]
+  numberOfWords: number
+  mode: string
+}
+
 interface ReadStore {
   isLoading: boolean
   materials: Material[]
@@ -38,6 +49,8 @@ interface ReadStore {
   difficulty: string
   materialBatch: string | null
   materialsUnsubscribe: Unsubscribe | null
+  batchedSubmissions: MaterialSubmission[]
+  hasAlreadyTakenTest: boolean
   setLoading: (value: boolean) => void
   fetchMaterials: (quarter: string, testType?: string) => void
   setIndexMaterial: (indexMaterial: number) => void
@@ -46,24 +59,19 @@ interface ReadStore {
   setDuration: (time: number | null) => void
   setMiscues: (word: string) => void
   clearMiscues: () => void
-  submitAnswer: (
-    studentId: string,
-    testType: string,
-    totalQuestions: number,
-    quarter: string,
-    lastMaterial: boolean,
-  ) => Promise<void>
   setComprehensionScore: () => void
   setVocabularyScore: () => void
   resetScore: () => void
   resetAll: () => void
   setDifficulty: (difficulty: string) => void
   setMaterialBatch: (materialBatch: string) => void
-  finishAssessment: (
-    userId: string,
+  addMaterialSubmission: (studentId: string) => void
+  submitBatchAnswers: (
+    studentId: string,
     quarter: string,
-    testType: string,
+    testType: string
   ) => Promise<void>
+  checkIfTestTaken: (userId: string, testType: 'preTest' | 'postTest') => Promise<void>
 }
 
 export const useReadStore = create<ReadStore>((set, get) => ({
@@ -79,6 +87,8 @@ export const useReadStore = create<ReadStore>((set, get) => ({
   vocabularyScore: 0,
   difficulty: '',
   materialBatch: null,
+  batchedSubmissions: [],
+  hasAlreadyTakenTest: false,
   setLoading: (value) => set({ isLoading: value }),
   fetchMaterials: (quarter: string, testType?: string) => {
     const { materialsUnsubscribe } = get()
@@ -123,53 +133,69 @@ export const useReadStore = create<ReadStore>((set, get) => ({
       currentAnswers: [...state.currentAnswers, answer],
     }))
   },
-  submitAnswer: async (studentId, testType, totalQuestions, quarter) => {
+  addMaterialSubmission: (studentId: string) => {
     const {
       indexMaterial,
       materials,
       currentAnswers,
       duration,
-      setLoading,
       miscues,
       comprehensionScore,
       vocabularyScore,
-      materialBatch,
     } = get()
     const material = materials[indexMaterial]
+    const numberOfWords = wordCount(material.text)
+
+    const materialSubmission: MaterialSubmission = {
+      materialId: material.id,
+      answers: currentAnswers,
+      comprehensionScore: comprehensionScore,
+      vocabularyScore: vocabularyScore,
+      duration: duration ?? 0,
+      miscues: miscues,
+      numberOfWords: numberOfWords,
+      mode: material.mode,
+    }
+
+    set((state) => ({
+      batchedSubmissions: [...state.batchedSubmissions, materialSubmission],
+      currentAnswers: [],
+      comprehensionScore: 0,
+      vocabularyScore: 0,
+      duration: null,
+      miscues: [],
+    }))
+  },
+  submitBatchAnswers: async (studentId, quarter, testType) => {
+    const { batchedSubmissions, materialBatch, setLoading } = get()
     setLoading(true)
 
     try {
-      const numberOfWords = wordCount(material.text)
-      const submission: Submission = {
-        id: null,
-        answers: currentAnswers,
-        materialId: material.id,
-        comprehensionScore: comprehensionScore,
-        vocabularyScore: vocabularyScore,
-        studentId: studentId,
-        submittedAt: Timestamp.now(),
-        numberOfWords: numberOfWords,
-        duration: duration ?? 0,
-        recordTime: {},
-        miscues: miscues,
-        mode: material.mode,
-        testType: testType,
-        materialBatch: materialBatch,
-        quarter: quarter,
-      }
-      console.log(`Submission: ${JSON.stringify(submission)}`)
+      const batchId = await readingService.submitBatchAnswers(
+        studentId,
+        batchedSubmissions,
+        quarter,
+        testType,
+        materialBatch
+      )
 
-      await readingService.submitAnswer(submission)
+      await readingService.updateUserWithTestMaterial(studentId, batchId, testType)
+
       set({
-        currentAnswers: [],
-        comprehensionScore: 0,
-        vocabularyScore: 0,
+        batchedSubmissions: [],
         isLoading: false,
-        duration: null,
-        miscues: [],
       })
     } catch (e) {
-      console.error('Error submitting answer: ', e)
+      console.error('Error submitting batch answers: ', e)
+      set({ isLoading: false })
+    }
+  },
+  checkIfTestTaken: async (userId: string, testType: 'preTest' | 'postTest') => {
+    try {
+      const hasTaken = await readingService.checkIfUserTookTest(userId, testType)
+      set({ hasAlreadyTakenTest: hasTaken })
+    } catch (e) {
+      console.error('Error checking if test was taken: ', e)
     }
   },
   setMiscues: (word) => {
@@ -197,10 +223,8 @@ export const useReadStore = create<ReadStore>((set, get) => ({
       miscues: [],
       comprehensionScore: 0,
       vocabularyScore: 0,
+      batchedSubmissions: [],
     }),
   setDifficulty: (difficulty) => set({ difficulty }),
   setMaterialBatch: (materialBatch) => set({ materialBatch }),
-  finishAssessment: async (userId, quarter, testType) => {
-    await readingService.finishUserAssessment(userId, quarter, testType)
-  },
 }))

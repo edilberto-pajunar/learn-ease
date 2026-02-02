@@ -9,4 +9,8 @@ export interface AppUser {
   name: string
   createdAt: Date
   role: UserRole
+  preTestMaterialBatch?: string
+  preTestCompletedAt?: Date
+  postTestMaterialBatch?: string
+  postTestCompletedAt?: Date
 }

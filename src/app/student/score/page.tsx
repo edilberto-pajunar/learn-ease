@@ -80,6 +80,7 @@ export default function PretestScorePage() {
   const { quarter, getQuarter } = useAdminStore()
   const router = useRouter()
   const [expandedCard, setExpandedCard] = useState<string | null>(null)
+  const [selectedTestType, setSelectedTestType] = useState<'preTest' | 'postTest'>('preTest')
 
   const studentId = user?.id
 
@@ -100,8 +101,8 @@ export default function PretestScorePage() {
     }
   }, [quarter?.quarter, fetchMaterials])
 
-  const preTestSubmissions = submissions.filter(
-    (sub) => sub.testType === 'preTest',
+  const filteredSubmissions = submissions.filter(
+    (sub) => sub.testType === selectedTestType,
   )
 
   const getMaterialDetails = (materialId: string): Material | undefined => {
@@ -129,7 +130,7 @@ export default function PretestScorePage() {
     }))
   }
 
-  const preTestBatches = groupSubmissionsByBatch(preTestSubmissions)
+  const testBatches = groupSubmissionsByBatch(filteredSubmissions)
 
   if (!studentId) {
     return (
@@ -153,38 +154,85 @@ export default function PretestScorePage() {
             </div>
             <div>
               <h1 className="text-3xl font-bold text-stone-900">
-                Pre-Test Results
+                Assessment Results
               </h1>
               <p className="text-stone-600 mt-1">
-                Review your initial assessment performance
+                Review your test performance
               </p>
             </div>
           </div>
         </div>
 
-        {preTestSubmissions.length === 0 ? (
+        {submissions.length === 0 ? (
           <Card className="border border-stone-200 shadow-sm bg-white">
             <CardContent className="p-12 text-center">
               <div className="inline-flex items-center justify-center w-16 h-16 bg-stone-100 rounded-xl mb-4 border border-stone-200">
                 <BookOpen className="w-8 h-8 text-stone-400" />
               </div>
               <h3 className="text-lg font-semibold text-stone-900 mb-2">
-                No Pre-Test Results Yet
+                No Results Yet
               </h3>
               <p className="text-stone-600 mb-6">
-                Complete a pre-test assessment to see your results here.
+                Complete an assessment to see your results here.
               </p>
               <Button
                 onClick={() => router.push('/student/mode')}
                 className="bg-stone-900 hover:bg-stone-800 text-white transition-all duration-300 hover:scale-105"
               >
-                Start Pre-Test
+                Start Assessment
               </Button>
             </CardContent>
           </Card>
         ) : (
-          <div className="space-y-6">
-            {preTestBatches.map((batchGroup) => (
+          <>
+            <div className="flex justify-center mb-6">
+              <div className="inline-flex bg-white rounded-lg p-1 shadow-sm border border-stone-200">
+                <Button
+                  onClick={() => setSelectedTestType('preTest')}
+                  className={`px-6 py-2 rounded-md font-medium transition-all ${
+                    selectedTestType === 'preTest'
+                      ? 'bg-stone-900 text-white'
+                      : 'bg-transparent text-stone-600 hover:text-stone-900 hover:bg-stone-50'
+                  }`}
+                >
+                  Pre-Test
+                </Button>
+                <Button
+                  onClick={() => setSelectedTestType('postTest')}
+                  className={`px-6 py-2 rounded-md font-medium transition-all ${
+                    selectedTestType === 'postTest'
+                      ? 'bg-stone-900 text-white'
+                      : 'bg-transparent text-stone-600 hover:text-stone-900 hover:bg-stone-50'
+                  }`}
+                >
+                  Post-Test
+                </Button>
+              </div>
+            </div>
+
+            {filteredSubmissions.length === 0 ? (
+              <Card className="border border-stone-200 shadow-sm bg-white">
+                <CardContent className="p-12 text-center">
+                  <div className="inline-flex items-center justify-center w-16 h-16 bg-stone-100 rounded-xl mb-4 border border-stone-200">
+                    <BookOpen className="w-8 h-8 text-stone-400" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-stone-900 mb-2">
+                    No {selectedTestType === 'preTest' ? 'Pre-Test' : 'Post-Test'} Results Yet
+                  </h3>
+                  <p className="text-stone-600 mb-6">
+                    Complete the {selectedTestType === 'preTest' ? 'pre-test' : 'post-test'} assessment to see your results here.
+                  </p>
+                  <Button
+                    onClick={() => router.push('/student/mode')}
+                    className="bg-stone-900 hover:bg-stone-800 text-white transition-all duration-300 hover:scale-105"
+                  >
+                    Start {selectedTestType === 'preTest' ? 'Pre-Test' : 'Post-Test'}
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="space-y-6">
+                {testBatches.map((batchGroup) => (
               <div key={batchGroup.batch} className="space-y-4">
                 {batchGroup.batch !== 'no-batch' && (
                   <div className="flex items-center gap-2 mb-2">
@@ -327,7 +375,7 @@ export default function PretestScorePage() {
                             </div>
                           </div>
 
-                          <button
+                          {/* <button
                             onClick={() =>
                               setExpandedCard(
                                 isExpanded ? null : submission.id || null,
@@ -343,7 +391,7 @@ export default function PretestScorePage() {
                                 isExpanded ? 'rotate-180' : ''
                               }`}
                             />
-                          </button>
+                          </button> */}
 
                           {isExpanded && material && (
                             <div className="mt-6 pt-6 border-t border-stone-200 space-y-6">
@@ -505,9 +553,11 @@ export default function PretestScorePage() {
                     )
                   })}
                 </div>
-              </div>
-            ))}
-          </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </>
         )}
       </div>
     </div>

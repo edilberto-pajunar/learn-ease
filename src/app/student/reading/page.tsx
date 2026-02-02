@@ -18,8 +18,9 @@ import {
   AlertCircle,
   AlertTriangle,
   HelpCircle,
+  Lock,
 } from 'lucide-react'
-import { useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import ReadingCompletedDialog from './component/ReadingCompletedDialog'
 
 const ReadingPageContent: FC = () => {
@@ -30,11 +31,15 @@ const ReadingPageContent: FC = () => {
     duration,
     fetchMaterials,
     materialBatch,
+    checkIfTestTaken,
+    hasAlreadyTakenTest,
   } = useReadStore()
   const { quarter, getQuarter } = useAdminStore()
-  const searchParams = useSearchParams()
-
   const { user } = useAuthStore()
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const testType = searchParams.get('testType') || 'preTest'
+  
   const [formError] = useState<string | null>(null)
   const [isSpeaking, setIsSpeaking] = useState(false)
   const [speechRate, setSpeechRate] = useState(1)
@@ -47,11 +52,42 @@ const ReadingPageContent: FC = () => {
   }, [quarter, getQuarter])
 
   useEffect(() => {
-    if (quarter?.quarter) {
-      const testType = searchParams.get('testType') || undefined
-      fetchMaterials(quarter.quarter, testType || undefined)
+    if (user?.id && testType) {
+      checkIfTestTaken(user.id, testType as 'preTest' | 'postTest')
     }
-  }, [fetchMaterials, quarter?.quarter, searchParams])
+  }, [user?.id, testType, checkIfTestTaken])
+
+  useEffect(() => {
+    if (quarter?.quarter) {
+      fetchMaterials('Q1', 'preTest')
+    }
+  }, [fetchMaterials, quarter?.quarter])
+
+  if (hasAlreadyTakenTest) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-blue-50/30 to-indigo-50/50 flex items-center justify-center">
+        <Card className="max-w-md border-0 shadow-lg bg-white/80 backdrop-blur-sm">
+          <CardContent className="p-8 text-center">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-amber-100 rounded-2xl shadow-lg mb-6">
+              <Lock className="w-8 h-8 text-amber-600" />
+            </div>
+            <h2 className="text-2xl font-bold text-foreground mb-2">
+              Test Already Completed
+            </h2>
+            <p className="text-muted-foreground mb-6">
+              You have already completed this {testType === 'preTest' ? 'pre-test' : 'post-test'}. You can only take each test once.
+            </p>
+            <Button
+              onClick={() => router.push('/student/mode')}
+              className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700"
+            >
+              Back to Tests
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
 
   if (materials.length === 0) {
     return (
@@ -110,19 +146,11 @@ const ReadingPageContent: FC = () => {
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
               {/* Title and Quarter */}
               <div className="flex-1">
-                <button
-                  onClick={() => {
-                    setShowCompletionDialog(true)
-                  }}
-                >
-                  <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-foreground via-blue-600 to-indigo-600 bg-clip-text text-transparent mb-2">
-                    {quarter?.quarter === 'Q1' ? 'Chapter 1' : 'Chapter 2'}
-                  </h1>
-                </button>
+                <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-foreground via-blue-600 to-indigo-600 bg-clip-text text-transparent mb-2">
+                  {testType === 'preTest' ? 'Pre-Test' : 'Post-Test'} Assessment
+                </h1>
                 <p className="text-lg text-muted-foreground">
-                  {quarter?.quarter === 'Q1'
-                    ? quarter?.overview1
-                    : quarter?.overview2}
+                  {quarter?.overview1 || 'Complete the reading materials and answer all questions'}
                 </p>
               </div>
 
