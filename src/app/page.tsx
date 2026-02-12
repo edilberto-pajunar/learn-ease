@@ -339,10 +339,18 @@ const HomePage = () => {
       </div>
 
       <footer className="bg-white border-t-2 border-slate-200 py-8 mt-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-slate-600">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-slate-600 space-y-3">
           <p className="text-sm">
             © 2026 T-BRITE. Technology-Based Reading for Interactive Teaching
             and Engagement.
+          </p>
+          <p className="text-sm font-medium">
+            This website and all rights are owned by Karen Desiree Solilapsi.
+          </p>
+          <p className="text-xs text-slate-500 max-w-2xl mx-auto">
+            By using this site, you agree to our terms of use. All content,
+            design, and materials are protected. Unauthorized use, reproduction,
+            or distribution is prohibited.
           </p>
         </div>
       </footer>

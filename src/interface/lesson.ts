@@ -10,6 +10,8 @@ export interface LessonMaterial {
   content?: string
   type?: string // poem | prose
   author?: string
+  audioUrl?: string
+  link?: string
 }
 
 export interface Lesson {

@@ -1,11 +1,11 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useReadStore } from '@/hooks/useReadStore'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Material } from '@/interface/material'
-import { BookOpen, Play, Square, CheckCircle2 } from 'lucide-react'
+import { BookOpen, Play, Square, CheckCircle2, Volume2 } from 'lucide-react'
 
 interface TimeCardProps {
   material: Material
@@ -20,10 +20,40 @@ const TimeCard: React.FC<TimeCardProps> = ({ material }) => {
     indexMaterial,
     setMaterialBatch,
   } = useReadStore()
+  const audioRef = useRef<HTMLAudioElement | null>(null)
+
   const [startTime, setStartTime] = useState<number | null>(null)
   const [endTime, setEndTime] = useState<number | null>(null)
   const [isReading, setIsReading] = useState(false)
   const [showText, setShowText] = useState(false)
+  const [isSpeaking, setIsSpeaking] = useState(false)
+
+  const speakText = async () => {
+    if (!audioRef.current) {
+      audioRef.current = new Audio(material.audioUrl!)
+    }
+
+    const audio = audioRef.current
+
+    if (isSpeaking) {
+      audio.pause()
+      audio.currentTime = 0
+      setIsSpeaking(false)
+      return
+    }
+
+    setIsSpeaking(true)
+    try {
+      await audio.play()
+    } catch (err) {
+      setIsSpeaking(false)
+    }
+
+    audio.onended = () => {
+      setIsSpeaking(false)
+    }
+  }
+
 
   const lines = material.text.split('\n')
 
@@ -110,7 +140,31 @@ const TimeCard: React.FC<TimeCardProps> = ({ material }) => {
 
           {/* Reading Controls */}
           <div className="flex items-center gap-3">
+            {/* <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-4">
+                  <Button
+                    onClick={speakText}
+                    variant="outline"
+                    size="sm"
+                    className={`transition-all duration-200 ${isSpeaking
+                      ? 'border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300'
+                      : 'border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300'
+                      }`}
+                    aria-label={isSpeaking ? 'Stop speaking' : 'Speak text'}
+                  >
+                    {isSpeaking ? (
+                      <Square className="h-4 w-4 mr-2" />
+                    ) : (
+                      <Volume2 className="h-4 w-4 mr-2" />
+                    )}
+                    {isSpeaking ? 'Stop' : 'Listen'}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card> */}
             {!isReading && !startTime && (
+
               <Button
                 onClick={handleStartReading}
                 className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
@@ -223,6 +277,7 @@ const TimeCard: React.FC<TimeCardProps> = ({ material }) => {
           </div>
         )}
 
+
         {/* Instructions */}
         {!showText && (
           <div className="text-center py-8">
@@ -301,8 +356,8 @@ const TimeCard: React.FC<TimeCardProps> = ({ material }) => {
                     )
                     return totalWords > 0
                       ? Math.round(
-                          ((totalWords - miscues.length) / totalWords) * 100,
-                        )
+                        ((totalWords - miscues.length) / totalWords) * 100,
+                      )
                       : 0
                   })()}
                   %

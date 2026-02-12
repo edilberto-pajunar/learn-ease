@@ -176,6 +176,8 @@ export default function CreateLesson({
           content: '',
           type: 'prose',
           author: '',
+          link: '',
+          audioUrl: '',
         },
       ],
     }))
@@ -482,6 +484,28 @@ export default function CreateLesson({
                         updateMaterial(materialIndex, 'author', e.target.value)
                       }
                       placeholder="Author name"
+                    />
+                  </div>
+                  <div>
+                    <Label>Link</Label>
+                    <Input
+                      type="url"
+                      value={material.link || ''}
+                      onChange={(e) =>
+                        updateMaterial(materialIndex, 'link', e.target.value)
+                      }
+                      placeholder="https://..."
+                    />
+                  </div>
+                  <div>
+                    <Label>Audio URL</Label>
+                    <Input
+                      type="url"
+                      value={material.audioUrl || ''}
+                      onChange={(e) =>
+                        updateMaterial(materialIndex, 'audioUrl', e.target.value)
+                      }
+                      placeholder="https://... (audio file or stream)"
                     />
                   </div>
                   <div>

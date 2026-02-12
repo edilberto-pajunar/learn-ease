@@ -8,6 +8,8 @@ interface Material {
   skill: string
   title?: string
   author?: string
+  audioUrl?: string
+  link?: string
 }
 
 interface Question {

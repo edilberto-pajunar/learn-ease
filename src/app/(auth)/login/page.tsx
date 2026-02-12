@@ -151,7 +151,8 @@ function LoginPage() {
 
           <p className="text-center text-xs text-slate-500 mt-6">
             By logging in, you agree to our learning platform&apos;s terms and
-            conditions
+            conditions. This website and all rights are owned by Karen Desiree
+            Solilapsi.
           </p>
         </div>
       </div>

@@ -1,6 +1,6 @@
 'use client'
 
-import { FC, useEffect, useState, Suspense } from 'react'
+import { FC, useEffect, useState, Suspense, useRef } from 'react'
 import { useReadStore } from '@/hooks/useReadStore'
 import { useAuthStore } from '@/hooks/useAuthStore'
 import { wordCount } from '@/app/utils/wordCount'
@@ -24,6 +24,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import ReadingCompletedDialog from './component/ReadingCompletedDialog'
 
 const ReadingPageContent: FC = () => {
+
   const {
     materials,
     indexMaterial,
@@ -39,9 +40,8 @@ const ReadingPageContent: FC = () => {
   const router = useRouter()
   const searchParams = useSearchParams()
   const testType = searchParams.get('testType') || 'preTest'
-  
+
   const [formError] = useState<string | null>(null)
-  const [isSpeaking, setIsSpeaking] = useState(false)
   const [speechRate, setSpeechRate] = useState(1)
   const [showCompletionDialog, setShowCompletionDialog] = useState(false)
 
@@ -110,22 +110,6 @@ const ReadingPageContent: FC = () => {
   const studentId = user?.id
   const material = materials[indexMaterial]
 
-  const speakText = () => {
-    if ('speechSynthesis' in window) {
-      if (isSpeaking) {
-        window.speechSynthesis.cancel()
-        setIsSpeaking(false)
-        return
-      }
-
-      const utterance = new SpeechSynthesisUtterance(material.text)
-      utterance.rate = speechRate
-      utterance.onend = () => setIsSpeaking(false)
-      utterance.onerror = () => setIsSpeaking(false)
-      window.speechSynthesis.speak(utterance)
-      setIsSpeaking(true)
-    }
-  }
 
   return (
     <>
@@ -154,47 +138,7 @@ const ReadingPageContent: FC = () => {
                 </p>
               </div>
 
-              {/* Audio Controls */}
-              <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-4">
-                    <Button
-                      onClick={speakText}
-                      variant="outline"
-                      size="sm"
-                      className={`transition-all duration-200 ${
-                        isSpeaking
-                          ? 'border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300'
-                          : 'border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300'
-                      }`}
-                      aria-label={isSpeaking ? 'Stop speaking' : 'Speak text'}
-                    >
-                      {isSpeaking ? (
-                        <Square className="h-4 w-4 mr-2" />
-                      ) : (
-                        <Volume2 className="h-4 w-4 mr-2" />
-                      )}
-                      {isSpeaking ? 'Stop' : 'Listen'}
-                    </Button>
-
-                    <select
-                      value={speechRate}
-                      onChange={(e) =>
-                        setSpeechRate(parseFloat(e.target.value))
-                      }
-                      className="text-sm border border-border rounded-lg px-3 py-2 bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50"
-                      disabled={isSpeaking}
-                    >
-                      <option value={0.5}>0.5x</option>
-                      <option value={0.75}>0.75x</option>
-                      <option value={1}>1x</option>
-                      <option value={1.25}>1.25x</option>
-                      <option value={1.5}>1.5x</option>
-                      <option value={2}>2x</option>
-                    </select>
-                  </div>
-                </CardContent>
-              </Card>
+             
             </div>
           </div>
 

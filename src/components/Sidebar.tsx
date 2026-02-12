@@ -174,11 +174,17 @@ const Sidebar: React.FC = () => {
           </nav>
 
           {/* Footer */}
-          <div className="p-4 border-t border-border">
+          <div className="p-4 border-t border-border space-y-1">
             <div
               className={`text-xs text-muted-foreground ${isCollapsed ? 'text-center' : ''}`}
             >
               {isCollapsed ? '©' : '© 2026 T-BRITE'}
+            </div>
+            <div
+              className={`text-[10px] text-muted-foreground/80 ${isCollapsed ? 'text-center' : ''}`}
+              title="Terms of use and rights"
+            >
+              {isCollapsed ? 'K.D.S.' : 'Owned by Karen Desiree Solilapsi. All rights reserved.'}
             </div>
           </div>
         </div>
