@@ -142,59 +142,60 @@ const ReadingPageContent: FC = () => {
           </div>
 
           {/* Progress and Stats */}
-          <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm mb-8">
-            <CardContent className="p-6">
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-                {/* Word Count */}
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-xl border border-blue-200">
-                    <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-                      <BookOpen className="w-5 h-5 text-white" />
-                    </div>
-                    <div>
-                      <span className="text-2xl font-bold text-blue-600">
-                        {wordCount(material.text)}
-                      </span>
-                      <p className="text-sm text-muted-foreground">words</p>
-                    </div>
-                  </div>
-                </div>
+          <div ref={readingSectionRef}>
 
-                {/* Progress Indicator */}
-                <div className="flex items-center gap-4">
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-foreground">
-                      {indexMaterial + 1}
+            <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm mb-8">
+              <CardContent className="p-6">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+                  {/* Word Count */}
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-xl border border-blue-200">
+                      <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                        <BookOpen className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <span className="text-2xl font-bold text-blue-600">
+                          {wordCount(material.text)}
+                        </span>
+                        <p className="text-sm text-muted-foreground">words</p>
+                      </div>
                     </div>
-                    <div className="text-sm text-muted-foreground">Current</div>
                   </div>
-                  <div className="text-muted-foreground">of</div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-foreground">
-                      {materials.length}
-                    </div>
-                    <div className="text-sm text-muted-foreground">Total</div>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
 
-          {/* Show Form Error if exists */}
-          {formError && (
-            <Card className="border-red-200 bg-red-50 mb-6">
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  <AlertCircle className="w-5 h-5 text-red-600" />
-                  Question
-                  <span className="text-red-600 font-medium">{formError}</span>
+                  {/* Progress Indicator */}
+                  <div className="flex items-center gap-4">
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-foreground">
+                        {indexMaterial + 1}
+                      </div>
+                      <div className="text-sm text-muted-foreground">Current</div>
+                    </div>
+                    <div className="text-muted-foreground">of</div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-foreground">
+                        {materials.length}
+                      </div>
+                      <div className="text-sm text-muted-foreground">Total</div>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
-          )}
 
-          {/* Reading Passage */}
-          <div ref={readingSectionRef}>
+            {/* Show Form Error if exists */}
+            {formError && (
+              <Card className="border-red-200 bg-red-50 mb-6">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <AlertCircle className="w-5 h-5 text-red-600" />
+                    Question
+                    <span className="text-red-600 font-medium">{formError}</span>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Reading Passage */}
             <TimeCard
               material={material}
               onFinishReading={() =>
