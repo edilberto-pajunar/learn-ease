@@ -1,13 +1,15 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAdminStore } from '@/hooks/useAdminStore'
-import { Users, Mail, ChevronRight, UserCircle } from 'lucide-react'
+import { exportService } from '@/services/exportService'
+import { Users, Mail, ChevronRight, UserCircle, Download } from 'lucide-react'
 
 const AdminStudentsPage: React.FC = () => {
   const { students, setStudents } = useAdminStore()
   const router = useRouter()
+  const [exporting, setExporting] = useState(false)
 
   useEffect(() => {
     setStudents()
@@ -15,6 +17,18 @@ const AdminStudentsPage: React.FC = () => {
 
   const handleNavigate = (id: string) => {
     router.push(`/admin/students/${id}`)
+  }
+
+  const handleExportCsv = async () => {
+    setExporting(true)
+    try {
+      const { csv } = await exportService.exportSubmissionsAsTable()
+      exportService.downloadCsv(csv, `submissions_export_${new Date().toISOString().slice(0, 10)}.csv`)
+    } catch (e) {
+      console.error('Export failed:', e)
+    } finally {
+      setExporting(false)
+    }
   }
 
   return (
@@ -42,6 +56,14 @@ const AdminStudentsPage: React.FC = () => {
                 {students.length}
               </span>
             </div>
+            <button
+              onClick={handleExportCsv}
+              disabled={exporting}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Download className="w-4 h-4" />
+              {exporting ? 'Exporting...' : 'Export submissions (CSV)'}
+            </button>
             {/* <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <input
