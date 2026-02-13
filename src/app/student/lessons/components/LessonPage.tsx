@@ -5,7 +5,7 @@ import { Lesson } from '@/interface/lesson'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
-import { BookOpen, CheckCircle2, Circle } from 'lucide-react'
+import { BookOpen, CheckCircle2, Circle, XCircle, HelpCircle } from 'lucide-react'
 import ContentSection from './ContentSection'
 import MaterialSection from './MaterialSection'
 import { useLessonStore } from '@/hooks/useLessonStore'
@@ -40,6 +40,12 @@ export default function LessonPage({
   )
   const [additionalExamples, setAdditionalExamples] = useState<
     Record<string, Array<{ example: string; explanation: string }>>
+  >({})
+  const [activitySelections, setActivitySelections] = useState<
+    Record<number, string>
+  >({})
+  const [activityChecked, setActivityChecked] = useState<
+    Record<number, 'correct' | 'incorrect' | null>
   >({})
 
   useEffect(() => {
@@ -147,6 +153,22 @@ export default function LessonPage({
     setAdditionalExamples((prev) => ({
       ...prev,
       [contentId]: [...(prev[contentId] || []), { example, explanation }],
+    }))
+  }
+
+  const setActivitySelection = (activityIndex: number, value: string) => {
+    setActivitySelections((prev) => ({ ...prev, [activityIndex]: value }))
+    setActivityChecked((prev) => ({ ...prev, [activityIndex]: null }))
+  }
+
+  const checkActivity = (activityIndex: number) => {
+    const activity = lesson.activities?.[activityIndex]
+    if (!activity) return
+    const selected = activitySelections[activityIndex]
+    const correct = (activity.answer ?? '').trim() === (selected ?? '').trim()
+    setActivityChecked((prev) => ({
+      ...prev,
+      [activityIndex]: correct ? 'correct' : 'incorrect',
     }))
   }
 
@@ -307,6 +329,85 @@ export default function LessonPage({
               <p className="text-lg text-muted-foreground">
                 No content available for this lesson yet.
               </p>
+            </CardContent>
+          </Card>
+        )}
+
+        {lesson.activities && lesson.activities.length > 0 && (
+          <Card className="border-0 shadow-md bg-white/80 backdrop-blur-sm mb-6 mt-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <HelpCircle className="w-5 h-5" />
+                Activities
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Answer each question and check to see if you got it right.
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {lesson.activities.map((activity, activityIndex) => {
+                const selected = activitySelections[activityIndex]
+                const checked = activityChecked[activityIndex]
+                const options = activity.options || []
+                return (
+                  <Card
+                    key={activityIndex}
+                    className={`p-4 ${
+                      checked === 'incorrect'
+                        ? 'border-red-200 bg-red-50/30'
+                        : 'bg-white border-border'
+                    }`}
+                  >
+                    <p className="font-medium text-foreground mb-3">
+                      {activityIndex + 1}. {activity.question || 'Question'}
+                    </p>
+                    <div className="flex flex-col gap-2 mb-3">
+                      {options.map((opt, optIndex) => (
+                        <Button
+                          key={optIndex}
+                          type="button"
+                          variant={
+                            selected === opt ? 'default' : 'outline'
+                          }
+                          size="sm"
+                          onClick={() =>
+                            setActivitySelection(activityIndex, opt)
+                          }
+                          className={
+                            selected === opt
+                              ? 'bg-blue-600 hover:bg-blue-700'
+                              : ''
+                          }
+                        >
+                          {opt}
+                        </Button>
+                      ))}
+                    </div>
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={() => checkActivity(activityIndex)}
+                        disabled={selected == null || selected === ''}
+                      >
+                        Check answer
+                      </Button>
+                      {checked === 'correct' && (
+                        <span className="flex items-center gap-1.5 text-green-600 text-sm font-medium">
+                          <CheckCircle2 className="w-4 h-4" />
+                          Correct!
+                        </span>
+                      )}
+                      {checked === 'incorrect' && (
+                        <span className="flex items-center gap-1.5 text-red-600 text-sm font-medium">
+                          <XCircle className="w-4 h-4" />
+                          Incorrect. Correct answer: {activity.answer ?? '—'}
+                        </span>
+                      )}
+                    </div>
+                  </Card>
+                )
+              })}
             </CardContent>
           </Card>
         )}

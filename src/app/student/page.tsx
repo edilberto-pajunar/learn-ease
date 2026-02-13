@@ -122,36 +122,52 @@ const HomePage: React.FC = () => {
   return (
     <div className="min-h-screen bg-blue-50">
       <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-[url('/images/background.svg')] opacity-5"></div>
+        <div className="absolute inset-0 bg-[url('/images/background.svg')] opacity-2"></div>
         <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16">
           {/* Welcome Section */}
-          <section className="text-center mb-12 sm:mb-16">
-            <div className="mb-6 sm:mb-8">
-              <div className="inline-flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 bg-blue-600 rounded-3xl shadow-xl mb-6 hover:scale-110 transition-transform duration-300">
-                <BookOpen className="w-10 h-10 sm:w-12 sm:h-12 text-white" />
-              </div>
+          <section className="mb-12 sm:mb-16">
+            <div className="max-w-6xl mx-auto">
+              <Card className="relative overflow-hidden border border-blue-200/60 bg-white/80 shadow-xl backdrop-blur supports-[backdrop-filter]:bg-white/70">
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-indigo-50" />
+                <div className="pointer-events-none absolute -top-24 -right-24 h-56 w-56 rounded-full bg-blue-200/40 blur-3xl" />
+                <div className="pointer-events-none absolute -bottom-24 -left-24 h-56 w-56 rounded-full bg-indigo-200/30 blur-3xl" />
+
+                <CardContent className="relative p-8 sm:p-10 md:p-12 text-center">
+                  <div className="mb-6 sm:mb-8">
+                    <div className="inline-flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 rounded-3xl shadow-xl mb-6 bg-gradient-to-br from-blue-600 to-indigo-600 ring-1 ring-white/30 hover:scale-110 transition-transform duration-300">
+                      <BookOpen className="w-10 h-10 sm:w-12 sm:h-12 text-white" />
+                    </div>
+                  </div>
+
+                  <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-slate-900 mb-4 sm:mb-6 leading-tight">
+                    Welcome back,{' '}
+                    <span className="text-blue-600">
+                      {user.name || 'Student'}!
+                    </span>{' '}
+                    👋
+                  </h1>
+
+                  <div className="inline-flex items-center gap-2 bg-blue-100/80 text-blue-700 px-4 py-2 rounded-full text-sm font-semibold mb-5 border border-blue-200/60 shadow-sm">
+                    <Sparkles className="w-4 h-4" />
+                    Ready to Level Up?
+                  </div>
+
+                  <p className="text-lg sm:text-xl md:text-2xl text-slate-700 max-w-3xl mx-auto leading-relaxed mb-4">
+                    <span className="font-bold text-blue-600">T</span>echnology-
+                    <span className="font-bold text-blue-600">B</span>ased{' '}
+                    <span className="font-bold text-blue-600">R</span>eading for{' '}
+                    <span className="font-bold text-blue-600">I</span>nteractive{' '}
+                    <span className="font-bold text-blue-600">T</span>eaching and{' '}
+                    <span className="font-bold text-blue-600">E</span>ngagement
+                  </p>
+
+                  <p className="text-base sm:text-lg text-slate-600 max-w-3xl mx-auto leading-relaxed">
+                    Your personalized learning hub where every story is an
+                    adventure and every challenge makes you stronger!
+                  </p>
+                </CardContent>
+              </Card>
             </div>
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-slate-900 mb-4 sm:mb-6 leading-tight">
-              Welcome back,{' '}
-              <span className="text-blue-600">{user.name || 'Student'}!</span>{' '}
-              👋
-            </h1>
-            <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-600 px-4 py-2 rounded-full text-sm font-semibold mb-4">
-              <Sparkles className="w-4 h-4" />
-              Ready to Level Up?
-            </div>
-            <p className="text-lg sm:text-xl md:text-2xl text-slate-700 max-w-3xl mx-auto leading-relaxed mb-4">
-              <span className="font-bold text-blue-600">T</span>echnology-
-              <span className="font-bold text-blue-600">B</span>ased{' '}
-              <span className="font-bold text-blue-600">R</span>eading for{' '}
-              <span className="font-bold text-blue-600">I</span>nteractive{' '}
-              <span className="font-bold text-blue-600">T</span>eaching and{' '}
-              <span className="font-bold text-blue-600">E</span>ngagement
-            </p>
-            <p className="text-base sm:text-lg text-slate-600 max-w-3xl mx-auto leading-relaxed">
-              Your personalized learning hub where every story is an adventure
-              and every challenge makes you stronger!
-            </p>
           </section>
 
           {/* Cards Section */}

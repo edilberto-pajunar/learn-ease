@@ -5,10 +5,12 @@ import { create } from 'zustand'
 
 interface LessonState {
   lessons: Lesson[]
+  currentLesson: Lesson | null
   loading: boolean
   error: string | null
   unsubscribe: Unsubscribe | null
   setLessons: () => void
+  setCurrentLesson: (lesson: Lesson | null) => void
   addLesson: (data: Omit<Lesson, 'id'>) => Promise<void>
   updateLesson: (id: string, data: Partial<Lesson>) => Promise<void>
   deleteLesson: (id: string) => Promise<void>
@@ -17,9 +19,11 @@ interface LessonState {
 
 export const useLessonStore = create<LessonState>((set, get) => ({
   lessons: [],
+  currentLesson: null,
   loading: false,
   error: null,
   unsubscribe: null,
+  setCurrentLesson: (lesson) => set({ currentLesson: lesson }),
   setLessons: () => {
     const { unsubscribe } = get()
     if (unsubscribe) {

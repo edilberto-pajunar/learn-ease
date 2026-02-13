@@ -13,17 +13,21 @@ export default function LessonDetailPage({
   params: Promise<{ lessonId: string }>
 }) {
   const { lessonId } = use(params)
-  const { lessons, setLessons, loading } = useLessonStore()
+  const { lessons, currentLesson, setLessons, setCurrentLesson, loading } =
+    useLessonStore()
   const router = useRouter()
 
   useEffect(() => {
     setLessons()
   }, [setLessons])
 
-  const lesson = lessons.find((l) => l.id === lessonId)
-  
-  const sameChapterLessons = lesson
-    ? lessons.filter((l) => l.chapter === lesson.chapter)
+  useEffect(() => {
+    const lesson = lessons.find((l) => l.id === lessonId)
+    setCurrentLesson(lesson ?? null)
+  }, [lessonId, lessons, setCurrentLesson])
+
+  const sameChapterLessons = currentLesson
+    ? lessons.filter((l) => l.chapter === currentLesson.chapter)
     : []
 
   if (loading && lessons.length === 0) {
@@ -37,7 +41,7 @@ export default function LessonDetailPage({
     )
   }
 
-  if (!lesson) {
+  if (!currentLesson) {
     return (
       <div className="container mx-auto px-4 py-8 max-w-6xl">
         <Button
@@ -74,7 +78,7 @@ export default function LessonDetailPage({
         <ArrowLeft className="h-4 w-4 mr-2" />
         Back to Lessons
       </Button>
-      <LessonPage lesson={lesson} filteredLessons={sameChapterLessons} />
+      <LessonPage lesson={currentLesson} filteredLessons={sameChapterLessons} />
     </div>
   )
 }

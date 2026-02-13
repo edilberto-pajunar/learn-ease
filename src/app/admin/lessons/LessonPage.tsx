@@ -103,6 +103,7 @@ export default function LessonPage() {
       overview: lesson.overview || '',
       contents: lesson.contents || [],
       materials: lesson.materials || [],
+      activities: lesson.activities || [],
       lesson: lesson.lesson,
     })
     setIsEditDialogOpen(true)

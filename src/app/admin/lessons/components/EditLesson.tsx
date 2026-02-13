@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Lesson, Content, LessonMaterial } from '@/interface/lesson'
+import { Lesson, Content, LessonMaterial, Activity } from '@/interface/lesson'
 import { Skill } from '@/interface/skill'
 import { Plus, Trash2 } from 'lucide-react'
 
@@ -46,6 +46,7 @@ export default function EditLesson({
         ...formData,
         materials: formData.materials || [],
         contents: formData.contents || [],
+        activities: formData.activities || [],
       }
       await onSubmit(lesson.id, lessonData)
       onOpenChange(false)
@@ -184,6 +185,79 @@ export default function EditLesson({
       .replace(/[^\w\s-]/g, '')
       .replace(/[\s_-]+/g, '_')
       .replace(/^-+|-+$/g, '')
+  }
+
+  const addActivity = () => {
+    setFormData((prev) => ({
+      ...prev,
+      activities: [
+        ...(prev.activities || []),
+        { question: '', options: [], answer: '' },
+      ],
+    }))
+  }
+
+  const updateActivity = (
+    index: number,
+    field: keyof Activity,
+    value: string | string[],
+  ) => {
+    setFormData((prev) => ({
+      ...prev,
+      activities: prev.activities?.map((a, i) =>
+        i === index ? { ...a, [field]: value } : a,
+      ),
+    }))
+  }
+
+  const addActivityOption = (activityIndex: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      activities: prev.activities?.map((a, i) =>
+        i === activityIndex
+          ? { ...a, options: [...(a.options || []), ''] }
+          : a,
+      ),
+    }))
+  }
+
+  const updateActivityOption = (
+    activityIndex: number,
+    optionIndex: number,
+    value: string,
+  ) => {
+    setFormData((prev) => ({
+      ...prev,
+      activities: prev.activities?.map((a, i) =>
+        i === activityIndex
+          ? {
+              ...a,
+              options:
+                a.options?.map((opt, idx) =>
+                  idx === optionIndex ? value : opt,
+                ) || [],
+            }
+          : a,
+      ),
+    }))
+  }
+
+  const removeActivityOption = (activityIndex: number, optionIndex: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      activities: prev.activities?.map((a, i) =>
+        i === activityIndex
+          ? { ...a, options: a.options?.filter((_, idx) => idx !== optionIndex) }
+          : a,
+      ),
+    }))
+  }
+
+  const removeActivity = (index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      activities: prev.activities?.filter((_, i) => i !== index),
+    }))
   }
 
   if (!lesson) return null
@@ -496,6 +570,103 @@ export default function EditLesson({
                       }
                       placeholder="Material content"
                       rows={4}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          <div>
+            <div className="flex justify-between items-center mb-2">
+              <Label>Activities</Label>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={addActivity}
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Activity
+              </Button>
+            </div>
+            {formData.activities?.map((activity, activityIndex) => (
+              <Card key={activityIndex} className="mb-4">
+                <CardHeader>
+                  <div className="flex justify-between items-center">
+                    <CardTitle className="text-sm">
+                      Activity {activityIndex + 1}
+                    </CardTitle>
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => removeActivity(activityIndex)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div>
+                    <Label>Question</Label>
+                    <Textarea
+                      value={activity.question || ''}
+                      onChange={(e) =>
+                        updateActivity(activityIndex, 'question', e.target.value)
+                      }
+                      placeholder="Activity question"
+                      rows={2}
+                    />
+                  </div>
+                  <div>
+                    <div className="flex justify-between items-center mb-2">
+                      <Label>Options</Label>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => addActivityOption(activityIndex)}
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Option
+                      </Button>
+                    </div>
+                    {activity.options?.map((opt, optIndex) => (
+                      <div key={optIndex} className="flex gap-2 mb-2">
+                        <Input
+                          value={opt}
+                          onChange={(e) =>
+                            updateActivityOption(
+                              activityIndex,
+                              optIndex,
+                              e.target.value,
+                            )
+                          }
+                          placeholder={`Option ${optIndex + 1}`}
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() =>
+                            removeActivityOption(activityIndex, optIndex)
+                          }
+                          className="shrink-0"
+                        >
+                          <Trash2 className="h-4 w-4 text-red-600" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                  <div>
+                    <Label>Answer</Label>
+                    <Input
+                      value={activity.answer || ''}
+                      onChange={(e) =>
+                        updateActivity(activityIndex, 'answer', e.target.value)
+                      }
+                      placeholder="Correct answer"
                     />
                   </div>
                 </CardContent>

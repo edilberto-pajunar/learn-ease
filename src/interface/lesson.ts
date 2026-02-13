@@ -14,6 +14,12 @@ export interface LessonMaterial {
   link?: string
 }
 
+export interface Activity {
+  question?: string;
+  options?: string[];
+  answer?: string;
+}
+
 export interface Lesson {
   id?: string
   chapter?: string
@@ -22,5 +28,6 @@ export interface Lesson {
   overview?: string
   contents?: Content[]
   materials: LessonMaterial[]
+  activities: Activity[]
   lesson?: number
 }
