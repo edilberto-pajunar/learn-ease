@@ -32,7 +32,7 @@ const AdminStudentPage = ({
   const router = useRouter()
 
   useEffect(() => {
-    fetchSubmissions(studentId)
+    // fetchSubmissions(studentId)
     fetchAllMaterials()
   }, [fetchSubmissions, studentId, fetchAllMaterials])
 
@@ -172,10 +172,10 @@ const AdminStudentPage = ({
                               <Trophy className="w-4 h-4" />
                               <span className="text-xs font-medium">Score</span>
                             </div>
-                            <p className="text-lg font-bold text-slate-900">
+                            {/* <p className="text-lg font-bold text-slate-900">
                               {submission.comprehensionScore +
                                 submission.vocabularyScore}
-                            </p>
+                            </p> */}
                           </div>
 
                           <div className="bg-slate-50 rounded-lg p-3">

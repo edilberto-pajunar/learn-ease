@@ -39,7 +39,7 @@ function StudentProgressChart() {
 
   useEffect(() => {
     if (user?.id) {
-      fetchSubmissions(user.id)
+      // fetchSubmissions(user.id)
     }
   }, [user?.id, fetchSubmissions])
 
