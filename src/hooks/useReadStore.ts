@@ -7,8 +7,11 @@ import { readingService } from '@/services/readingService'
 import {
   collection,
   onSnapshot,
+  orderBy,
+  query,
   Timestamp,
   Unsubscribe,
+  where,
 } from 'firebase/firestore'
 import { create } from 'zustand'
 import { Answer, Submission } from '@/interface/submission'
@@ -52,7 +55,7 @@ interface ReadStore {
   batchedSubmissions: MaterialSubmission[]
   hasAlreadyTakenTest: boolean
   setLoading: (value: boolean) => void
-  fetchMaterials: (quarter: string, testType?: string) => void
+  fetchMaterials: (quarter: string) => void
   setIndexMaterial: (indexMaterial: number) => void
   setIndexQuestion: (indexQuestion: number) => void
   setCurrentAnswers: (answer: Answer) => void
@@ -69,9 +72,12 @@ interface ReadStore {
   submitBatchAnswers: (
     studentId: string,
     quarter: string,
-    testType: string
+    testType: string,
   ) => Promise<void>
-  checkIfTestTaken: (userId: string, testType: 'preTest' | 'postTest') => Promise<void>
+  checkIfTestTaken: (
+    userId: string,
+    testType: 'preTest' | 'postTest',
+  ) => Promise<void>
 }
 
 export const useReadStore = create<ReadStore>((set, get) => ({
@@ -90,26 +96,28 @@ export const useReadStore = create<ReadStore>((set, get) => ({
   batchedSubmissions: [],
   hasAlreadyTakenTest: false,
   setLoading: (value) => set({ isLoading: value }),
-  fetchMaterials: (quarter: string, testType?: string) => {
+  fetchMaterials: (quarter: string) => {
     const { materialsUnsubscribe } = get()
 
-    if (materialsUnsubscribe) {
-      materialsUnsubscribe()
-    }
+    if (materialsUnsubscribe) materialsUnsubscribe()
 
     if (!quarter) {
       set({ materials: [], indexMaterial: 0, materialsUnsubscribe: null })
       return
     }
 
-    const unsubscribe = onSnapshot(collection(db, 'materials'), (snapshot) => {
-      const materials: Material[] = snapshot.docs
-        .map((doc) => doc.data() as Material)
-        .filter((material) => {
-          const matchesQuarter = material.quarter === quarter
-          const matchesTestType = !testType || material.testType === testType
-          return matchesQuarter && matchesTestType
-        })
+    const materialsRef = collection(db, 'materials')
+
+    const q = query(
+      materialsRef,
+      where('quarter', '==', quarter),
+      orderBy('createdAt', 'desc'),
+    )
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const materials: Material[] = snapshot.docs.map(
+        (doc) => ({ id: doc.id, ...doc.data() }) as Material,
+      )
 
       set({ materials, indexMaterial: 0, materialsUnsubscribe: unsubscribe })
     })
@@ -176,10 +184,14 @@ export const useReadStore = create<ReadStore>((set, get) => ({
         batchedSubmissions,
         quarter,
         testType,
-        materialBatch
+        materialBatch,
       )
 
-      await readingService.updateUserWithTestMaterial(studentId, batchId, testType)
+      await readingService.updateUserWithTestMaterial(
+        studentId,
+        batchId,
+        testType,
+      )
 
       set({
         batchedSubmissions: [],
@@ -190,9 +202,15 @@ export const useReadStore = create<ReadStore>((set, get) => ({
       set({ isLoading: false })
     }
   },
-  checkIfTestTaken: async (userId: string, testType: 'preTest' | 'postTest') => {
+  checkIfTestTaken: async (
+    userId: string,
+    testType: 'preTest' | 'postTest',
+  ) => {
     try {
-      const hasTaken = await readingService.checkIfUserTookTest(userId, testType)
+      const hasTaken = await readingService.checkIfUserTookTest(
+        userId,
+        testType,
+      )
       set({ hasAlreadyTakenTest: hasTaken })
     } catch (e) {
       console.error('Error checking if test was taken: ', e)

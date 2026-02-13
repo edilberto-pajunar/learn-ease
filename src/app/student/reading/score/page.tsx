@@ -15,19 +15,25 @@ import { useRouter } from 'next/navigation'
 // 📊 Score Page for Multiple Materials
 const ScorePage = () => {
   const { user } = useAuthStore()
-  const { submissions, fetchSubmissions } = useSubmissionStore()
+  const { preTestSubmissions, postTestSubmissions, fetchPreTestSubmission, fetchPostTestSubmission } = useSubmissionStore()
   const { materials, fetchMaterials } = useReadStore()
   const { quarter } = useAdminStore()
   const router = useRouter()
 
   const studentId = user?.id
+  const preTestMaterialBatchId = user?.preTestMaterialBatchId ?? ''
+  const postTestMaterialBatchId = user?.postTestMaterialBatchId ?? ''
   const [selectedTestType, setSelectedTestType] = useState<'preTest' | 'postTest'>('preTest')
 
-  // Simulate fetching submissions
   useEffect(() => {
     if (!studentId) return
-    fetchSubmissions(studentId)
-  }, [studentId, fetchSubmissions])
+    if (preTestMaterialBatchId) {
+      fetchPreTestSubmission(studentId, preTestMaterialBatchId)
+    }
+    if (postTestMaterialBatchId) {
+      fetchPostTestSubmission(studentId, postTestMaterialBatchId)
+    }
+  }, [studentId, fetchPreTestSubmission, fetchPostTestSubmission, preTestMaterialBatchId, postTestMaterialBatchId])
 
   useEffect(() => {
     if (quarter?.quarter) {
@@ -54,11 +60,23 @@ const ScorePage = () => {
     }))
   }
 
-  const filteredSubmissions = submissions.filter(
-    (sub) => sub.testType === selectedTestType,
-  )
+  const submissions =
+    selectedTestType === 'preTest' ? (preTestSubmissions ?? []) : (postTestSubmissions ?? [])
+  const hasAnySubmissions =
+    (preTestSubmissions?.length ?? 0) > 0 || (postTestSubmissions?.length ?? 0) > 0
 
-  const testBatches = groupSubmissionsByBatch(filteredSubmissions)
+  const { totalCorrect, totalQuestions, totalScorePercent } = (() => {
+    const answers = submissions.flatMap((s) => s.answers ?? [])
+    const correct = answers.filter((a) => a?.isCorrect).length
+    const total = answers.length || 1
+    return {
+      totalCorrect: correct,
+      totalQuestions: total,
+      totalScorePercent: Math.round((correct / total) * 100),
+    }
+  })()
+
+  const testBatches = groupSubmissionsByBatch(submissions)
 
   // Get material details by ID
   const getMaterialDetails = (materialId: string): Material | undefined => {
@@ -92,7 +110,7 @@ const ScorePage = () => {
           </p>
         </div>
 
-        {submissions.length === 0 ? (
+        {!hasAnySubmissions ? (
           <Card className="border shadow-sm bg-white">
             <CardContent className="p-12 text-center">
               <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-xl mb-4">
@@ -130,28 +148,26 @@ const ScorePage = () => {
               <div className="inline-flex bg-white rounded-lg p-1 shadow-sm border">
                 <Button
                   onClick={() => setSelectedTestType('preTest')}
-                  className={`px-6 py-2 rounded-md font-medium transition-all ${
-                    selectedTestType === 'preTest'
-                      ? 'bg-gray-900 text-white'
-                      : 'bg-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                  }`}
+                  className={`px-6 py-2 rounded-md font-medium transition-all ${selectedTestType === 'preTest'
+                    ? 'bg-gray-900 text-white'
+                    : 'bg-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                    }`}
                 >
                   Pre-Test
                 </Button>
                 <Button
                   onClick={() => setSelectedTestType('postTest')}
-                  className={`px-6 py-2 rounded-md font-medium transition-all ${
-                    selectedTestType === 'postTest'
-                      ? 'bg-gray-900 text-white'
-                      : 'bg-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                  }`}
+                  className={`px-6 py-2 rounded-md font-medium transition-all ${selectedTestType === 'postTest'
+                    ? 'bg-gray-900 text-white'
+                    : 'bg-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                    }`}
                 >
                   Post-Test
                 </Button>
               </div>
             </div>
 
-            {filteredSubmissions.length === 0 ? (
+            {submissions.length === 0 ? (
               <Card className="border shadow-sm bg-white">
                 <CardContent className="p-8 text-center">
                   <p className="text-gray-600">
@@ -161,6 +177,24 @@ const ScorePage = () => {
               </Card>
             ) : (
               <div className="space-y-6">
+                <Card className="border shadow-sm bg-white">
+                  <CardContent className="p-4">
+                    <div className="flex flex-wrap items-center justify-between gap-4">
+                      <h3 className="text-sm font-medium text-gray-700">
+                        Total score ({selectedTestType === 'preTest' ? 'Pre-Test' : 'Post-Test'})
+                      </h3>
+                      <div className="flex items-center gap-6">
+                        <span className="text-2xl font-bold text-gray-900">
+                          {totalScorePercent}%
+                        </span>
+                        <span className="text-sm text-gray-600">
+                          {totalCorrect} / {totalQuestions} correct
+                        </span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
                 {testBatches.map((batchGroup) => (
                   <div key={batchGroup.batch}>
                     {batchGroup.batch !== 'no-batch' && (

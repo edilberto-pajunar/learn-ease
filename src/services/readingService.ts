@@ -1,12 +1,17 @@
 import { db } from '@/firebase/client_app'
 import { Submission } from '@/interface/submission'
-import { doc, setDoc, collection, updateDoc, getDoc, Timestamp } from 'firebase/firestore'
+import {
+  doc,
+  setDoc,
+  collection,
+  updateDoc,
+  getDoc,
+  Timestamp,
+} from 'firebase/firestore'
 
 interface MaterialSubmission {
   materialId: string
   answers: any[]
-  comprehensionScore: number
-  vocabularyScore: number
   duration: number
   miscues: string[]
   numberOfWords: number
@@ -38,9 +43,7 @@ export const readingService = {
     }
   },
 
-  async submitAnswer(
-    submission: Submission,
-  ) {
+  async submitAnswer(submission: Submission) {
     try {
       const submissionsRef = collection(db, 'submissions')
       const studentId = submission.studentId
@@ -53,8 +56,6 @@ export const readingService = {
           id: docRef.id,
           answers: submission.answers,
           materialId: materialId,
-          comprehensionScore: submission.comprehensionScore,
-          vocabularyScore: submission.vocabularyScore,
           studentId: studentId,
           submittedAt: new Date(),
           numberOfWords: submission.numberOfWords,
@@ -69,7 +70,7 @@ export const readingService = {
       )
 
       console.log(`StudentID: ${studentId}: Answer submitted: ${materialId}`)
-     
+
       return true
     } catch (error) {
       console.log('Error submitting answer: ', error)
@@ -124,8 +125,6 @@ export const readingService = {
           id: docRef.id,
           answers: materialSubmission.answers,
           materialId: materialSubmission.materialId,
-          comprehensionScore: materialSubmission.comprehensionScore,
-          vocabularyScore: materialSubmission.vocabularyScore,
           studentId: studentId,
           submittedAt: Timestamp.now(),
           numberOfWords: materialSubmission.numberOfWords,
@@ -146,21 +145,27 @@ export const readingService = {
     }
   },
 
-  async updateUserWithTestMaterial(userId: string, batchId: string, testType: string) {
+  async updateUserWithTestMaterial(
+    userId: string,
+    batchId: string,
+    testType: string,
+  ) {
     try {
       const userRef = doc(db, 'users', userId)
       const updateData: any = {}
-      
+
       if (testType === 'preTest') {
-        updateData.preTestMaterialBatch = batchId
+        updateData.preTestMaterialBatchId = batchId
         updateData.preTestCompletedAt = Timestamp.now()
       } else if (testType === 'postTest') {
-        updateData.postTestMaterialBatch = batchId
+        updateData.postTestMaterialBatchId = batchId
         updateData.postTestCompletedAt = Timestamp.now()
       }
-      
+
       await updateDoc(userRef, updateData)
-      console.log(`User ${userId} updated with ${testType}MaterialBatch: ${batchId}`)
+      console.log(
+        `User ${userId} updated with ${testType} MaterialBatch Id: ${batchId}`,
+      )
       return true
     } catch (error) {
       console.log(`Error updating user with ${testType}Material: `, error)
@@ -175,17 +180,17 @@ export const readingService = {
     try {
       const userRef = doc(db, 'users', userId)
       const userDoc = await getDoc(userRef)
-      
+
       if (userDoc.exists()) {
         const userData = userDoc.data()
-        
+
         if (testType === 'preTest') {
           return userData.preTestCompletedAt != null
         } else if (testType === 'postTest') {
           return userData.postTestCompletedAt != null
         }
       }
-      
+
       return false
     } catch (error) {
       console.log('Error checking if user took test: ', error)

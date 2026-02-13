@@ -3,7 +3,7 @@
 import { useAuthStore } from '@/hooks/useAuthStore'
 import { UserRole } from '@/interface/user'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useState } from 'react'
 import {
   Users,
@@ -20,17 +20,20 @@ import {
   BookOpenText,
   BookCheck,
   BookOpen,
+  MessageSquare,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 const Sidebar: React.FC = () => {
   const pathname = usePathname()
+  const router = useRouter()
   const { user, logout } = useAuthStore()
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [isMobileOpen, setIsMobileOpen] = useState(false)
 
   const handleLogout = async () => {
     await logout()
+    router.replace('/login')
   }
 
   const adminLinks = [
@@ -40,6 +43,8 @@ const Sidebar: React.FC = () => {
     { href: '/admin/lessons', label: 'Lessons', icon: BookCheck },
     { href: '/admin/skills', label: 'Skills', icon: Target },
     { href: '/admin/chapters', label: 'Chapters', icon: BookOpen },
+    { href: '/admin/feedbacks', label: 'Feedbacks', icon: MessageSquare },
+
 
   ]
 

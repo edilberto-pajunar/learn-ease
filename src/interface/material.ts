@@ -10,6 +10,7 @@ interface Material {
   author?: string
   audioUrl?: string
   link?: string
+  createdAt?: Date
 }
 
 interface Question {

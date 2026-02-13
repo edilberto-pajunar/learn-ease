@@ -1,35 +1,51 @@
 import { db } from '@/firebase/client_app'
-import { addDoc, collection, getDocs, updateDoc } from 'firebase/firestore'
+import type { Feedback } from '@/interface/feedback'
+import { addDoc, collection, getDocs, query, updateDoc, where } from 'firebase/firestore'
+
+const FEEDBACK_SUBMITTED_KEY = 'learn_ease_feedback_submitted'
 
 export const feedbackService = {
-  async getFeedbacks() {
+  async hasUserSubmitted(studentId: string): Promise<boolean> {
+    try {
+      const submitted = typeof window !== 'undefined' && localStorage.getItem(FEEDBACK_SUBMITTED_KEY)
+      if (submitted === 'true') return true
+      const ref = collection(db, 'feedbacks')
+      const q = query(ref, where('studentId', '==', studentId))
+      const snapshot = await getDocs(q)
+      return !snapshot.empty
+    } catch (e) {
+      console.error(e)
+      return false
+    }
+  },
+
+  async getFeedbacks(): Promise<Feedback[]> {
     try {
       const ref = collection(db, 'feedbacks')
       const snapshot = await getDocs(ref)
-      const feedbacks = snapshot.docs.map((doc) => doc.data() as Feedback)
-      return feedbacks
+      return snapshot.docs.map((doc) => ({
+        ...doc.data(),
+        id: doc.id,
+        createdAt: doc.data().createdAt?.toDate?.() ?? doc.data().createdAt,
+      })) as Feedback[]
     } catch (e) {
-      console.log(e)
+      console.error(e)
+      return []
     }
   },
-  async createFeedback(feedback: Feedback) {
-    try {
-      const ref = collection(db, 'feedbacks')
-      const data: Feedback = {
-        rating: feedback.rating,
-        comment: feedback.comment,
-        createdAt: new Date(),
-      }
 
-      // Add new doc
-      const docRef = await addDoc(ref, data)
-
-      // Update the same doc with its generated ID
-      await updateDoc(docRef, { id: docRef.id })
-
-      console.log('Document created with ID:', docRef.id)
-    } catch (e) {
-      console.log(e)
+  async createFeedback(feedback: Feedback): Promise<void> {
+    const ref = collection(db, 'feedbacks')
+    const data = {
+      responses: feedback.responses,
+      overallComment: feedback.overallComment ?? null,
+      createdAt: new Date(),
+      studentId: feedback.studentId ?? null,
+    }
+    const docRef = await addDoc(ref, data)
+    await updateDoc(docRef, { id: docRef.id })
+    if (typeof window !== 'undefined' && feedback.studentId) {
+      localStorage.setItem(FEEDBACK_SUBMITTED_KEY, 'true')
     }
   },
 }

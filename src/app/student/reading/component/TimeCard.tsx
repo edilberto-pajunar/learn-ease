@@ -1,17 +1,18 @@
 'use client'
 
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useReadStore } from '@/hooks/useReadStore'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Material } from '@/interface/material'
-import { BookOpen, Play, Square, CheckCircle2, Volume2 } from 'lucide-react'
+import { BookOpen, Play, Square, CheckCircle2, } from 'lucide-react'
 
 interface TimeCardProps {
   material: Material
+  onFinishReading?: () => void
 }
 
-const TimeCard: React.FC<TimeCardProps> = ({ material }) => {
+const TimeCard: React.FC<TimeCardProps> = ({ material, onFinishReading }) => {
   const {
     setDuration,
     setMiscues,
@@ -20,39 +21,12 @@ const TimeCard: React.FC<TimeCardProps> = ({ material }) => {
     indexMaterial,
     setMaterialBatch,
   } = useReadStore()
-  const audioRef = useRef<HTMLAudioElement | null>(null)
 
   const [startTime, setStartTime] = useState<number | null>(null)
   const [endTime, setEndTime] = useState<number | null>(null)
   const [isReading, setIsReading] = useState(false)
   const [showText, setShowText] = useState(false)
-  const [isSpeaking, setIsSpeaking] = useState(false)
 
-  const speakText = async () => {
-    if (!audioRef.current) {
-      audioRef.current = new Audio(material.audioUrl!)
-    }
-
-    const audio = audioRef.current
-
-    if (isSpeaking) {
-      audio.pause()
-      audio.currentTime = 0
-      setIsSpeaking(false)
-      return
-    }
-
-    setIsSpeaking(true)
-    try {
-      await audio.play()
-    } catch (err) {
-      setIsSpeaking(false)
-    }
-
-    audio.onended = () => {
-      setIsSpeaking(false)
-    }
-  }
 
 
   const lines = material.text.split('\n')
@@ -81,7 +55,6 @@ const TimeCard: React.FC<TimeCardProps> = ({ material }) => {
     const currentEndTime = Date.now()
     setEndTime(currentEndTime)
     setIsReading(false)
-    setShowText(false)
     console.log('End Time: ', currentEndTime)
     console.log('Start Time: ', startTime)
     if (startTime) {
@@ -89,6 +62,7 @@ const TimeCard: React.FC<TimeCardProps> = ({ material }) => {
       setDuration(duration)
       console.log('Duration: ', duration)
     }
+    onFinishReading?.()
   }
 
   const handleWordTap = (word: string) => {
@@ -132,37 +106,10 @@ const TimeCard: React.FC<TimeCardProps> = ({ material }) => {
               Instruction: Read the passage at your own pace. Tap any words you
               mispronounce or struggle with.
             </p>
-            <p className="text-muted-foreground">
-              Once finished, it will hide the reading material so make sure to
-              read and analyze it carefully.
-            </p>
           </div>
 
           {/* Reading Controls */}
           <div className="flex items-center gap-3">
-            {/* <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
-              <CardContent className="p-4">
-                <div className="flex items-center gap-4">
-                  <Button
-                    onClick={speakText}
-                    variant="outline"
-                    size="sm"
-                    className={`transition-all duration-200 ${isSpeaking
-                      ? 'border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300'
-                      : 'border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300'
-                      }`}
-                    aria-label={isSpeaking ? 'Stop speaking' : 'Speak text'}
-                  >
-                    {isSpeaking ? (
-                      <Square className="h-4 w-4 mr-2" />
-                    ) : (
-                      <Volume2 className="h-4 w-4 mr-2" />
-                    )}
-                    {isSpeaking ? 'Stop' : 'Listen'}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card> */}
             {!isReading && !startTime && (
 
               <Button
@@ -225,24 +172,27 @@ const TimeCard: React.FC<TimeCardProps> = ({ material }) => {
             </div>
 
             {/* Text Display */}
-            <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
-              <div className="text-lg leading-relaxed text-foreground">
-                <h2 className="text-2xl font-bold text-foreground mb-2 flex items-center">
+            <div className="bg-gray-50 rounded-lg p-6 border border-gray-200 min-w-0 overflow-hidden">
+              <div className="text-lg leading-relaxed text-foreground min-w-0 break-words">
+                <h2 className="text-2xl font-bold text-foreground mb-2 flex items-center break-words">
                   {material.title && `Title: ${material.title}`}
                 </h2>
-                <p className="text-sm text-muted-foreground mb-4">
+                <p className="text-sm text-muted-foreground mb-4 break-words">
                   {' '}
                   {material.author && `Author: ${material.author}`}
                 </p>
                 {lines.map((line, lineIndex) => {
                   const words = line.split(' ')
                   return (
-                    <div key={lineIndex} className="mb-2">
+                    <div
+                      key={lineIndex}
+                      className="mb-2 flex flex-wrap gap-x-1 gap-y-1"
+                    >
                       {words.map((word, wordIndex) => (
                         <span
                           key={`${lineIndex}-${wordIndex}`}
                           onClick={() => handleWordTap(word)}
-                          className={`mr-1 ${getWordStyle(word)}`}
+                          className={`${getWordStyle(word)}`}
                           title={
                             miscues.includes(word)
                               ? 'Click to remove miscue'

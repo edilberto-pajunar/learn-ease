@@ -165,8 +165,10 @@ export default function EditMaterial({
                       className="w-full p-2 border border-gray-300 rounded-md"
                     >
                       <option value="">Select question type</option>
-                      <option value="COMPREHENSION">Comprehension</option>
-                      <option value="VOCABULARY">Vocabulary</option>
+                      <option value="LITERAL">Literal</option>
+                      <option value="INFERENTIAL">Inferential</option>
+                      <option value="CRITICAL">Critical</option>
+
                     </select>
                   </div>
                   <div>

@@ -1,13 +1,14 @@
+import type { Feedback } from '@/interface/feedback'
 import { feedbackService } from '@/services/feedbackService'
 import { create } from 'zustand'
 
 interface FeedbackStore {
   feedback: Feedback[]
-  getFeedbacks: () => void
-  createFeedback: (feedback: Feedback) => void
+  getFeedbacks: () => Promise<void>
+  createFeedback: (feedback: Feedback) => Promise<void>
 }
 
-export const useFeedbackStore = create<FeedbackStore>((set, get) => ({
+export const useFeedbackStore = create<FeedbackStore>((set) => ({
   feedback: [],
   getFeedbacks: async () => {
     const feedbacks = await feedbackService.getFeedbacks()

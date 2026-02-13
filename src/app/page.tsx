@@ -20,6 +20,7 @@ import {
   Globe,
   Zap,
 } from 'lucide-react'
+import { Card } from '@/components/ui/card'
 
 const HomePage = () => {
   const router = useRouter()
@@ -114,7 +115,7 @@ const HomePage = () => {
   return (
     <div className="min-h-screen bg-blue-50">
       <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-[url('/images/background.svg')] opacity-5"></div>
+        <div className="absolute inset-0 bg-[url('/images/background.svg')] opacity-2"></div>
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-24">
           <div className="text-center">
@@ -122,58 +123,47 @@ const HomePage = () => {
               <BookOpen className="w-10 h-10 sm:w-12 sm:h-12 text-white" />
             </div>
 
-            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-slate-900 mb-4 sm:mb-6 leading-tight">
-              Welcome to <span className="text-blue-600">T-BRITE</span>
-            </h1>
-
-            <div className="max-w-4xl mx-auto mb-6 sm:mb-8">
-              <p className="text-xl sm:text-2xl md:text-3xl text-slate-700 leading-relaxed font-medium">
-                <span className="font-bold text-blue-600">T</span>echnology-
-                <span className="font-bold text-blue-600">B</span>ased{' '}
-                <span className="font-bold text-blue-600">R</span>eading for{' '}
-                <span className="font-bold text-blue-600">I</span>nteractive{' '}
-                <span className="font-bold text-blue-600">T</span>eaching and{' '}
-                <span className="font-bold text-blue-600">E</span>ngagement
-              </p>
-            </div>
-
-            <p className="text-lg sm:text-xl md:text-2xl text-slate-700 max-w-3xl mx-auto mb-4 sm:mb-6 leading-relaxed px-4 font-medium">
-              Transforming Traditional Learning into Interactive Digital
-              Experiences
-            </p>
-            <p className="text-base sm:text-lg text-slate-600 max-w-3xl mx-auto mb-8 sm:mb-12 leading-relaxed px-4">
-              Experience the best of both worlds: the reliability of traditional
-              learning methods with the convenience and engagement of modern
-              technology.
-            </p>
-
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
-              <Button
-                onClick={handleGetStarted}
-                className="w-full sm:w-auto px-8 py-6 text-lg font-semibold bg-blue-600 hover:bg-blue-700 text-white transition-all duration-300 hover:scale-105 hover:shadow-lg group"
-              >
-                Start Reading Now
-              </Button>
-            </div>
-
-            {/* <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 max-w-4xl mx-auto">
-              {stats.map((stat, index) => (
-                <div
-                  key={index}
-                  className="bg-white rounded-xl p-4 sm:p-6 border border-slate-200 hover:border-blue-300 hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
-                >
-                  <div className="flex flex-col items-center">
-                    <stat.icon className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600 mb-2" />
-                    <div className="text-2xl sm:text-3xl font-bold text-slate-900 mb-1">
-                      {stat.value}
-                    </div>
-                    <div className="text-xs sm:text-sm text-slate-600 text-center">
-                      {stat.label}
-                    </div>
-                  </div>
+            <Card className="relative overflow-hidden border-2 border-slate-200/80 bg-white shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 max-w-4xl mx-auto">
+              <div className="h-1.5 w-full bg-blue-600" aria-hidden />
+              <div className="px-6 sm:px-8 md:px-12 pt-8 sm:pt-10 pb-10 sm:pb-12">
+                <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-700 px-4 py-2 rounded-full text-sm font-semibold mb-6 border border-blue-200/80">
+                  <Sparkles className="w-4 h-4" />
+                  Your reading journey starts here
                 </div>
-              ))}
-            </div> */}
+
+                <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-slate-900 mb-4 sm:mb-6 leading-tight break-words">
+                  Welcome to <span className="text-blue-600">T-BRITE</span>
+                </h1>
+
+                <div className="max-w-3xl mx-auto mb-6 sm:mb-8">
+                  <p className="text-xl sm:text-2xl md:text-3xl text-slate-700 leading-relaxed font-medium break-words">
+                    <span className="font-bold text-blue-600">T</span>echnology-
+                    <span className="font-bold text-blue-600">B</span>ased{' '}
+                    <span className="font-bold text-blue-600">R</span>eading for{' '}
+                    <span className="font-bold text-blue-600">I</span>nteractive{' '}
+                    <span className="font-bold text-blue-600">T</span>eaching and{' '}
+                    <span className="font-bold text-blue-600">E</span>ngagement
+                  </p>
+                </div>
+
+                <div className="w-16 h-0.5 bg-slate-200 mx-auto mb-6 sm:mb-8" aria-hidden />
+
+                <p className="text-lg sm:text-xl md:text-2xl text-slate-600 max-w-2xl mx-auto mb-8 sm:mb-10 leading-relaxed font-medium break-words">
+                  Transforming Traditional Learning into Interactive Digital
+                  Experiences
+                </p>
+
+                <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                  <Button
+                    onClick={handleGetStarted}
+                    className="w-full sm:w-auto px-8 py-6 text-lg font-semibold bg-blue-600 hover:bg-blue-700 text-white transition-all duration-300 hover:scale-105 hover:shadow-lg hover:-translate-y-0.5 focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 group"
+                  >
+                    Start Reading Now
+                    <ArrowRight className="w-5 h-5 ml-2 inline-block group-hover:translate-x-1 transition-transform duration-200" />
+                  </Button>
+                </div>
+              </div>
+            </Card>
           </div>
         </div>
       </div>

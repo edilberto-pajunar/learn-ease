@@ -7,17 +7,20 @@ import { Button } from '@/components/ui/button'
 import { Question } from '@/interface/material'
 import { Answer } from '@/interface/submission'
 import { useSearchParams } from 'next/navigation'
+import { Check, CheckCircle } from 'lucide-react'
 
 interface QuestionCardProps {
   questions: Question[]
   studentId: string
   setShowCompletionDialog: (show: boolean) => void
+  onFinishMaterial?: () => void
 }
 
 const QuestionCard: React.FC<QuestionCardProps> = ({
   questions,
   studentId,
   setShowCompletionDialog,
+  onFinishMaterial,
 }) => {
   const searchParams = useSearchParams()
   const testType = (searchParams.get('testType') as 'preTest' | 'postTest') || 'preTest'
@@ -75,6 +78,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
             await submitBatchAnswers(studentId, 'Q1', testType)
             setShowCompletionDialog(true)
           }
+          onFinishMaterial?.()
         } catch (error) {
           console.error('Error processing answers:', error)
         }
@@ -84,7 +88,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
         setIndexQuestion(indexQuestion + 1)
         setSelectedAnswer(null)
         setShowFeedback(false)
-      }, 1500)
+      }, 400)
     }
   }
 
@@ -181,19 +185,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
                       }`}
                     >
                       {selectedAnswer?.answer === option && (
-                        <svg
-                          className="w-4 h-4"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M5 13l4 4L19 7"
-                          />
-                        </svg>
+                        <Check className="w-4 h-4" />
                       )}
                     </div>
                     <span className="font-medium">{option}</span>
@@ -219,19 +211,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
             {showFeedback && (
               <div className="mt-6 p-4 rounded-lg border-2 border-blue-200 bg-blue-50 text-blue-800">
                 <div className="flex items-center gap-3">
-                  <svg
-                    className="w-6 h-6 text-blue-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
+                  <CheckCircle className="w-6 h-6 text-blue-600" />
                   <div>
                     <h4 className="font-semibold">Answer Submitted</h4>
                     <p className="text-sm">
@@ -250,7 +230,6 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
             {questions.map((_, index) => (
               <button
                 key={index}
-                onClick={() => setIndexQuestion(index)}
                 className={`w-3 h-3 rounded-full transition-all duration-200 ${
                   index === indexQuestion
                     ? 'bg-blue-600 scale-125'

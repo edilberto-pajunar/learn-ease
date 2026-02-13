@@ -6,14 +6,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { MessageSquare, Star, Calendar, User, Filter } from 'lucide-react'
+import type { Feedback } from '@/interface/feedback'
+import { FEEDBACK_QUESTIONS } from '@/interface/feedback'
 
-interface Feedback {
-  id?: string
-  rating?: number
-  comment?: string
-  createdAt?: Date
-  studentName?: string
-  studentId?: string
+function getAverageRating(f: Feedback): number {
+  if (!f.responses?.length) return 0
+  const sum = f.responses.reduce((a, r) => a + r.value, 0)
+  return Math.round(sum / f.responses.length)
 }
 
 export default function AdminFeedbackPage() {
@@ -39,25 +38,17 @@ export default function AdminFeedbackPage() {
 
   useEffect(() => {
     let filtered = [...feedback]
-
-    // Filter by rating
     if (filterRating !== null) {
-      filtered = filtered.filter((f) => f.rating === filterRating)
+      filtered = filtered.filter((f) => getAverageRating(f) === filterRating)
     }
-
-    // Sort feedback
     filtered.sort((a, b) => {
       if (sortBy === 'date') {
         const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0
         const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0
         return dateB - dateA
-      } else {
-        const ratingA = a.rating || 0
-        const ratingB = b.rating || 0
-        return ratingB - ratingA
       }
+      return getAverageRating(b) - getAverageRating(a)
     })
-
     setFilteredFeedback(filtered)
   }, [feedback, filterRating, sortBy])
 
@@ -147,8 +138,8 @@ export default function AdminFeedbackPage() {
                 <h3 className="text-2xl font-bold text-green-700 mb-1">
                   {feedback.length > 0
                     ? (
-                        feedback.reduce((acc, f) => acc + (f.rating || 0), 0) /
-                        feedback.length
+feedback.reduce((acc, f) => acc + getAverageRating(f), 0) /
+                          feedback.length
                       ).toFixed(1)
                     : '0'}
                 </h3>
@@ -162,7 +153,7 @@ export default function AdminFeedbackPage() {
                   <Star className="w-6 h-6 text-white" />
                 </div>
                 <h3 className="text-2xl font-bold text-yellow-700 mb-1">
-                  {feedback.filter((f) => (f.rating || 0) >= 4).length}
+                  {feedback.filter((f) => getAverageRating(f) >= 4).length}
                 </h3>
                 <p className="text-yellow-600 font-medium">Positive Reviews</p>
               </CardContent>
@@ -290,18 +281,22 @@ export default function AdminFeedbackPage() {
                       key={feedbackItem.id || index}
                       className="group border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 bg-gradient-to-br from-card to-card/50 overflow-hidden flex flex-col"
                     >
-                      <div
-                        className={`h-2 ${
-                          (feedbackItem.rating || 0) >= 4
-                            ? 'bg-gradient-to-r from-green-500 to-emerald-600'
-                            : (feedbackItem.rating || 0) >= 3
-                              ? 'bg-gradient-to-r from-yellow-500 to-orange-600'
-                              : 'bg-gradient-to-r from-red-500 to-pink-600'
-                        }`}
-                      />
+                      {(() => {
+                        const avg = getAverageRating(feedbackItem)
+                        return (
+                          <div
+                            className={`h-2 ${
+                              avg >= 4
+                                ? 'bg-gradient-to-r from-green-500 to-emerald-600'
+                                : avg >= 3
+                                  ? 'bg-gradient-to-r from-yellow-500 to-orange-600'
+                                  : 'bg-gradient-to-r from-red-500 to-pink-600'
+                            }`}
+                          />
+                        )
+                      })()}
 
                       <CardContent className="p-6 flex flex-col flex-1">
-                        {/* Header with Rating and Student Info */}
                         <div className="flex items-start justify-between mb-4">
                           <div className="flex items-center gap-2">
                             <div className="flex items-center">
@@ -309,7 +304,7 @@ export default function AdminFeedbackPage() {
                                 <Star
                                   key={star}
                                   className={`w-4 h-4 ${
-                                    star <= (feedbackItem.rating || 0)
+                                    star <= getAverageRating(feedbackItem)
                                       ? 'text-yellow-400 fill-current'
                                       : 'text-gray-300'
                                   }`}
@@ -317,9 +312,9 @@ export default function AdminFeedbackPage() {
                               ))}
                             </div>
                             <Badge
-                              className={`ml-2 ${getRatingColor(feedbackItem.rating || 0)}`}
+                              className={`ml-2 ${getRatingColor(getAverageRating(feedbackItem))}`}
                             >
-                              {getRatingLabel(feedbackItem.rating || 0)}
+                              {getRatingLabel(getAverageRating(feedbackItem))}
                             </Badge>
                           </div>
 
@@ -327,7 +322,7 @@ export default function AdminFeedbackPage() {
                             <div className="flex items-center gap-1 text-xs text-muted-foreground mb-1">
                               <User className="w-3 h-3" />
                               <span className="text-xs">
-                                {feedbackItem.studentName || 'Anonymous'}
+                                {feedbackItem.studentId || 'Anonymous'}
                               </span>
                             </div>
                             <div className="text-xs text-muted-foreground">
@@ -336,11 +331,21 @@ export default function AdminFeedbackPage() {
                           </div>
                         </div>
 
-                        {/* Comment */}
-                        <div className="mb-4 flex-1">
-                          <p className="text-foreground text-sm leading-relaxed line-clamp-4">
-                            {feedbackItem.comment || 'No comment provided'}
-                          </p>
+                        <div className="space-y-2 mb-4 flex-1">
+                          {feedbackItem.responses?.map((r) => {
+                            const q = FEEDBACK_QUESTIONS.find((x) => x.id === r.questionId)
+                            return (
+                              <p key={r.questionId} className="text-foreground text-sm">
+                                <span className="font-medium">{q?.label ?? r.questionId}:</span>{' '}
+                                {r.value}/5
+                              </p>
+                            )
+                          })}
+                          {(feedbackItem.overallComment?.trim() ?? '') && (
+                            <p className="text-foreground text-sm leading-relaxed line-clamp-4 pt-2 border-t">
+                              {feedbackItem.overallComment}
+                            </p>
+                          )}
                         </div>
 
                         {/* Footer with Actions - Always at bottom */}

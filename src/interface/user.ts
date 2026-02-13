@@ -9,8 +9,8 @@ export interface AppUser {
   name: string
   createdAt: Date
   role: UserRole
-  preTestMaterialBatch?: string
+  preTestMaterialBatchId?: string
   preTestCompletedAt?: Date
-  postTestMaterialBatch?: string
+  postTestMaterialBatchId?: string
   postTestCompletedAt?: Date
 }

@@ -14,8 +14,6 @@ export type SubmissionTableRow = {
   materialBatch: string
   mode: string
   submittedAt: string
-  comprehensionScore: number
-  vocabularyScore: number
   totalScore: number
   totalQuestions: number
   numberOfWords: number
@@ -43,7 +41,7 @@ function submissionToRow(
   sub: Submission,
   student: StudentInfo,
 ): SubmissionTableRow {
-  const totalScore = (sub.comprehensionScore ?? 0) + (sub.vocabularyScore ?? 0)
+  const totalScore = sub.answers.filter((a) => a.isCorrect).length ?? 0
   const totalQuestions = sub.answers?.length ?? 0
   return {
     studentId: sub.studentId ?? '',
@@ -56,8 +54,6 @@ function submissionToRow(
     materialBatch: sub.materialBatch ?? '',
     mode: sub.mode ?? '',
     submittedAt: formatTimestamp(sub.submittedAt),
-    comprehensionScore: sub.comprehensionScore ?? 0,
-    vocabularyScore: sub.vocabularyScore ?? 0,
     totalScore,
     totalQuestions,
     numberOfWords: sub.numberOfWords ?? 0,
@@ -96,13 +92,15 @@ export const exportService = {
   ): SubmissionTableRow[] {
     const defaultStudent: StudentInfo = { name: '—', email: '—' }
     return submissions
-      .map((s) =>
-        submissionToRow(s, students[s.studentId] ?? defaultStudent),
-      )
+      .map((s) => submissionToRow(s, students[s.studentId] ?? defaultStudent))
       .sort((a, b) => {
-        if (a.studentId !== b.studentId) return a.studentId.localeCompare(b.studentId)
+        if (a.studentId !== b.studentId)
+          return a.studentId.localeCompare(b.studentId)
         const order = { preTest: 0, postTest: 1 }
-        return (order[a.testType as keyof typeof order] ?? 2) - (order[b.testType as keyof typeof order] ?? 2)
+        return (
+          (order[a.testType as keyof typeof order] ?? 2) -
+          (order[b.testType as keyof typeof order] ?? 2)
+        )
       })
   },
 

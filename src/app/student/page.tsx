@@ -132,14 +132,14 @@ const HomePage: React.FC = () => {
                 <div className="pointer-events-none absolute -top-24 -right-24 h-56 w-56 rounded-full bg-blue-200/40 blur-3xl" />
                 <div className="pointer-events-none absolute -bottom-24 -left-24 h-56 w-56 rounded-full bg-indigo-200/30 blur-3xl" />
 
-                <CardContent className="relative p-8 sm:p-10 md:p-12 text-center">
+                <CardContent className="relative p-8 sm:p-10 md:p-12 text-center min-w-0 overflow-hidden">
                   <div className="mb-6 sm:mb-8">
                     <div className="inline-flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 rounded-3xl shadow-xl mb-6 bg-gradient-to-br from-blue-600 to-indigo-600 ring-1 ring-white/30 hover:scale-110 transition-transform duration-300">
                       <BookOpen className="w-10 h-10 sm:w-12 sm:h-12 text-white" />
                     </div>
                   </div>
 
-                  <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-slate-900 mb-4 sm:mb-6 leading-tight">
+                  <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-slate-900 mb-4 sm:mb-6 leading-tight break-words">
                     Welcome back,{' '}
                     <span className="text-blue-600">
                       {user.name || 'Student'}!
@@ -147,12 +147,12 @@ const HomePage: React.FC = () => {
                     👋
                   </h1>
 
-                  <div className="inline-flex items-center gap-2 bg-blue-100/80 text-blue-700 px-4 py-2 rounded-full text-sm font-semibold mb-5 border border-blue-200/60 shadow-sm">
+                  <div className="inline-flex flex-wrap items-center justify-center gap-2 bg-blue-100/80 text-blue-700 px-4 py-2 rounded-full text-sm font-semibold mb-5 border border-blue-200/60 shadow-sm">
                     <Sparkles className="w-4 h-4" />
                     Ready to Level Up?
                   </div>
 
-                  <p className="text-lg sm:text-xl md:text-2xl text-slate-700 max-w-3xl mx-auto leading-relaxed mb-4">
+                  <p className="text-lg sm:text-xl md:text-2xl text-slate-700 max-w-3xl mx-auto leading-relaxed mb-4 break-words">
                     <span className="font-bold text-blue-600">T</span>echnology-
                     <span className="font-bold text-blue-600">B</span>ased{' '}
                     <span className="font-bold text-blue-600">R</span>eading for{' '}
@@ -161,7 +161,7 @@ const HomePage: React.FC = () => {
                     <span className="font-bold text-blue-600">E</span>ngagement
                   </p>
 
-                  <p className="text-base sm:text-lg text-slate-600 max-w-3xl mx-auto leading-relaxed">
+                  <p className="text-base sm:text-lg text-slate-600 max-w-3xl mx-auto leading-relaxed break-words">
                     Your personalized learning hub where every story is an
                     adventure and every challenge makes you stronger!
                   </p>

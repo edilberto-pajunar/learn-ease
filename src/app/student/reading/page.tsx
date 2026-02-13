@@ -1,6 +1,6 @@
 'use client'
 
-import { FC, useEffect, useState, Suspense, useRef } from 'react'
+import { FC, useEffect, useRef, useState, Suspense } from 'react'
 import { useReadStore } from '@/hooks/useReadStore'
 import { useAuthStore } from '@/hooks/useAuthStore'
 import { wordCount } from '@/app/utils/wordCount'
@@ -12,8 +12,6 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import {
   Loader2,
-  Volume2,
-  Square,
   BookOpen,
   AlertCircle,
   AlertTriangle,
@@ -42,8 +40,9 @@ const ReadingPageContent: FC = () => {
   const testType = searchParams.get('testType') || 'preTest'
 
   const [formError] = useState<string | null>(null)
-  const [speechRate, setSpeechRate] = useState(1)
   const [showCompletionDialog, setShowCompletionDialog] = useState(false)
+  const questionsSectionRef = useRef<HTMLDivElement>(null)
+  const readingSectionRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (!quarter) {
@@ -59,7 +58,7 @@ const ReadingPageContent: FC = () => {
 
   useEffect(() => {
     if (quarter?.quarter) {
-      fetchMaterials('Q1', 'preTest')
+      fetchMaterials('Q1')
     }
   }, [fetchMaterials, quarter?.quarter])
 
@@ -138,7 +137,7 @@ const ReadingPageContent: FC = () => {
                 </p>
               </div>
 
-             
+
             </div>
           </div>
 
@@ -195,7 +194,14 @@ const ReadingPageContent: FC = () => {
           )}
 
           {/* Reading Passage */}
-          <TimeCard material={material} />
+          <div ref={readingSectionRef}>
+            <TimeCard
+              material={material}
+              onFinishReading={() =>
+                questionsSectionRef.current?.scrollIntoView({ behavior: 'smooth' })
+              }
+            />
+          </div>
 
           {/* Miscues Display */}
           {miscues.length > 0 && (
@@ -220,7 +226,10 @@ const ReadingPageContent: FC = () => {
           )}
 
           {/* Comprehension Questions */}
-          <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm mb-8">
+          <Card
+            ref={questionsSectionRef}
+            className="border-0 shadow-lg bg-white/80 backdrop-blur-sm mb-8"
+          >
             <CardContent className="p-6">
               <div className="border-b border-border/50 pb-4 mb-6">
                 <h2 className="text-2xl font-bold text-foreground mb-2 flex items-center gap-3">
@@ -239,6 +248,9 @@ const ReadingPageContent: FC = () => {
                   questions={material.questions}
                   studentId={studentId!}
                   setShowCompletionDialog={setShowCompletionDialog}
+                  onFinishMaterial={() =>
+                    readingSectionRef.current?.scrollIntoView({ behavior: 'smooth' })
+                  }
                 />
               ) : (
                 <div className="text-center py-8">

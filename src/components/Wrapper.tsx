@@ -5,11 +5,12 @@ import { useAuthStore } from '@/hooks/useAuthStore'
 import { AppUser, UserRole } from '@/interface/user'
 import { onAuthStateChanged, User } from 'firebase/auth'
 import { doc, getDoc } from 'firebase/firestore'
-import { redirect } from 'next/navigation'
+import { redirect, usePathname } from 'next/navigation'
 import { useEffect } from 'react'
 
 export default function Wrapper({ children }: any) {
   const { setUser, setIsAuthenticated } = useAuthStore()
+  const pathname = usePathname()
 
   const fetchData = async () => {
     onAuthStateChanged(auth, async (firebaseUser: User | null) => {
@@ -41,7 +42,9 @@ export default function Wrapper({ children }: any) {
       } else {
         setUser(null)
         setIsAuthenticated(false)
-        redirect('/login')
+        if (pathname !== '/' && pathname !== '/login') {
+          redirect('/login')
+        }
       }
     })
   }

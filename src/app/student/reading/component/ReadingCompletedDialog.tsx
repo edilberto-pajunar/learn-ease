@@ -19,7 +19,6 @@ interface ReadingCompletedDialogProps {
 
 export default function ReadingCompletedDialog({
   isOpen,
-  materialBatch,
   totalMaterials,
   onClose,
 }: ReadingCompletedDialogProps) {
@@ -36,7 +35,7 @@ export default function ReadingCompletedDialog({
       setCountdown((prev) => {
         if (prev <= 1) {
           clearInterval(timer)
-          router.push(`/student/reading/score/${materialBatch}`)
+          router.push(`/student/reading/score`)
           return 0
         }
         return prev - 1
@@ -44,10 +43,10 @@ export default function ReadingCompletedDialog({
     }, 1000)
 
     return () => clearInterval(timer)
-  }, [isOpen, router, materialBatch])
+  }, [isOpen, router])
 
   const handleViewResults = () => {
-    router.push(`/student/reading/score/${materialBatch}`)
+    router.push(`/student/reading/score`)
   }
 
   return (

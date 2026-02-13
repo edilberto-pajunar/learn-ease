@@ -11,10 +11,11 @@ import { Button } from '@/components/ui/button'
 import { useRouter } from 'next/navigation'
 import {
   BookOpen,
+  Calendar,
   Clock,
+  Percent,
   CheckCircle2,
   XCircle,
-  TrendingUp,
   FileText,
 } from 'lucide-react'
 import { Material } from '@/interface/material'
@@ -31,16 +32,6 @@ const formatDuration = (seconds: number): string => {
   }
 }
 
-const calculateOverallScore = (
-  comprehensionScore: number,
-  vocabularyScore: number,
-  totalQuestions: number,
-): number => {
-  return Math.round(
-    ((comprehensionScore + vocabularyScore) / totalQuestions) * 100,
-  )
-}
-
 const getScoreLevel = (
   percentage: number,
 ): {
@@ -49,14 +40,15 @@ const getScoreLevel = (
   bgColor: string
   borderColor: string
 } => {
-  if (percentage >= 80) {
+  const p = Number.isFinite(percentage) ? percentage : 0
+  if (p >= 80) {
     return {
       level: 'Excellent',
       color: 'text-green-700',
       bgColor: 'bg-green-50',
       borderColor: 'border-green-300',
     }
-  } else if (percentage >= 60) {
+  } else if (p >= 60) {
     return {
       level: 'Good',
       color: 'text-blue-700',
@@ -73,9 +65,17 @@ const getScoreLevel = (
   }
 }
 
+function getSubmittedAtDate(submittedAt: Submission['submittedAt']): Date | null {
+  if (!submittedAt) return null
+  if (typeof submittedAt.toDate === 'function') return submittedAt.toDate()
+  if (typeof submittedAt.toMillis === 'function') return new Date(submittedAt.toMillis())
+  if (submittedAt?.seconds != null) return new Date((submittedAt as { seconds: number }).seconds * 1000)
+  return null
+}
+
 export default function PretestScorePage() {
   const { user } = useAuthStore()
-  const { submissions, fetchSubmissions } = useSubmissionStore()
+  const { preTestSubmissions, postTestSubmissions, fetchPreTestSubmission, fetchPostTestSubmission } = useSubmissionStore()
   const { materials, fetchMaterials } = useReadStore()
   const { quarter, getQuarter } = useAdminStore()
   const router = useRouter()
@@ -83,11 +83,21 @@ export default function PretestScorePage() {
   const [selectedTestType, setSelectedTestType] = useState<'preTest' | 'postTest'>('preTest')
 
   const studentId = user?.id
+  const preTestMaterialBatchId = user?.preTestMaterialBatchId ?? ''
+  const postTestMaterialBatchId = user?.postTestMaterialBatchId ?? ''
+
+  console.log('preTestMaterialBatchId', preTestMaterialBatchId);
+  console.log('postTestMaterialBatchId', postTestMaterialBatchId);
 
   useEffect(() => {
     if (!studentId) return
-    fetchSubmissions(studentId)
-  }, [studentId, fetchSubmissions])
+    if (preTestMaterialBatchId) {
+      fetchPreTestSubmission(studentId, preTestMaterialBatchId)
+    }
+    if (!postTestMaterialBatchId) {
+      fetchPostTestSubmission(studentId, postTestMaterialBatchId)
+    }
+  }, [studentId, fetchPreTestSubmission, fetchPostTestSubmission, preTestMaterialBatchId, postTestMaterialBatchId])
 
   useEffect(() => {
     if (!quarter) {
@@ -101,36 +111,50 @@ export default function PretestScorePage() {
     }
   }, [quarter?.quarter, fetchMaterials])
 
-  const filteredSubmissions = submissions.filter(
-    (sub) => sub.testType === selectedTestType,
-  )
+  const submissions =
+    selectedTestType === 'preTest' ? preTestSubmissions ?? [] : postTestSubmissions ?? []
+  const hasAnySubmissions =
+    (preTestSubmissions?.length ?? 0) > 0 || (postTestSubmissions?.length ?? 0) > 0
+
+  const { totalCorrect, totalQuestions, totalScorePercent, totalScoreLevel } = (() => {
+    const answers = submissions.flatMap((s) => s.answers ?? [])
+    const correct = answers.filter((a) => a?.isCorrect).length
+    const total = answers.length || 1
+    const percent = Math.round((correct / total) * 100)
+    return {
+      totalCorrect: correct,
+      totalQuestions: total,
+      totalScorePercent: percent,
+      totalScoreLevel: getScoreLevel(percent),
+    }
+  })()
 
   const getMaterialDetails = (materialId: string): Material | undefined => {
     return materials.find((material) => material.id === materialId)
   }
 
-  const groupSubmissionsByBatch = (submissions: Submission[]) => {
-    const grouped = submissions.reduce(
+  const groupSubmissionsByBatch = (subs: Submission[]) => {
+    const grouped = (subs ?? []).reduce(
       (acc, submission) => {
-        const batch = submission.materialBatch || 'no-batch'
-        if (!acc[batch]) {
-          acc[batch] = []
-        }
+        const batch = submission.materialBatch ?? 'no-batch'
+        if (!acc[batch]) acc[batch] = []
         acc[batch].push(submission)
         return acc
       },
       {} as Record<string, Submission[]>,
     )
 
-    return Object.entries(grouped).map(([batch, subs]) => ({
+    return Object.entries(grouped).map(([batch, batchSubs]) => ({
       batch,
-      submissions: subs.sort(
-        (a, b) => b.submittedAt.toMillis() - a.submittedAt.toMillis(),
-      ),
+      submissions: batchSubs.sort((a, b) => {
+        const dateA = getSubmittedAtDate(a.submittedAt)?.getTime() ?? 0
+        const dateB = getSubmittedAtDate(b.submittedAt)?.getTime() ?? 0
+        return dateB - dateA
+      }),
     }))
   }
 
-  const testBatches = groupSubmissionsByBatch(filteredSubmissions)
+  const testBatches = groupSubmissionsByBatch(submissions)
 
   if (!studentId) {
     return (
@@ -163,7 +187,7 @@ export default function PretestScorePage() {
           </div>
         </div>
 
-        {submissions.length === 0 ? (
+        {!hasAnySubmissions ? (
           <Card className="border border-stone-200 shadow-sm bg-white">
             <CardContent className="p-12 text-center">
               <div className="inline-flex items-center justify-center w-16 h-16 bg-stone-100 rounded-xl mb-4 border border-stone-200">
@@ -186,31 +210,29 @@ export default function PretestScorePage() {
         ) : (
           <>
             <div className="flex justify-center mb-6">
-              <div className="inline-flex bg-white rounded-lg p-1 shadow-sm border border-stone-200">
+              <div className="inline-flex bg-white rounded-lg p-1 shadow-sm border border-stone-200 gap-4">
                 <Button
                   onClick={() => setSelectedTestType('preTest')}
-                  className={`px-6 py-2 rounded-md font-medium transition-all ${
-                    selectedTestType === 'preTest'
-                      ? 'bg-stone-900 text-white'
-                      : 'bg-transparent text-stone-600 hover:text-stone-900 hover:bg-stone-50'
-                  }`}
+                  className={`px-6 py-2 rounded-md font-medium transition-all ${selectedTestType === 'preTest'
+                    ? 'bg-stone-900 text-white'
+                    : 'bg-transparent text-stone-600 hover:text-stone-900 hover:bg-stone-50'
+                    }`}
                 >
                   Pre-Test
                 </Button>
                 <Button
                   onClick={() => setSelectedTestType('postTest')}
-                  className={`px-6 py-2 rounded-md font-medium transition-all ${
-                    selectedTestType === 'postTest'
-                      ? 'bg-stone-900 text-white'
-                      : 'bg-transparent text-stone-600 hover:text-stone-900 hover:bg-stone-50'
-                  }`}
+                  className={`px-6 py-2 rounded-md font-medium transition-all ${selectedTestType === 'postTest'
+                    ? 'bg-stone-900 text-white'
+                    : 'bg-transparent text-stone-600 hover:text-stone-900 hover:bg-stone-50'
+                    }`}
                 >
                   Post-Test
                 </Button>
               </div>
             </div>
 
-            {filteredSubmissions.length === 0 ? (
+            {submissions.length === 0 ? (
               <Card className="border border-stone-200 shadow-sm bg-white">
                 <CardContent className="p-12 text-center">
                   <div className="inline-flex items-center justify-center w-16 h-16 bg-stone-100 rounded-xl mb-4 border border-stone-200">
@@ -232,150 +254,135 @@ export default function PretestScorePage() {
               </Card>
             ) : (
               <div className="space-y-6">
-                {testBatches.map((batchGroup) => (
-              <div key={batchGroup.batch} className="space-y-4">
-                {batchGroup.batch !== 'no-batch' && (
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="h-px flex-1 bg-stone-200" />
-                    <span className="text-sm font-medium text-stone-600 px-3 py-1 bg-stone-100 rounded-full border border-stone-200">
-                      Batch {batchGroup.batch}
-                    </span>
-                    <div className="h-px flex-1 bg-stone-200" />
-                  </div>
-                )}
-
-                <div className="grid gap-4">
-                  {batchGroup.submissions.map((submission) => {
-                    const material = getMaterialDetails(submission.materialId)
-                    const materialTitle =
-                      material?.title || `Material ${submission.materialId}`
-                    const overallScore = calculateOverallScore(
-                      submission.comprehensionScore,
-                      submission.vocabularyScore,
-                      submission.answers.length,
-                    )
-                    const scoreLevel = getScoreLevel(overallScore)
-                    const isExpanded = expandedCard === submission.id
-
-                    const comprehensionQuestions =
-                      material?.questions.filter(
-                        (q) => q.type === 'COMPREHENSION',
-                      ) || []
-                    const vocabularyQuestions =
-                      material?.questions.filter(
-                        (q) => q.type === 'VOCABULARY',
-                      ) || []
-
-                    return (
-                      <Card
-                        key={submission.id}
-                        className="border border-stone-200 shadow-sm bg-white hover:shadow-md transition-all duration-300 hover:-translate-y-1 overflow-hidden"
+                <Card className="border border-stone-200 shadow-sm bg-white">
+                  <CardContent className="p-4">
+                    <div className="flex flex-wrap items-center justify-between gap-4">
+                      <h3 className="text-sm font-semibold text-stone-700">
+                        Total score
+                      </h3>
+                      <span className="text-sm text-stone-600">
+                        {totalCorrect} / {totalQuestions} correct
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap items-center justify-between gap-4">
+                      <h3 className="text-sm font-semibold text-stone-700">
+                        Percentage
+                      </h3>
+                      <span className="text-sm text-stone-600">
+                        {totalScorePercent}%
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap items-center justify-between gap-4">
+                      <h3 className="text-sm font-semibold text-stone-700">
+                        Level
+                      </h3>
+                      <span
+                        className={`px-3 py-1.5 rounded-lg border text-xs font-semibold ${totalScoreLevel.bgColor} ${totalScoreLevel.borderColor} ${totalScoreLevel.color}`}
                       >
-                        <CardContent className="p-6">
-                          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 mb-6 pb-6 border-b border-stone-200">
-                            <div className="flex-1">
-                              <div className="flex items-start gap-3">
-                                <div className="inline-flex items-center justify-center w-10 h-10 bg-stone-100 rounded-lg border border-stone-200">
-                                  <BookOpen className="w-5 h-5 text-stone-700" />
+                        {totalScoreLevel.level}
+                      </span>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {testBatches.map((batchGroup) => (
+                  <div key={batchGroup.batch} className="space-y-4">
+
+                    <div className="grid gap-4">
+                      {batchGroup.submissions.map((submission, idx) => {
+                        const material = getMaterialDetails(submission.materialId ?? '')
+                        const answers = submission.answers ?? []
+                        const totalAnswers = answers.length || 1
+                        const numberOfCorrectAnswers = answers.filter((a) => a?.isCorrect).length
+                        const percentage = (numberOfCorrectAnswers / totalAnswers) * 100
+
+                        const materialTitle =
+                          material?.title ?? `Material ${submission.materialId ?? 'Unknown'}`
+                        const isExpanded = expandedCard === (submission.id ?? null)
+                        const submittedDate = getSubmittedAtDate(submission.submittedAt)
+
+                        return (
+                          <Card
+                            key={submission.id ?? submission.materialId ?? idx}
+                            className="border border-stone-200 shadow-sm bg-white hover:shadow-md transition-all duration-300 hover:-translate-y-1 overflow-hidden"
+                          >
+                            <CardContent className="p-6">
+                              <div className="space-y-3 mb-6 pb-6 border-b border-stone-200">
+                                <div className="flex items-center gap-3">
+                                  <div className="inline-flex items-center justify-center w-10 h-10 bg-stone-100 rounded-lg border border-stone-200 shrink-0">
+                                    <BookOpen className="w-5 h-5 text-stone-700" />
+                                  </div>
+                                  <span className="text-sm font-semibold text-stone-700 w-20 shrink-0">Material</span>
+                                  <span className="text-sm text-stone-600">{materialTitle}</span>
                                 </div>
-                                <div className="flex-1">
-                                  <h2 className="text-lg font-semibold text-stone-900 mb-1">
-                                    {materialTitle}
-                                  </h2>
-                                  <p className="text-sm text-stone-500">
-                                    {submission.submittedAt
-                                      .toDate()
-                                      .toLocaleDateString('en-US', {
+                                <div className="flex items-center gap-3">
+                                  <div className="inline-flex items-center justify-center w-10 h-10 bg-stone-100 rounded-lg border border-stone-200 shrink-0">
+                                    <Calendar className="w-5 h-5 text-stone-700" />
+                                  </div>
+                                  <span className="text-sm font-semibold text-stone-700 w-20 shrink-0">Submitted</span>
+                                  <span className="text-sm text-stone-600">
+                                    {submittedDate
+                                      ? submittedDate.toLocaleDateString('en-US', {
                                         year: 'numeric',
                                         month: 'short',
                                         day: 'numeric',
                                         hour: '2-digit',
                                         minute: '2-digit',
-                                      })}
-                                  </p>
-                                  {submission.quarter && (
-                                    <span className="inline-block mt-2 text-xs font-medium text-stone-600 bg-stone-100 px-2 py-1 rounded border border-stone-200">
-                                      {submission.quarter}
-                                    </span>
-                                  )}
+                                      })
+                                      : '—'}
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                  <div className="inline-flex items-center justify-center w-10 h-10 bg-stone-100 rounded-lg border border-stone-200 shrink-0">
+                                    <Percent className="w-5 h-5 text-stone-700" />
+                                  </div>
+                                  <span className="text-sm font-semibold text-stone-700 w-20 shrink-0">Score</span>
+                                  <span className="text-sm text-stone-600">{Math.round(percentage)}%</span>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                  <div className="inline-flex items-center justify-center w-10 h-10 bg-stone-100 rounded-lg border border-stone-200 shrink-0">
+                                    <CheckCircle2 className="w-5 h-5 text-stone-700" />
+                                  </div>
+                                  <span className="text-sm font-semibold text-stone-700 w-20 shrink-0">Correct</span>
+                                  <span className="text-sm text-stone-600">
+                                    {numberOfCorrectAnswers} / {totalAnswers}
+                                  </span>
                                 </div>
                               </div>
-                            </div>
 
-                            <div className="flex flex-col items-end gap-2">
-                              <div
-                                className={`text-center px-5 py-3 rounded-xl border ${scoreLevel.bgColor} ${scoreLevel.borderColor}`}
-                              >
-                                <div
-                                  className={`text-3xl font-bold ${scoreLevel.color} mb-1`}
-                                >
-                                  {overallScore}%
+                              <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
+                                <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                                  <div className="text-sm font-semibold text-blue-700">
+                                    {formatDuration(Number(submission.duration) || 0)}
+                                  </div>
+                                  <div className="text-xs text-blue-600 mt-0.5 flex items-center gap-1">
+                                    <Clock className="w-3 h-3" />
+                                    Duration
+                                  </div>
                                 </div>
-                                <div className="text-xs font-medium text-stone-600">
-                                  {submission.comprehensionScore +
-                                    submission.vocabularyScore}
-                                  /{submission.answers.length} correct
+                                <div className="p-3 bg-emerald-50 rounded-lg border border-emerald-200">
+                                  <div className="text-sm font-semibold text-emerald-700">
+                                    {submission.numberOfWords ?? 0}
+                                  </div>
+                                  <div className="text-xs text-emerald-600 mt-0.5">
+                                    Words
+                                  </div>
+                                </div>
+                                <div className="p-3 bg-amber-50 rounded-lg border border-amber-200">
+                                  <div className="text-sm font-semibold text-amber-700">
+                                    {submission.miscues
+                                      ? Array.isArray(submission.miscues)
+                                        ? submission.miscues.length
+                                        : 0
+                                      : 0}
+                                  </div>
+                                  <div className="text-xs text-amber-600 mt-0.5">
+                                    Miscues
+                                  </div>
                                 </div>
                               </div>
-                              <div
-                                className={`px-3 py-1.5 rounded-lg border text-xs font-semibold ${scoreLevel.bgColor} ${scoreLevel.borderColor} ${scoreLevel.color}`}
-                              >
-                                {scoreLevel.level}
-                              </div>
-                            </div>
-                          </div>
 
-                          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
-                            <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-                              <div className="text-sm font-semibold text-blue-700">
-                                {formatDuration(submission.duration)}
-                              </div>
-                              <div className="text-xs text-blue-600 mt-0.5 flex items-center gap-1">
-                                <Clock className="w-3 h-3" />
-                                Duration
-                              </div>
-                            </div>
-                            <div className="p-3 bg-emerald-50 rounded-lg border border-emerald-200">
-                              <div className="text-sm font-semibold text-emerald-700">
-                                {submission.numberOfWords}
-                              </div>
-                              <div className="text-xs text-emerald-600 mt-0.5">
-                                Words
-                              </div>
-                            </div>
-                            <div className="p-3 bg-purple-50 rounded-lg border border-purple-200">
-                              <div className="text-sm font-semibold text-purple-700">
-                                {submission.comprehensionScore}/
-                                {comprehensionQuestions.length}
-                              </div>
-                              <div className="text-xs text-purple-600 mt-0.5">
-                                Comprehension
-                              </div>
-                            </div>
-                            <div className="p-3 bg-indigo-50 rounded-lg border border-indigo-200">
-                              <div className="text-sm font-semibold text-indigo-700">
-                                {submission.vocabularyScore}/
-                                {vocabularyQuestions.length}
-                              </div>
-                              <div className="text-xs text-indigo-600 mt-0.5">
-                                Vocabulary
-                              </div>
-                            </div>
-                            <div className="p-3 bg-amber-50 rounded-lg border border-amber-200">
-                              <div className="text-sm font-semibold text-amber-700">
-                                {submission.miscues
-                                  ? Array.isArray(submission.miscues)
-                                    ? submission.miscues.length
-                                    : 0
-                                  : 0}
-                              </div>
-                              <div className="text-xs text-amber-600 mt-0.5">
-                                Miscues
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* <button
+                              {/* <button
                             onClick={() =>
                               setExpandedCard(
                                 isExpanded ? null : submission.id || null,
@@ -393,171 +400,81 @@ export default function PretestScorePage() {
                             />
                           </button> */}
 
-                          {isExpanded && material && (
-                            <div className="mt-6 pt-6 border-t border-stone-200 space-y-6">
-                              <div>
-                                <div className="flex items-center gap-2 mb-3">
-                                  <div className="w-1 h-4 bg-purple-500 rounded-full" />
-                                  <h3 className="text-sm font-semibold text-stone-700 uppercase tracking-wide">
-                                    Comprehension Questions
-                                  </h3>
-                                  <span className="ml-auto text-xs font-medium text-purple-600 bg-purple-50 px-2 py-1 rounded-full border border-purple-200">
-                                    {submission.comprehensionScore}/
-                                    {comprehensionQuestions.length} correct
-                                  </span>
-                                </div>
-                                <div className="space-y-3">
-                                  {comprehensionQuestions.map(
-                                    (question, index) => {
-                                      const studentAnswer =
-                                        submission.answers.find(
-                                          (a) =>
-                                            a.type === 'COMPREHENSION' &&
-                                            submission.answers.indexOf(a) ===
-                                              index,
-                                        )
-                                      const isCorrect =
-                                        studentAnswer?.isCorrect || false
+                              {isExpanded && material && (
+                                <div className="mt-6 pt-6 border-t border-stone-200 space-y-6">
+                                  <div>
+                                    <div className="space-y-3">
+                                      {(material.questions ?? []).map(
+                                        (question, index) => {
+                                          const studentAnswer = answers.find(
+                                            (a, i) =>
+                                              a?.type === 'COMPREHENSION' && i === index,
+                                          )
+                                          const isCorrect =
+                                            studentAnswer?.isCorrect || false
 
-                                      return (
-                                        <div
-                                          key={index}
-                                          className={`p-4 rounded-lg border-l-4 ${
-                                            isCorrect
-                                              ? 'bg-green-50 border-l-green-500 border-green-200'
-                                              : 'bg-red-50 border-l-red-500 border-red-200'
-                                          }`}
-                                        >
-                                          <div className="flex items-start gap-3 mb-3">
-                                            {isCorrect ? (
-                                              <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                                            ) : (
-                                              <XCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-                                            )}
-                                            <p className="flex-1 text-sm font-medium text-stone-800">
-                                              {question.title}
-                                            </p>
-                                          </div>
-                                          <div className="ml-8 space-y-2 text-sm">
-                                            <div className="flex flex-wrap items-center gap-2">
-                                              <span className="text-xs font-medium text-stone-600">
-                                                Your answer:
-                                              </span>
-                                              <span
-                                                className={`px-3 py-1 rounded-md text-xs font-medium ${
-                                                  isCorrect
-                                                    ? 'bg-green-100 text-green-700 border border-green-200'
-                                                    : 'bg-red-100 text-red-700 border border-red-200 line-through'
+                                          return (
+                                            <div
+                                              key={index}
+                                              className={`p-4 rounded-lg border-l-4 ${isCorrect
+                                                ? 'bg-green-50 border-l-green-500 border-green-200'
+                                                : 'bg-red-50 border-l-red-500 border-red-200'
                                                 }`}
-                                              >
-                                                {studentAnswer?.answer ||
-                                                  'No answer'}
-                                              </span>
-                                            </div>
-                                            {!isCorrect && (
-                                              <div className="flex flex-wrap items-center gap-2">
-                                                <span className="text-xs font-medium text-stone-600">
-                                                  Correct answer:
-                                                </span>
-                                                <span className="px-3 py-1 rounded-md text-xs font-medium bg-green-100 text-green-700 border border-green-200">
-                                                  {question.answer}
-                                                </span>
+                                            >
+                                              <div className="flex items-start gap-3 mb-3">
+                                                {isCorrect ? (
+                                                  <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                                                ) : (
+                                                  <XCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                                                )}
+                                                <p className="flex-1 text-sm font-medium text-stone-800">
+                                                  {question?.title ?? ''}
+                                                </p>
                                               </div>
-                                            )}
-                                          </div>
-                                        </div>
-                                      )
-                                    },
-                                  )}
-                                </div>
-                              </div>
-
-                              <div>
-                                <div className="flex items-center gap-2 mb-3">
-                                  <div className="w-1 h-4 bg-indigo-500 rounded-full" />
-                                  <h3 className="text-sm font-semibold text-stone-700 uppercase tracking-wide">
-                                    Vocabulary Questions
-                                  </h3>
-                                  <span className="ml-auto text-xs font-medium text-indigo-600 bg-indigo-50 px-2 py-1 rounded-full border border-indigo-200">
-                                    {submission.vocabularyScore}/
-                                    {vocabularyQuestions.length} correct
-                                  </span>
-                                </div>
-                                <div className="space-y-3">
-                                  {vocabularyQuestions.map(
-                                    (question, index) => {
-                                      const vocabAnswers =
-                                        submission.answers.filter(
-                                          (a) => a.type === 'VOCABULARY',
-                                        )
-                                      const studentAnswer = vocabAnswers[index]
-                                      const isCorrect =
-                                        studentAnswer?.isCorrect || false
-
-                                      return (
-                                        <div
-                                          key={index}
-                                          className={`p-4 rounded-lg border-l-4 ${
-                                            isCorrect
-                                              ? 'bg-green-50 border-l-green-500 border-green-200'
-                                              : 'bg-red-50 border-l-red-500 border-red-200'
-                                          }`}
-                                        >
-                                          <div className="flex items-start gap-3 mb-3">
-                                            {isCorrect ? (
-                                              <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                                            ) : (
-                                              <XCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-                                            )}
-                                            <p className="flex-1 text-sm font-medium text-stone-800">
-                                              {question.title}
-                                            </p>
-                                          </div>
-                                          <div className="ml-8 space-y-2 text-sm">
-                                            <div className="flex flex-wrap items-center gap-2">
-                                              <span className="text-xs font-medium text-stone-600">
-                                                Your answer:
-                                              </span>
-                                              <span
-                                                className={`px-3 py-1 rounded-md text-xs font-medium ${
-                                                  isCorrect
-                                                    ? 'bg-green-100 text-green-700 border border-green-200'
-                                                    : 'bg-red-100 text-red-700 border border-red-200 line-through'
-                                                }`}
-                                              >
-                                                {studentAnswer?.answer ||
-                                                  'No answer'}
-                                              </span>
-                                            </div>
-                                            {!isCorrect && (
-                                              <div className="flex flex-wrap items-center gap-2">
-                                                <span className="text-xs font-medium text-stone-600">
-                                                  Correct answer:
-                                                </span>
-                                                <span className="px-3 py-1 rounded-md text-xs font-medium bg-green-100 text-green-700 border border-green-200">
-                                                  {question.answer}
-                                                </span>
+                                              <div className="ml-8 space-y-2 text-sm">
+                                                <div className="flex flex-wrap items-center gap-2">
+                                                  <span className="text-xs font-medium text-stone-600">
+                                                    Your answer:
+                                                  </span>
+                                                  <span
+                                                    className={`px-3 py-1 rounded-md text-xs font-medium ${isCorrect
+                                                      ? 'bg-green-100 text-green-700 border border-green-200'
+                                                      : 'bg-red-100 text-red-700 border border-red-200 line-through'
+                                                      }`}
+                                                  >
+                                                    {studentAnswer?.answer ||
+                                                      'No answer'}
+                                                  </span>
+                                                </div>
+                                                {!isCorrect && (
+                                                  <div className="flex flex-wrap items-center gap-2">
+                                                    <span className="text-xs font-medium text-stone-600">
+                                                      Correct answer:
+                                                    </span>
+                                                    <span className="px-3 py-1 rounded-md text-xs font-medium bg-green-100 text-green-700 border border-green-200">
+                                                      {question?.answer ?? ''}
+                                                    </span>
+                                                  </div>
+                                                )}
                                               </div>
-                                            )}
-                                          </div>
-                                        </div>
-                                      )
-                                    },
-                                  )}
+                                            </div>
+                                          )
+                                        },
+                                      )}
+                                    </div>
+                                  </div>
                                 </div>
-                              </div>
-                            </div>
-                          )}
-                        </CardContent>
-                      </Card>
-                    )
-                  })}
-                </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </>
+                              )}
+                            </CardContent>
+                          </Card>
+                        )
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
