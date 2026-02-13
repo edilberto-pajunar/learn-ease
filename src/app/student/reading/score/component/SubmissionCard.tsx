@@ -23,9 +23,8 @@ const formatDuration = (seconds: number): string => {
 }
 
 const calculateReadingLevel = (
-  comprehensionScore: number,
-  vocabularyScore: number,
   totalQuestions: number,
+  totalCorrect: number,
 ): {
   level: string
   color: string
@@ -34,7 +33,7 @@ const calculateReadingLevel = (
   percentage: number
 } => {
   const percentage =
-    ((comprehensionScore + vocabularyScore) / totalQuestions) * 100
+    (totalCorrect / totalQuestions) * 100
 
   if (percentage >= 80) {
     return {
@@ -71,8 +70,7 @@ export default function SubmissionCard(props: SubmissionCardProps) {
   const materialText = material?.text || 'No content available'
 
   const readingLevel = calculateReadingLevel(
-    submission.comprehensionScore,
-    submission.vocabularyScore,
+    submission.answers.filter((answer) => answer.isCorrect).length,
     submission.answers.length,
   )
 
@@ -126,7 +124,7 @@ export default function SubmissionCard(props: SubmissionCardProps) {
                 {Math.round(readingLevel.percentage)}%
               </div>
               <div className="text-xs text-gray-600 mt-0.5">
-                {submission.comprehensionScore + submission.vocabularyScore}/
+                {submission.answers.filter((answer) => answer.isCorrect).length}/
                 {submission.answers.length} correct
               </div>
             </div>
@@ -152,18 +150,6 @@ export default function SubmissionCard(props: SubmissionCardProps) {
               {submission.numberOfWords}
             </div>
             <div className="text-xs text-emerald-600 mt-0.5">Words</div>
-          </div>
-          <div className="p-3 bg-gradient-to-br from-purple-50 to-purple-100/50 rounded-lg border border-purple-200">
-            <div className="text-sm font-semibold text-purple-700">
-              {submission.comprehensionScore}
-            </div>
-            <div className="text-xs text-purple-600 mt-0.5">Comprehension</div>
-          </div>
-          <div className="p-3 bg-gradient-to-br from-indigo-50 to-indigo-100/50 rounded-lg border border-indigo-200">
-            <div className="text-sm font-semibold text-indigo-700">
-              {submission.vocabularyScore}
-            </div>
-            <div className="text-xs text-indigo-600 mt-0.5">Vocabulary</div>
           </div>
           <div className="p-3 bg-gradient-to-br from-amber-50 to-amber-100/50 rounded-lg border border-amber-200">
             <div className="text-sm font-semibold text-amber-700">
@@ -224,7 +210,7 @@ export default function SubmissionCard(props: SubmissionCardProps) {
                   </h3>
                 </div>
                 <span className="text-xs font-medium text-purple-600 bg-purple-50 px-2 py-1 rounded-full">
-                  {submission.comprehensionScore}/
+                  {submission.answers.filter((answer) => answer.isCorrect).length}/
                   {comprehensionQuestions.length} correct
                 </span>
               </div>
@@ -301,7 +287,7 @@ export default function SubmissionCard(props: SubmissionCardProps) {
                   </h3>
                 </div>
                 <span className="text-xs font-medium text-indigo-600 bg-indigo-50 px-2 py-1 rounded-full">
-                  {submission.vocabularyScore}/{vocabularyQuestions.length}{' '}
+                  {submission.answers.filter((answer) => answer.isCorrect).length}/{vocabularyQuestions.length}{' '}
                   correct
                 </span>
               </div>

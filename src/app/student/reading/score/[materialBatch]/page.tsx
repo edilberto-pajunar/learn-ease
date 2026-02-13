@@ -26,7 +26,7 @@ const calculateReadingSpeed = (words: number, duration: number): number => {
 const calculateTotalScore = (submission: Submission): number => {
   const totalQuestions = submission.answers.length
   const correctAnswers =
-    submission.comprehensionScore + submission.vocabularyScore
+    submission.answers.filter((answer) => answer.isCorrect).length
   return totalQuestions > 0
     ? Math.round((correctAnswers / totalQuestions) * 100)
     : 0
@@ -416,7 +416,7 @@ function SubmissionScoreCard({
               {totalScore}%
             </div>
             <p className="text-xs text-muted-foreground">
-              {submission.comprehensionScore + submission.vocabularyScore} /{' '}
+              {submission.answers.filter((answer) => answer.isCorrect).length} /{' '}
               {submission.answers.length} correct
             </p>
           </div>

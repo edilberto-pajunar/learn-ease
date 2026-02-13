@@ -48,7 +48,7 @@ export default function SummaryPage() {
         getSkill(submission.materialId) === skill &&
         submission.testType === testType,
     )
-    return submissions.reduce((acc, submission) => acc + submission.comprehensionScore + submission.vocabularyScore, 0)
+    return submissions.reduce((acc, submission) => acc + submission.answers.filter((answer) => answer.isCorrect).length, 0)
   }
 
   const getUniqueStudentsCount = (testType: string) => {
@@ -110,23 +110,13 @@ export default function SummaryPage() {
           (s) => s.testType === 'postTest',
         )
 
-        const avgPreTest =
-          preTestSubmissions.length > 0
-            ? preTestSubmissions.reduce((acc, s) => acc + s.comprehensionScore + s.vocabularyScore, 0) /
-              preTestSubmissions.length
-            : 0
-
-        const avgPostTest =
-          postTestSubmissions.length > 0
-            ? postTestSubmissions.reduce((acc, s) => acc + s.comprehensionScore + s.vocabularyScore, 0) /
-              postTestSubmissions.length
-            : 0
+       
 
         return {
           studentId,
-          'Pre-test Average': Math.round(avgPreTest * 100) / 100,
-          'Post-test Average': Math.round(avgPostTest * 100) / 100,
-          Improvement: Math.round((avgPostTest - avgPreTest) * 100) / 100,
+          'Pre-test Average': Math.round(0 * 100) / 100,
+          'Post-test Average': Math.round(0 * 100) / 100,
+          Improvement: Math.round((0 - 0) * 100) / 100,
         }
       })
       .sort((a, b) => b['Improvement'] - a['Improvement'])
