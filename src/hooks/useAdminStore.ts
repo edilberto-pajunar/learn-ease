@@ -123,7 +123,7 @@ export const useAdminStore = create<AdminState>((set) => ({
     const materialsRef = collection(db, 'materials')
     const q = query(materialsRef)
     const querySnapshot = await getDocs(q)
-    const materials = querySnapshot.docs.map((doc) => doc.data() as Material)
+    const materials = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Material))
     set({ allMaterials: materials })
   },
   exportAllSubmissions: async (studentId: string) => {
