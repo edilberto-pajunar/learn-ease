@@ -15,6 +15,7 @@ import {
 } from 'firebase/firestore'
 import { create } from 'zustand'
 import { Answer, Submission } from '@/interface/submission'
+import { useAuthStore } from '@/hooks/useAuthStore'
 
 // enum ComprehensionStatus {
 //   NOT_STARTED = 'NOT_STARTED',
@@ -193,6 +194,8 @@ export const useReadStore = create<ReadStore>((set, get) => ({
         testType,
       )
 
+      await useAuthStore.getState().refreshUser(studentId)
+
       set({
         batchedSubmissions: [],
         isLoading: false,
@@ -232,8 +235,12 @@ export const useReadStore = create<ReadStore>((set, get) => ({
     set({ comprehensionScore: get().comprehensionScore + 1 }),
   setVocabularyScore: () => set({ vocabularyScore: get().vocabularyScore + 1 }),
   resetScore: () => set({ comprehensionScore: 0, vocabularyScore: 0 }),
-  resetAll: () =>
+  resetAll: () => {
+    const { materialsUnsubscribe } = get()
+    if (materialsUnsubscribe) materialsUnsubscribe()
     set({
+      materials: [],
+      materialsUnsubscribe: null,
       indexMaterial: 0,
       indexQuestion: 0,
       currentAnswers: [],
@@ -242,7 +249,9 @@ export const useReadStore = create<ReadStore>((set, get) => ({
       comprehensionScore: 0,
       vocabularyScore: 0,
       batchedSubmissions: [],
-    }),
+      hasAlreadyTakenTest: false,
+    })
+  },
   setDifficulty: (difficulty) => set({ difficulty }),
   setMaterialBatch: (materialBatch) => set({ materialBatch }),
 }))

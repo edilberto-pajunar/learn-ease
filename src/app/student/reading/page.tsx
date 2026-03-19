@@ -32,6 +32,7 @@ const ReadingPageContent: FC = () => {
     materialBatch,
     checkIfTestTaken,
     hasAlreadyTakenTest,
+    isLoading,
   } = useReadStore()
   const { quarter, getQuarter } = useAdminStore()
   const { user } = useAuthStore()
@@ -114,6 +115,7 @@ const ReadingPageContent: FC = () => {
     <>
       <ReadingCompletedDialog
         isOpen={showCompletionDialog}
+        isSubmitting={isLoading}
         materialBatch={materialBatch || ''}
         totalMaterials={materials.length}
         onClose={() => setShowCompletionDialog(false)}

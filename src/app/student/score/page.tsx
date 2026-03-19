@@ -94,7 +94,7 @@ export default function PretestScorePage() {
     if (preTestMaterialBatchId) {
       fetchPreTestSubmission(studentId, preTestMaterialBatchId)
     }
-    if (!postTestMaterialBatchId) {
+    if (postTestMaterialBatchId) {
       fetchPostTestSubmission(studentId, postTestMaterialBatchId)
     }
   }, [studentId, fetchPreTestSubmission, fetchPostTestSubmission, preTestMaterialBatchId, postTestMaterialBatchId])

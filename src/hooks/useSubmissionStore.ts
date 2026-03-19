@@ -25,6 +25,7 @@ interface SubmissionStore {
   setBatchSubmissions: (batchId: string) => Promise<void>
   preTestUnsubscribe: (() => void) | null
   postTestUnsubscribe: (() => void) | null
+  reset: () => void
 }
 
 export const useSubmissionStore = create<SubmissionStore>((set, get) => ({
@@ -124,5 +125,19 @@ export const useSubmissionStore = create<SubmissionStore>((set, get) => ({
     )
     set({ submissions })
   },
-  unsubscribe: null,
+  reset: () => {
+    const { preTestUnsubscribe, postTestUnsubscribe } = get()
+    if (preTestUnsubscribe) preTestUnsubscribe()
+    if (postTestUnsubscribe) postTestUnsubscribe()
+    set({
+      submissions: [],
+      allSubmissions: [],
+      batchId: null,
+      batchSubmissions: [],
+      preTestSubmissions: [],
+      postTestSubmissions: [],
+      preTestUnsubscribe: null,
+      postTestUnsubscribe: null,
+    })
+  },
 }))

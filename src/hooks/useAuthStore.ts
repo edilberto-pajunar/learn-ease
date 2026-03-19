@@ -4,11 +4,15 @@ import { auth, db } from "@/firebase/client_app";
 import { AppUser, } from "@/interface/user";
 import {
   collection,
+  doc,
+  getDoc,
   getDocs,
   query,
   where,
 } from "firebase/firestore";
 import { Submission } from "@/interface/submission";
+import { useSubmissionStore } from "@/hooks/useSubmissionStore";
+import { useReadStore } from "@/hooks/useReadStore";
 
 interface AuthState {
   isAuthenticated: boolean;
@@ -17,6 +21,7 @@ interface AuthState {
   setIsAuthenticated: (isAuthenticated: boolean) => void;
   setUser: (user: AppUser | null) => void;
   setSubmissions: () => void;
+  refreshUser: (userId: string) => Promise<void>;
   logout: () => void;
 }
 
@@ -51,7 +56,21 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       }
     }
   },
+  refreshUser: async (userId: string) => {
+    try {
+      const userRef = doc(db, "users", userId);
+      const userSnap = await getDoc(userRef);
+      if (userSnap.exists()) {
+        const userData = { id: userSnap.id, ...userSnap.data() } as AppUser;
+        set({ user: userData });
+      }
+    } catch (e) {
+      console.error("Error refreshing user: ", e);
+    }
+  },
   logout: async () => {
+    useSubmissionStore.getState().reset()
+    useReadStore.getState().resetAll()
     await signOut(auth);
     set({
       user: null,

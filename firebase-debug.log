@@ -58,3 +58,150 @@ For CI servers and headless environments, generate a new token with firebase log
 [debug] [2026-03-10T15:49:57.438Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
 [debug] [2026-03-10T15:49:57.438Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
 [debug] [2026-03-10T15:49:57.552Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 400
+[debug] [2026-03-19T18:46:06.737Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-03-19T18:46:06.739Z] > authorizing via signed-in user (choi@ventvest.com)
+[debug] [2026-03-19T18:46:06.739Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-03-19T18:46:06.739Z] > authorizing via signed-in user (choi@ventvest.com)
+[debug] [2026-03-19T18:46:06.739Z] Checked if tokens are valid: false, expires at: 1773926173374
+[debug] [2026-03-19T18:46:06.740Z] Checked if tokens are valid: false, expires at: 1773926173374
+[debug] [2026-03-19T18:46:06.740Z] > refreshing access token with scopes: []
+[debug] [2026-03-19T18:46:06.740Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-03-19T18:46:06.740Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-03-19T18:46:06.741Z] Checked if tokens are valid: false, expires at: 1773926173374
+[debug] [2026-03-19T18:46:06.741Z] Checked if tokens are valid: false, expires at: 1773926173374
+[debug] [2026-03-19T18:46:06.741Z] > refreshing access token with scopes: []
+[debug] [2026-03-19T18:46:06.741Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-03-19T18:46:06.741Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-03-19T18:46:06.742Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-03-19T18:46:06.742Z] > authorizing via signed-in user (choi@ventvest.com)
+[debug] [2026-03-19T18:46:06.742Z] Checked if tokens are valid: false, expires at: 1773926173374
+[debug] [2026-03-19T18:46:06.742Z] Checked if tokens are valid: false, expires at: 1773926173374
+[debug] [2026-03-19T18:46:06.742Z] > refreshing access token with scopes: []
+[debug] [2026-03-19T18:46:06.742Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-03-19T18:46:06.742Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-03-19T18:46:06.865Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2026-03-19T18:46:06.865Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-03-19T18:46:06.885Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/learnease-b04de/billingInfo [none]
+[debug] [2026-03-19T18:46:06.886Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2026-03-19T18:46:06.887Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-03-19T18:46:06.903Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/learnease-b04de/billingInfo [none]
+[debug] [2026-03-19T18:46:06.904Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2026-03-19T18:46:06.905Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-03-19T18:46:06.923Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/learnease-b04de/billingInfo [none]
+[debug] [2026-03-19T18:46:07.357Z] <<< [apiv2][status] GET https://cloudbilling.googleapis.com/v1/projects/learnease-b04de/billingInfo 403
+[debug] [2026-03-19T18:46:07.358Z] <<< [apiv2][body] GET https://cloudbilling.googleapis.com/v1/projects/learnease-b04de/billingInfo {"error":{"code":403,"message":"The caller does not have permission","status":"PERMISSION_DENIED"}}
+[debug] [2026-03-19T18:46:08.712Z] <<< [apiv2][status] GET https://cloudbilling.googleapis.com/v1/projects/learnease-b04de/billingInfo 403
+[debug] [2026-03-19T18:46:08.712Z] <<< [apiv2][body] GET https://cloudbilling.googleapis.com/v1/projects/learnease-b04de/billingInfo {"error":{"code":403,"message":"The caller does not have permission","status":"PERMISSION_DENIED"}}
+[debug] [2026-03-19T18:46:08.714Z] <<< [apiv2][status] GET https://cloudbilling.googleapis.com/v1/projects/learnease-b04de/billingInfo 403
+[debug] [2026-03-19T18:46:31.768Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-03-19T18:46:31.770Z] > authorizing via signed-in user (choi@ventvest.com)
+[debug] [2026-03-19T18:46:31.770Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-03-19T18:46:31.770Z] > authorizing via signed-in user (choi@ventvest.com)
+[debug] [2026-03-19T18:46:31.770Z] Checked if tokens are valid: true, expires at: 1773949565905
+[debug] [2026-03-19T18:46:31.770Z] Checked if tokens are valid: true, expires at: 1773949565905
+[debug] [2026-03-19T18:46:31.770Z] Checked if tokens are valid: true, expires at: 1773949565905
+[debug] [2026-03-19T18:46:31.770Z] Checked if tokens are valid: true, expires at: 1773949565905
+[debug] [2026-03-19T18:46:31.770Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-03-19T18:46:31.770Z] > authorizing via signed-in user (choi@ventvest.com)
+[debug] [2026-03-19T18:46:31.770Z] Checked if tokens are valid: true, expires at: 1773949565905
+[debug] [2026-03-19T18:46:31.770Z] Checked if tokens are valid: true, expires at: 1773949565905
+[debug] [2026-03-19T18:46:31.771Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/learnease-b04de/billingInfo [none]
+[debug] [2026-03-19T18:46:31.771Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/learnease-b04de/billingInfo [none]
+[debug] [2026-03-19T18:46:31.771Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/learnease-b04de/billingInfo [none]
+[debug] [2026-03-19T18:46:32.259Z] <<< [apiv2][status] GET https://cloudbilling.googleapis.com/v1/projects/learnease-b04de/billingInfo 403
+[debug] [2026-03-19T18:46:32.260Z] <<< [apiv2][body] GET https://cloudbilling.googleapis.com/v1/projects/learnease-b04de/billingInfo {"error":{"code":403,"message":"The caller does not have permission","status":"PERMISSION_DENIED"}}
+[debug] [2026-03-19T18:46:33.123Z] <<< [apiv2][status] GET https://cloudbilling.googleapis.com/v1/projects/learnease-b04de/billingInfo 403
+[debug] [2026-03-19T18:46:34.544Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-03-19T18:46:34.545Z] > authorizing via signed-in user (choi@ventvest.com)
+[debug] [2026-03-19T18:46:34.545Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-03-19T18:46:34.545Z] > authorizing via signed-in user (choi@ventvest.com)
+[debug] [2026-03-19T18:46:34.546Z] Checked if tokens are valid: true, expires at: 1773949565905
+[debug] [2026-03-19T18:46:34.546Z] Checked if tokens are valid: true, expires at: 1773949565905
+[debug] [2026-03-19T18:46:34.546Z] Checked if tokens are valid: true, expires at: 1773949565905
+[debug] [2026-03-19T18:46:34.546Z] Checked if tokens are valid: true, expires at: 1773949565905
+[debug] [2026-03-19T18:46:34.546Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-03-19T18:46:34.546Z] > authorizing via signed-in user (choi@ventvest.com)
+[debug] [2026-03-19T18:46:34.546Z] Checked if tokens are valid: true, expires at: 1773949565905
+[debug] [2026-03-19T18:46:34.546Z] Checked if tokens are valid: true, expires at: 1773949565905
+[debug] [2026-03-19T18:46:34.546Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/learnease-b04de/billingInfo [none]
+[debug] [2026-03-19T18:46:34.547Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/learnease-b04de/billingInfo [none]
+[debug] [2026-03-19T18:46:34.547Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/learnease-b04de/billingInfo [none]
+[debug] [2026-03-19T18:46:34.920Z] <<< [apiv2][status] GET https://cloudbilling.googleapis.com/v1/projects/learnease-b04de/billingInfo 403
+[debug] [2026-03-19T18:53:23.063Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-03-19T18:53:23.064Z] > authorizing via signed-in user (choi@ventvest.com)
+[debug] [2026-03-19T18:53:23.064Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-03-19T18:53:23.064Z] > authorizing via signed-in user (choi@ventvest.com)
+[debug] [2026-03-19T18:53:23.064Z] Checked if tokens are valid: true, expires at: 1773949565905
+[debug] [2026-03-19T18:53:23.064Z] Checked if tokens are valid: true, expires at: 1773949565905
+[debug] [2026-03-19T18:53:23.065Z] Checked if tokens are valid: true, expires at: 1773949565905
+[debug] [2026-03-19T18:53:23.065Z] Checked if tokens are valid: true, expires at: 1773949565905
+[debug] [2026-03-19T18:53:23.065Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-03-19T18:53:23.065Z] > authorizing via signed-in user (choi@ventvest.com)
+[debug] [2026-03-19T18:53:23.065Z] Checked if tokens are valid: true, expires at: 1773949565905
+[debug] [2026-03-19T18:53:23.065Z] Checked if tokens are valid: true, expires at: 1773949565905
+[debug] [2026-03-19T18:53:23.065Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/learnease-b04de/billingInfo [none]
+[debug] [2026-03-19T18:53:23.065Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/learnease-b04de/billingInfo [none]
+[debug] [2026-03-19T18:53:23.066Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/learnease-b04de/billingInfo [none]
+[debug] [2026-03-19T18:53:24.422Z] <<< [apiv2][status] GET https://cloudbilling.googleapis.com/v1/projects/learnease-b04de/billingInfo 403
+[debug] [2026-03-19T18:53:24.422Z] <<< [apiv2][body] GET https://cloudbilling.googleapis.com/v1/projects/learnease-b04de/billingInfo {"error":{"code":403,"message":"The caller does not have permission","status":"PERMISSION_DENIED"}}
+[debug] [2026-03-19T18:53:24.516Z] <<< [apiv2][status] GET https://cloudbilling.googleapis.com/v1/projects/learnease-b04de/billingInfo 403
+[debug] [2026-03-19T18:53:24.516Z] <<< [apiv2][body] GET https://cloudbilling.googleapis.com/v1/projects/learnease-b04de/billingInfo {"error":{"code":403,"message":"The caller does not have permission","status":"PERMISSION_DENIED"}}
+[debug] [2026-03-19T18:53:24.553Z] <<< [apiv2][status] GET https://cloudbilling.googleapis.com/v1/projects/learnease-b04de/billingInfo 403
+[debug] [2026-03-19T19:02:42.117Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-03-19T19:02:42.118Z] > authorizing via signed-in user (choi@ventvest.com)
+[debug] [2026-03-19T19:02:42.118Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-03-19T19:02:42.118Z] > authorizing via signed-in user (choi@ventvest.com)
+[debug] [2026-03-19T19:02:42.119Z] Checked if tokens are valid: true, expires at: 1773949565905
+[debug] [2026-03-19T19:02:42.119Z] Checked if tokens are valid: true, expires at: 1773949565905
+[debug] [2026-03-19T19:02:42.119Z] Checked if tokens are valid: true, expires at: 1773949565905
+[debug] [2026-03-19T19:02:42.119Z] Checked if tokens are valid: true, expires at: 1773949565905
+[debug] [2026-03-19T19:02:42.119Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-03-19T19:02:42.119Z] > authorizing via signed-in user (choi@ventvest.com)
+[debug] [2026-03-19T19:02:42.119Z] Checked if tokens are valid: true, expires at: 1773949565905
+[debug] [2026-03-19T19:02:42.119Z] Checked if tokens are valid: true, expires at: 1773949565905
+[debug] [2026-03-19T19:02:42.119Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/learnease-b04de/billingInfo [none]
+[debug] [2026-03-19T19:02:42.120Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/learnease-b04de/billingInfo [none]
+[debug] [2026-03-19T19:02:42.120Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/learnease-b04de/billingInfo [none]
+[debug] [2026-03-19T19:02:42.520Z] <<< [apiv2][status] GET https://cloudbilling.googleapis.com/v1/projects/learnease-b04de/billingInfo 403
+[debug] [2026-03-19T19:02:42.520Z] <<< [apiv2][body] GET https://cloudbilling.googleapis.com/v1/projects/learnease-b04de/billingInfo {"error":{"code":403,"message":"The caller does not have permission","status":"PERMISSION_DENIED"}}
+[debug] [2026-03-19T19:02:43.517Z] <<< [apiv2][status] GET https://cloudbilling.googleapis.com/v1/projects/learnease-b04de/billingInfo 403
+[debug] [2026-03-19T19:02:43.517Z] <<< [apiv2][body] GET https://cloudbilling.googleapis.com/v1/projects/learnease-b04de/billingInfo {"error":{"code":403,"message":"The caller does not have permission","status":"PERMISSION_DENIED"}}
+[debug] [2026-03-19T19:02:43.518Z] <<< [apiv2][status] GET https://cloudbilling.googleapis.com/v1/projects/learnease-b04de/billingInfo 403
+[debug] [2026-03-19T19:07:02.970Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-03-19T19:07:02.971Z] > authorizing via signed-in user (choi@ventvest.com)
+[debug] [2026-03-19T19:07:02.971Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-03-19T19:07:02.971Z] > authorizing via signed-in user (choi@ventvest.com)
+[debug] [2026-03-19T19:07:02.971Z] Checked if tokens are valid: true, expires at: 1773949565905
+[debug] [2026-03-19T19:07:02.971Z] Checked if tokens are valid: true, expires at: 1773949565905
+[debug] [2026-03-19T19:07:02.971Z] Checked if tokens are valid: true, expires at: 1773949565905
+[debug] [2026-03-19T19:07:02.971Z] Checked if tokens are valid: true, expires at: 1773949565905
+[debug] [2026-03-19T19:07:02.971Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-03-19T19:07:02.971Z] > authorizing via signed-in user (choi@ventvest.com)
+[debug] [2026-03-19T19:07:02.972Z] Checked if tokens are valid: true, expires at: 1773949565905
+[debug] [2026-03-19T19:07:02.972Z] Checked if tokens are valid: true, expires at: 1773949565905
+[debug] [2026-03-19T19:07:02.972Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/learnease-b04de/billingInfo [none]
+[debug] [2026-03-19T19:07:02.972Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/learnease-b04de/billingInfo [none]
+[debug] [2026-03-19T19:07:02.973Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/learnease-b04de/billingInfo [none]
+[debug] [2026-03-19T19:07:04.422Z] <<< [apiv2][status] GET https://cloudbilling.googleapis.com/v1/projects/learnease-b04de/billingInfo 403
+[debug] [2026-03-19T19:07:04.423Z] <<< [apiv2][body] GET https://cloudbilling.googleapis.com/v1/projects/learnease-b04de/billingInfo {"error":{"code":403,"message":"The caller does not have permission","status":"PERMISSION_DENIED"}}
+[debug] [2026-03-19T19:07:04.750Z] <<< [apiv2][status] GET https://cloudbilling.googleapis.com/v1/projects/learnease-b04de/billingInfo 403
+[debug] [2026-03-19T19:10:17.421Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-03-19T19:10:17.422Z] > authorizing via signed-in user (choi@ventvest.com)
+[debug] [2026-03-19T19:10:17.422Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-03-19T19:10:17.422Z] > authorizing via signed-in user (choi@ventvest.com)
+[debug] [2026-03-19T19:10:17.422Z] Checked if tokens are valid: true, expires at: 1773949565905
+[debug] [2026-03-19T19:10:17.422Z] Checked if tokens are valid: true, expires at: 1773949565905
+[debug] [2026-03-19T19:10:17.422Z] Checked if tokens are valid: true, expires at: 1773949565905
+[debug] [2026-03-19T19:10:17.422Z] Checked if tokens are valid: true, expires at: 1773949565905
+[debug] [2026-03-19T19:10:17.422Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-03-19T19:10:17.422Z] > authorizing via signed-in user (choi@ventvest.com)
+[debug] [2026-03-19T19:10:17.422Z] Checked if tokens are valid: true, expires at: 1773949565905
+[debug] [2026-03-19T19:10:17.422Z] Checked if tokens are valid: true, expires at: 1773949565905
+[debug] [2026-03-19T19:10:17.423Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/learnease-b04de/billingInfo [none]
+[debug] [2026-03-19T19:10:17.423Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/learnease-b04de/billingInfo [none]
+[debug] [2026-03-19T19:10:17.424Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/learnease-b04de/billingInfo [none]
+[debug] [2026-03-19T19:10:18.818Z] <<< [apiv2][status] GET https://cloudbilling.googleapis.com/v1/projects/learnease-b04de/billingInfo 403
+[debug] [2026-03-19T19:10:18.818Z] <<< [apiv2][body] GET https://cloudbilling.googleapis.com/v1/projects/learnease-b04de/billingInfo {"error":{"code":403,"message":"The caller does not have permission","status":"PERMISSION_DENIED"}}
+[debug] [2026-03-19T19:10:18.819Z] <<< [apiv2][status] GET https://cloudbilling.googleapis.com/v1/projects/learnease-b04de/billingInfo 403
+[debug] [2026-03-19T19:10:18.820Z] <<< [apiv2][body] GET https://cloudbilling.googleapis.com/v1/projects/learnease-b04de/billingInfo {"error":{"code":403,"message":"The caller does not have permission","status":"PERMISSION_DENIED"}}
+[debug] [2026-03-19T19:10:19.095Z] <<< [apiv2][status] GET https://cloudbilling.googleapis.com/v1/projects/learnease-b04de/billingInfo 403
